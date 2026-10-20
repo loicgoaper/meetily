@@ -22,6 +22,8 @@ pub mod wav;
 
 #[cfg(test)]
 mod db_tests;
+#[cfg(test)]
+mod live_tests;
 
 use log::{info, warn};
 use sqlx::SqlitePool;

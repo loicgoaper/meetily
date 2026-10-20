@@ -515,6 +515,16 @@ pub async fn api_has_live_transcript_backup(
 }
 
 #[cfg(test)]
+pub(crate) fn encode_part_for_tests(audio: &Path, dir: &Path, index: usize, offset: f64, len: f64) -> Result<(PathBuf, &'static str), String> {
+    encode_part(audio, dir, index, offset, len)
+}
+
+#[cfg(test)]
+pub(crate) fn words_for_tests(response: openrouter_stt::SttResponse) -> Vec<DiarWord> {
+    words_from_response(response)
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
 
