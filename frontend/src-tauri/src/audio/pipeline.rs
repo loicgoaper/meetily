@@ -769,6 +769,9 @@ impl AudioPipeline {
         // Note: target_chunk_duration_ms is ignored - VAD controls segmentation now
         let _ = target_chunk_duration_ms;
 
+        // Fork: new session, new mic/system energy timeline (speaker labels).
+        crate::fork::source_timeline::reset();
+
         Ok(Self {
             receiver,
             transcription_sender,
@@ -847,6 +850,9 @@ impl AudioPipeline {
                     // STEP 2: Mix audio in fixed windows when both streams have sufficient data
                     while self.ring_buffer.can_mix() {
                         if let Some((mic_window, sys_window)) = self.ring_buffer.extract_window() {
+                            // Fork: remember which source carried the energy in this window
+                            crate::fork::source_timeline::push_window(&mic_window, &sys_window, self.sample_rate);
+
                             // Simple mixing without aggressive ducking
                             let mixed_clean = self.mixer.mix_window(&mic_window, &sys_window);
 

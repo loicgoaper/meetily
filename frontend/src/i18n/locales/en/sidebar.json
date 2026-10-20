@@ -1,0 +1,35 @@
+{
+  "menu": {
+    "home": "Home",
+    "meetingNotes": "Meeting Notes",
+    "settings": "Settings",
+    "importAudio": "Import Audio",
+    "startRecording": "Start Recording",
+    "recordingInProgress": "Recording in progress..."
+  },
+  "search": {
+    "placeholder": "Search meeting content...",
+    "searching": "Searching...",
+    "match": "Match:"
+  },
+  "item": {
+    "editTitle": "Edit meeting title",
+    "delete": "Delete meeting"
+  },
+  "deleteConfirm": "Are you sure you want to delete this meeting? This action cannot be undone.",
+  "editDialog": {
+    "title": "Edit Meeting Title",
+    "label": "Meeting Title",
+    "placeholder": "Enter meeting title",
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "toast": {
+    "deleted": "Meeting deleted successfully",
+    "deletedDescription": "All associated data has been removed",
+    "deleteFailed": "Failed to delete meeting",
+    "titleEmpty": "Meeting title cannot be empty",
+    "titleUpdated": "Meeting title updated successfully",
+    "titleUpdateFailed": "Failed to update meeting title"
+  }
+}

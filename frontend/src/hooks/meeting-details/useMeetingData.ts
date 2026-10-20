@@ -5,6 +5,7 @@ import { CurrentMeeting, useSidebar } from '@/components/Sidebar/SidebarProvider
 import { invoke as invokeTauri } from '@tauri-apps/api/core';
 import { toast } from 'sonner';
 import { hasVisibleSummaryContent } from '@/lib/summary-content';
+import { useTranslation } from 'react-i18next';
 
 interface UseMeetingDataProps {
   meeting: any;
@@ -13,6 +14,7 @@ interface UseMeetingDataProps {
 }
 
 export function useMeetingData({ meeting, summaryData, onMeetingUpdated }: UseMeetingDataProps) {
+  const { t } = useTranslation();
   // State
   // Use prop directly since summary generation fetches transcripts independently
   const transcripts = meeting.transcripts;
@@ -41,7 +43,7 @@ export function useMeetingData({ meeting, summaryData, onMeetingUpdated }: UseMe
 
   const handleSaveSummary = useCallback(async (summary: MeetingSummary) => {
     if (!hasVisibleSummaryContent(summary)) {
-      throw new Error('Summary contains no visible content to save.');
+      throw new Error(t('summary.save.noContent'));
     }
 
     const formattedSummary = 'markdown' in summary || 'summary_json' in summary
@@ -51,7 +53,7 @@ export function useMeetingData({ meeting, summaryData, onMeetingUpdated }: UseMe
       meetingId: meeting.id,
       summary: formattedSummary,
     });
-  }, [meeting.id, meetingTitle]);
+  }, [meeting.id, meetingTitle, t]);
 
   const saveAllChanges = useCallback(async () => {
     setIsSaving(true);
@@ -64,14 +66,14 @@ export function useMeetingData({ meeting, summaryData, onMeetingUpdated }: UseMe
         await handleSaveSummary(aiSummary);
       }
 
-      toast.success("Changes saved successfully");
+      toast.success(t('summary.save.success'));
     } catch (error) {
       console.error('Failed to save changes:', error);
-      toast.error("Failed to save changes", { description: String(error) });
+      toast.error(t('summary.save.failed'), { description: String(error) });
     } finally {
       setIsSaving(false);
     }
-  }, [aiSummary, handleSaveSummary]);
+  }, [aiSummary, handleSaveSummary, t]);
 
   // Update meeting title from external source (e.g., AI summary)
   const updateMeetingTitle = useCallback((newTitle: string) => {

@@ -180,6 +180,8 @@ impl SettingsRepository {
         let api_key_column = match provider {
             "localWhisper" => "whisperApiKey",
             "parakeet" => return Ok(()), // Parakeet doesn't need an API key, return early
+            // Fork: cloud STT shares the summary OpenRouter key (one key to change in Meetily)
+            "openrouter" => return Self::save_api_key(pool, "openrouter", api_key).await,
             "deepgram" => "deepgramApiKey",
             "elevenLabs" => "elevenLabsApiKey",
             "groq" => "groqApiKey",
@@ -212,6 +214,8 @@ impl SettingsRepository {
         let api_key_column = match provider {
             "localWhisper" => "whisperApiKey",
             "parakeet" => return Ok(None), // Parakeet doesn't need an API key
+            // Fork: cloud STT shares the summary OpenRouter key
+            "openrouter" => return Self::get_api_key(pool, "openrouter").await,
             "deepgram" => "deepgramApiKey",
             "elevenLabs" => "elevenLabsApiKey",
             "groq" => "groqApiKey",

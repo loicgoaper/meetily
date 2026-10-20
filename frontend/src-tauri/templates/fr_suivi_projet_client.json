@@ -1,0 +1,65 @@
+{
+  "name": "Suivi de projet client",
+  "description": "Point de suivi avec un client : avancement, décisions validées, attentes de chaque côté, risques et actions.",
+  "sections": [
+    {
+      "title": "Résumé exécutif",
+      "instruction": "Paragraphe de synthèse pour le client : où en est le projet, ce qui a été validé, ce qui bloque, la suite",
+      "format": "paragraph"
+    },
+    {
+      "title": "Participants",
+      "instruction": "Participants côté client et côté prestataire, avec leur rôle",
+      "format": "list"
+    },
+    {
+      "title": "Avancement",
+      "instruction": "État de chaque lot, chantier ou livrable discuté",
+      "format": "list",
+      "item_format": "| **Lot / livrable** | **Statut** | Commentaire |\n| --- | --- | --- |"
+    },
+    {
+      "title": "Décisions validées par le client",
+      "instruction": "Décisions, arbitrages et validations obtenus du client pendant la réunion",
+      "format": "list",
+      "item_format": "| **Décision** | **Validée par** | Réf. [mm:ss] |\n| --- | --- | --- |"
+    },
+    {
+      "title": "En attente côté client",
+      "instruction": "Éléments, informations, accès ou validations que le client doit fournir, avec échéance si connue",
+      "format": "list"
+    },
+    {
+      "title": "En attente côté prestataire",
+      "instruction": "Ce que l'équipe projet doit livrer ou préparer",
+      "format": "list"
+    },
+    {
+      "title": "Risques et alertes",
+      "instruction": "Risques, retards, dépendances ou points de vigilance, avec leur impact",
+      "format": "list",
+      "item_format": "| **Risque** | **Impact** | Parade | Responsable |\n| --- | --- | --- | --- |"
+    },
+    {
+      "title": "Changements de périmètre",
+      "instruction": "Demandes nouvelles ou modifications du périmètre évoquées, et leur incidence (délai, budget)",
+      "format": "list"
+    },
+    {
+      "title": "Actions",
+      "instruction": "Liste toutes les tâches décidées, avec le responsable (nom de la personne), l'échéance si elle a été mentionnée et le moment de la réunion où l'action a été décidée",
+      "format": "list",
+      "item_format": "| **Responsable** | **Action** | Échéance | Réf. [mm:ss] |\n| --- | --- | --- | --- |"
+    },
+    {
+      "title": "Éléments présentés à l'écran",
+      "instruction": "Résume ce qui a été montré à l'écran pendant la réunion (diapositives, documents, tableaux, chiffres) d'après le contenu d'écran fourni, avec l'horodatage [mm:ss]. Omets la section si rien n'a été partagé",
+      "format": "list"
+    },
+    {
+      "title": "Prochain point",
+      "instruction": "Date et objet du prochain rendez-vous s'ils ont été fixés",
+      "format": "string"
+    }
+  ]
+}

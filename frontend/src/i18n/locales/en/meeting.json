@@ -1,0 +1,32 @@
+{
+  "page": {
+    "noMeetingSelected": "No meeting selected",
+    "goBack": "Go Back",
+    "loadDetailsError": "Failed to load meeting details",
+    "loadTranscriptsError": "Failed to load transcripts"
+  },
+  "tabs": {
+    "transcript": "Transcript",
+    "summary": "Summary",
+    "resize": "Resize transcript and summary",
+    "resizeValue": "Transcript panel {{percent}} percent"
+  },
+  "transcript": {
+    "copy": "Copy",
+    "copyTitle": "Copy Transcript",
+    "noTranscript": "No transcript available",
+    "recording": "Recording",
+    "openFolderTitle": "Open Recording Folder",
+    "enhance": "Enhance",
+    "enhanceTitle": "Retranscribe to enhance your recorded audio",
+    "contextPlaceholder": "Add context for AI summary. For example people involved, meeting overview, objective etc...",
+    "fetchForCopyError": "Failed to fetch transcripts for copying",
+    "noneToCopy": "No transcripts available to copy",
+    "copied": "Transcript copied to clipboard",
+    "clipboardHeader": "Transcript of the Meeting: {{id}} - {{title}}",
+    "clipboardDate": "Date: {{date}}"
+  },
+  "folder": {
+    "openError": "Failed to open recording folder"
+  }
+}

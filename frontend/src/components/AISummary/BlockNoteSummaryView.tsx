@@ -8,6 +8,8 @@ import { Block } from '@blocknote/core';
 import { useCreateBlockNote } from '@blocknote/react';
 import { BlockNoteView } from '@blocknote/shadcn';
 import { blocksToMarkdownSafely } from '@/lib/blocknote-markdown';
+import { en as blockNoteEn, fr as blockNoteFr } from '@blocknote/core/locales';
+import { useTranslation } from 'react-i18next';
 import "@blocknote/shadcn/style.css";
 
 // Dynamically import BlockNote Editor to avoid SSR issues
@@ -75,6 +77,7 @@ export const BlockNoteSummaryView = forwardRef<BlockNoteSummaryViewRef, BlockNot
   meeting,
   onDirtyChange
 }, ref) => {
+  const { i18n } = useTranslation();
   const { format, data } = detectSummaryFormat(summaryData);
   const [isDirty, setIsDirty] = useState(false);
   const [currentBlocks, setCurrentBlocks] = useState<Block[]>([]);
@@ -83,7 +86,9 @@ export const BlockNoteSummaryView = forwardRef<BlockNoteSummaryViewRef, BlockNot
 
   // Create BlockNote editor for markdown parsing
   const editor = useCreateBlockNote({
-    initialContent: undefined
+    initialContent: undefined,
+    // Editor menus and placeholders follow the interface language
+    dictionary: i18n.language === 'en' ? blockNoteEn : blockNoteFr,
   });
 
   // Parse markdown to blocks when format is markdown

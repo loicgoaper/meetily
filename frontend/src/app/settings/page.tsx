@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
-import { ArrowLeft, Settings2, Mic, Database as DatabaseIcon, SparkleIcon, FlaskConical } from 'lucide-react';
+import { ArrowLeft, Settings2, Mic, Database as DatabaseIcon, SparkleIcon, FlaskConical, Cloud, LayoutTemplate } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import { invoke } from '@tauri-apps/api/core';
 import { motion } from 'framer-motion';
@@ -12,17 +13,23 @@ import { SummaryModelSettings } from '@/components/SummaryModelSettings';
 import { BetaSettings } from '@/components/BetaSettings';
 import { useConfig } from '@/contexts/ConfigContext';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { CloudAiSettings } from '@/components/fork/CloudAiSettings';
+import { TemplateManager } from '@/components/fork/TemplateManager';
+import { LanguageSettings } from '@/components/fork/LanguageSettings';
 
 // Tabs configuration (constant)
 const TABS = [
-  { value: 'general', label: 'General', icon: Settings2 },
-  { value: 'recording', label: 'Recordings', icon: Mic },
-  { value: 'Transcriptionmodels', label: 'Transcription', icon: DatabaseIcon },
-  { value: 'summaryModels', label: 'Summary', icon: SparkleIcon },
-  { value: 'beta', label: 'Beta', icon: FlaskConical }
+  { value: 'general', labelKey: 'settings.tabs.general', icon: Settings2 },
+  { value: 'recording', labelKey: 'settings.tabs.recordings', icon: Mic },
+  { value: 'Transcriptionmodels', labelKey: 'settings.tabs.transcription', icon: DatabaseIcon },
+  { value: 'summaryModels', labelKey: 'settings.tabs.summary', icon: SparkleIcon },
+  { value: 'templates', labelKey: 'settings.tabs.templates', icon: LayoutTemplate },
+  { value: 'cloud', labelKey: 'settings.tabs.cloud', icon: Cloud },
+  { value: 'beta', labelKey: 'settings.tabs.beta', icon: FlaskConical }
 ] as const;
 
 export default function SettingsPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { transcriptModelConfig, setTranscriptModelConfig } = useConfig();
 
@@ -73,9 +80,9 @@ export default function SettingsPage() {
               className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
-              <span>Back</span>
+              <span>{t('common.back')}</span>
             </button>
-            <h1 className="text-3xl font-bold">Settings</h1>
+            <h1 className="text-3xl font-bold">{t('settings.title')}</h1>
           </div>
         </div>
       </div>
@@ -96,7 +103,7 @@ export default function SettingsPage() {
                     className="flex items-center gap-2 px-6 py-4 bg-transparent rounded-none border-0 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 data-[state=active]:shadow-none text-gray-600 hover:text-gray-900 relative z-10"
                   >
                     <Icon className="w-4 h-4" />
-                    {tab.label}
+                    {t(tab.labelKey)}
                   </TabsTrigger>
                 );
               })}
@@ -110,7 +117,10 @@ export default function SettingsPage() {
             </TabsList>
 
             <TabsContent value="general">
-              <PreferenceSettings />
+              <div className="space-y-6">
+                <LanguageSettings />
+                <PreferenceSettings />
+              </div>
             </TabsContent>
             <TabsContent value="recording">
               <RecordingSettings />
@@ -123,6 +133,12 @@ export default function SettingsPage() {
             </TabsContent>
             <TabsContent value="summaryModels">
               <SummaryModelSettings />
+            </TabsContent>
+            <TabsContent value="templates" className="mt-6">
+              <TemplateManager />
+            </TabsContent>
+            <TabsContent value="cloud" className="mt-6">
+              <CloudAiSettings />
             </TabsContent>
             <TabsContent value="beta" className="mt-6">
               <BetaSettings />

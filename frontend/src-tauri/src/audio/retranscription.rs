@@ -103,7 +103,22 @@ pub async fn start_retranscription<R: Runtime>(
     RETRANSCRIPTION_CANCELLED.store(false, Ordering::SeqCst);
 
     let use_parakeet = provider.as_deref() == Some("parakeet");
-    let result = run_retranscription(app.clone(), meeting_id.clone(), meeting_folder_path, language, model, provider).await;
+    let result = if provider.as_deref() == Some("openrouter") {
+        // Fork: cloud retranscription = full-file transcription with speaker identification
+        let _ = meeting_folder_path;
+        emit_progress(&app, &meeting_id, "transcribing", 10, "Transcription cloud avec identification des intervenants...");
+        crate::fork::diarization::diarize_meeting(&app, &meeting_id)
+            .await
+            .map(|r| RetranscriptionResult {
+                meeting_id: meeting_id.clone(),
+                segments_count: r.segments,
+                duration_seconds: 0.0,
+                language: language.clone(),
+            })
+            .map_err(|e| anyhow!(e))
+    } else {
+        run_retranscription(app.clone(), meeting_id.clone(), meeting_folder_path, language, model, provider).await
+    };
 
     // Unload the engine after the batch job (success, failure, or cancellation)
     super::common::unload_engine_after_batch(use_parakeet).await;
@@ -139,7 +154,7 @@ pub async fn start_retranscription<R: Runtime>(
 
 /// Find audio file in meeting folder
 /// Tries common names first, then scans for any file with an audio extension
-fn find_audio_file(folder: &Path) -> Result<PathBuf> {
+pub(crate) fn find_audio_file(folder: &Path) -> Result<PathBuf> {
     let candidates = [
         "audio.mp4", "audio.m4a", "audio.wav", "audio.mp3",
         "audio.flac", "audio.ogg", "recording.mp4",

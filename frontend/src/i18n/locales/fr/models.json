@@ -1,0 +1,226 @@
+{
+  "common": {
+    "download": "Télécharger",
+    "retry": "Réessayer",
+    "delete": "Supprimer",
+    "redownload": "Retélécharger",
+    "cancel": "Annuler",
+    "ready": "Prêt",
+    "recommended": "Recommandé",
+    "selected": "Sélectionné",
+    "downloading": "Téléchargement en cours...",
+    "cancelling": "Annulation…",
+    "cancellationRequested": "Annulation demandée",
+    "cancelDownload": "Annuler le téléchargement",
+    "deleteModelTooltip": "Supprimer le modèle pour libérer de l'espace",
+    "loadingModels": "Chargement des modèles...",
+    "noModelsFound": "Aucun modèle trouvé.",
+    "unknownError": "Erreur inconnue",
+    "failedToLoadModels": "Impossible de charger les modèles",
+    "failedToLoadTranscriptionModels": "Impossible de charger les modèles de transcription",
+    "usingForTranscription": "{{name}} est utilisé pour la transcription",
+    "save": "Enregistrer"
+  },
+  "toast": {
+    "downloadCompletedBeforeCancellation": "Le téléchargement de {{name}} s'est terminé avant l'annulation",
+    "downloadCancelled": "Téléchargement de {{name}} annulé",
+    "modelReady": "{{icon}} {{name}} est prêt !",
+    "modelReadyDescription": "Modèle téléchargé et prêt à l'emploi",
+    "downloadFailedFor": "Échec du téléchargement de {{name}}",
+    "cancellingModel": "Annulation de {{name}}...",
+    "cancellingDescription": "Le téléchargement est en cours d'arrêt. Vous pourrez réessayer une fois le nettoyage terminé.",
+    "cancelFailed": "Impossible d'annuler le téléchargement",
+    "downloadingModel": "Téléchargement de {{name}}...",
+    "downloadingDescription": "Cela peut prendre quelques minutes",
+    "downloadFailed": "Échec du téléchargement",
+    "switchedTo": "{{name}} sélectionné",
+    "modelDeleted": "{{name}} supprimé",
+    "modelDeletedDescription": "Modèle supprimé pour libérer de l'espace",
+    "deleteFailedFor": "Impossible de supprimer {{name}}",
+    "deleteFailed": "Échec de la suppression",
+    "namedModelDeleted": "Modèle {{name}} supprimé"
+  },
+  "badge": {
+    "fullPrecision": "Pleine précision",
+    "balancedPlus": "Équilibré+",
+    "balanced": "Équilibré",
+    "fast": "Rapide",
+    "standard": "Standard",
+    "int8Quantized": "Quantifié Int8"
+  },
+  "whisper": {
+    "advancedModels": "Modèles avancés",
+    "accuracy": {
+      "high": "Haute précision",
+      "good": "Bonne précision",
+      "decent": "Précision correcte",
+      "other": "Précision : {{accuracy}}"
+    },
+    "speed": {
+      "slow": "Traitement lent",
+      "medium": "Traitement moyen",
+      "fast": "Traitement rapide",
+      "veryFast": "Traitement très rapide",
+      "other": "Traitement : {{speed}}"
+    },
+    "tagline": {
+      "speed": {
+        "realTime": "Temps réel",
+        "fast": "Traitement rapide",
+        "moderate": "Vitesse modérée",
+        "slower": "Traitement plus lent"
+      },
+      "feature": {
+        "mostAccurate": "Le plus précis",
+        "bestAccuracyWithSpeed": "Meilleure précision, avec rapidité",
+        "professionalQuality": "Qualité professionnelle",
+        "balancedQuality": "Qualité équilibrée",
+        "goodAccuracy": "Bonne précision",
+        "fastestOption": "Option la plus rapide"
+      },
+      "optimizedSuffix": ", optimisé",
+      "ultraFastSuffix": ", ultra rapide"
+    }
+  },
+  "parakeet": {
+    "listenFailed": "Impossible de suivre les mises à jour des modèles Parakeet",
+    "display": {
+      "lightning": {
+        "name": "Éclair",
+        "tagline": "Temps réel • Idéal pour la vitesse, excellente précision"
+      },
+      "compact": {
+        "name": "Compact",
+        "tagline": "Temps réel • Taille réduite"
+      },
+      "precise": {
+        "name": "Précis",
+        "tagline": "20x plus rapide que le temps réel • Précision supérieure"
+      }
+    }
+  },
+  "builtin": {
+    "title": "Modèles d'IA intégrée",
+    "noModels": "Aucun modèle trouvé. Téléchargez un modèle pour commencer à utiliser l'IA intégrée.",
+    "corrupted": "Corrompu",
+    "error": "Erreur",
+    "deleteModel": "Supprimer le modèle",
+    "fileCorrupted": "Le fichier est corrompu. Relancez le téléchargement ou supprimez-le.",
+    "errorOccurred": "Une erreur est survenue",
+    "contextTokens": "{{tokens}} jetons",
+    "downloadedSuccessfully": "Modèle {{name}} téléchargé",
+    "downloadOfCancelled": "Téléchargement de {{name}} annulé"
+  },
+  "downloadProgress": {
+    "finalizing": "Finalisation...",
+    "downloadingModel": "Téléchargement de {{name}}",
+    "percentComplete": "{{percent}} % terminé",
+    "completedLoading": "Téléchargement terminé, chargement du modèle...",
+    "modelsAvailable": "{{downloaded}} modèle(s) disponible(s) sur {{total}}",
+    "totalSize": "{{size}} au total",
+    "runsLocally": "Les modèles s'exécutent localement : aucune connexion Internet requise pour la transcription"
+  },
+  "downloadToast": {
+    "downloadComplete": "Téléchargement terminé",
+    "downloadCancelled": "Téléchargement annulé",
+    "transcriptionModel": "Modèle de transcription (Parakeet)",
+    "summaryModel": "Modèle de compte rendu ({{model}})",
+    "errors": {
+      "network": "Erreur réseau : vérifiez votre connexion Internet",
+      "server": "Erreur serveur : téléchargement temporairement indisponible",
+      "storage": "Erreur de stockage : vérifiez l'espace disque disponible",
+      "validation": "Échec de la validation du fichier : relancez le téléchargement"
+    }
+  },
+  "chunks": {
+    "calculating": "Calcul en cours...",
+    "title": "Progression du traitement",
+    "paused": "En pause",
+    "pause": "Pause",
+    "resume": "Reprendre",
+    "chunksCompleted": "{{completed}} segment(s) terminé(s) sur {{total}}",
+    "stats": {
+      "completed": "Terminés",
+      "processing": "En cours",
+      "pending": "En attente",
+      "failed": "Échoués"
+    },
+    "estimatedRemaining": "Temps restant estimé : {{time}}",
+    "recentChunks": "Segments récents ({{shown}} sur {{total}})",
+    "chunk": "Segment {{id}}",
+    "error": "Erreur : {{message}}",
+    "allCompleted": "Traitement terminé ! Les {{total}} segments ont tous été transcrits.",
+    "miniTitle": "Traitement",
+    "miniChunks": "{{completed}} / {{total}} segments",
+    "miniProcessing": "({{processing}} en cours)"
+  },
+  "summarySettings": {
+    "title": "Paramètres du modèle",
+    "summarizationModel": "Modèle de compte rendu",
+    "selectProvider": "Choisir un fournisseur",
+    "providers": {
+      "builtinAi": "IA intégrée (hors ligne, sans API)",
+      "customOpenai": "Serveur personnalisé (OpenAI)"
+    },
+    "selectModel": "Choisir un modèle...",
+    "searchModels": "Rechercher un modèle...",
+    "custom": {
+      "endpointUrl": "URL du point de terminaison *",
+      "endpointHelp": "URL de base de l'API compatible OpenAI",
+      "modelName": "Nom du modèle *",
+      "modelHelp": "Identifiant du modèle à utiliser pour les requêtes",
+      "apiKeyOptional": "Clé API (facultative)",
+      "apiKeyPlaceholder": "Laissez vide si elle n'est pas requise",
+      "advancedOptions": "Options avancées",
+      "maxTokens": "Nombre maximal de jetons",
+      "temperature": "Température (0.0-2.0)",
+      "example": "p. ex. {{value}}",
+      "testingConnection": "Test de la connexion...",
+      "testConnection": "Tester la connexion"
+    },
+    "apiKey": {
+      "label": "Clé API",
+      "placeholder": "Saisissez votre clé API",
+      "unlockToEdit": "Déverrouiller pour modifier",
+      "lockToPreventEditing": "Verrouiller pour empêcher la modification"
+    },
+    "ollama": {
+      "customEndpoint": "Point de terminaison personnalisé (facultatif)",
+      "endpointHelp": "Laissez vide ou saisissez un point de terminaison personnalisé (p. ex. http://x.yy.zz:11434)",
+      "fetching": "Récupération...",
+      "fetchModels": "Récupérer les modèles",
+      "endpointChangedBeforeSaving": "Le point de terminaison a changé. Cliquez sur « Récupérer les modèles » pour charger les modèles du nouveau point de terminaison avant d'enregistrer.",
+      "availableModels": "Modèles Ollama disponibles",
+      "using": "Utilisé :",
+      "notInstalledOrRunning": "Ollama n'est pas installé ou n'est pas en cours d'exécution. Téléchargez et installez Ollama pour utiliser des modèles locaux.",
+      "downloadOllama": "Télécharger Ollama",
+      "afterInstall": "Après avoir installé Ollama, redémarrez l'application et cliquez sur « Récupérer les modèles » pour continuer.",
+      "endpointChanged": "Le point de terminaison a changé. Cliquez sur « Récupérer les modèles » pour charger les modèles du nouveau point de terminaison.",
+      "noModels": "Aucun modèle trouvé. Téléchargez un modèle recommandé ou cliquez sur « Récupérer les modèles » pour charger les modèles Ollama disponibles.",
+      "downloadingModelEllipsis": "Téléchargement de {{model}}...",
+      "downloadRecommended": "Télécharger {{model}} (recommandé, ~800 Mo)",
+      "downloadingModel": "Téléchargement de {{model}}",
+      "noMatch": "Aucun modèle ne correspond à « {{query}} ». Essayez un autre terme de recherche.",
+      "withSizeOf": "d'une taille de "
+    },
+    "toast": {
+      "invalidEndpoint": "URL du point de terminaison Ollama invalide. Elle doit commencer par http:// ou https://",
+      "loadOllamaFailed": "Impossible de charger les modèles Ollama",
+      "loadOpenRouterFailed": "Impossible de charger les modèles OpenRouter",
+      "loadBuiltinFailed": "Impossible de charger les modèles d'IA intégrée",
+      "saveCustomFailed": "Impossible d'enregistrer la configuration OpenAI personnalisée",
+      "enterEndpointAndModel": "Saisissez d'abord l'URL du point de terminaison et le nom du modèle",
+      "connectionSuccessful": "Connexion réussie !",
+      "alreadyDownloading": "{{model}} est déjà en cours de téléchargement",
+      "progress": "Progression : {{percent}} %",
+      "downloadModelFailed": "Échec du téléchargement du modèle",
+      "ollamaNotInstalled": "Ollama n'est pas installé",
+      "ollamaNotInstalledDescription": "Téléchargez et installez Ollama avant de télécharger des modèles.",
+      "deleteModelFailed": "Impossible de supprimer le modèle"
+    }
+  },
+  "config": {
+    "saved": "Paramètres du compte rendu enregistrés",
+    "saveFailed": "Impossible d'enregistrer les paramètres du compte rendu"
+  }
+}

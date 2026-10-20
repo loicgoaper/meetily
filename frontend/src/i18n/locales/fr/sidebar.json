@@ -1,0 +1,35 @@
+{
+  "menu": {
+    "home": "Accueil",
+    "meetingNotes": "Notes de réunion",
+    "settings": "Réglages",
+    "importAudio": "Importer un fichier audio",
+    "startRecording": "Démarrer l'enregistrement",
+    "recordingInProgress": "Enregistrement en cours…"
+  },
+  "search": {
+    "placeholder": "Rechercher dans les réunions…",
+    "searching": "Recherche…",
+    "match": "Correspondance :"
+  },
+  "item": {
+    "editTitle": "Modifier le titre de la réunion",
+    "delete": "Supprimer la réunion"
+  },
+  "deleteConfirm": "Voulez-vous vraiment supprimer cette réunion ? Cette action est irréversible.",
+  "editDialog": {
+    "title": "Modifier le titre de la réunion",
+    "label": "Titre de la réunion",
+    "placeholder": "Saisissez le titre de la réunion",
+    "cancel": "Annuler",
+    "save": "Enregistrer"
+  },
+  "toast": {
+    "deleted": "Réunion supprimée",
+    "deletedDescription": "Toutes les données associées ont été supprimées",
+    "deleteFailed": "Impossible de supprimer la réunion",
+    "titleEmpty": "Le titre de la réunion ne peut pas être vide",
+    "titleUpdated": "Titre de la réunion mis à jour",
+    "titleUpdateFailed": "Impossible de mettre à jour le titre de la réunion"
+  }
+}

@@ -1,0 +1,111 @@
+// fork/db_tests.rs
+//
+// Integration tests of the fork's SQL against a real SQLite database migrated with
+// every upstream + fork migration.
+
+use super::meeting_context::{MeetingContext, MeetingContextRepository, Participant};
+use super::preferences::{PreferencesRepository, STT_LIVE_MODEL, UI_LANGUAGE};
+use super::speakers::{MeetingSpeaker, SpeakersRepository};
+use sqlx::SqlitePool;
+use std::collections::HashMap;
+
+async fn migrated_pool() -> SqlitePool {
+    let pool = SqlitePool::connect("sqlite::memory:").await.unwrap();
+    let mut migrator = sqlx::migrate!("./migrations");
+    migrator.set_ignore_missing(true);
+    migrator.run(&pool).await.unwrap();
+    sqlx::query("INSERT INTO meetings (id, title, created_at, updated_at) VALUES ('m1', 'Réunion', '2026-10-20', '2026-10-20')")
+        .execute(&pool)
+        .await
+        .unwrap();
+    pool
+}
+
+fn context(company: Option<&str>) -> MeetingContext {
+    MeetingContext {
+        context_text: Some("Suivi projet".into()),
+        meeting_type: Some("visio".into()),
+        participants: vec![
+            Participant { name: "Loïc".into(), is_self: true, ..Default::default() },
+            Participant { name: "Marie".into(), role: Some("DSI".into()), company: company.map(String::from), ..Default::default() },
+        ],
+        ..Default::default()
+    }
+}
+
+#[tokio::test]
+async fn context_roundtrip_and_contacts_upsert() {
+    let pool = migrated_pool().await;
+    MeetingContextRepository::save(&pool, "m1", &context(Some("Acme"))).await.unwrap();
+    // Saving again replaces participants and upserts contacts (expression index conflict)
+    MeetingContextRepository::save(&pool, "m1", &context(Some("Acme"))).await.unwrap();
+
+    let ctx = MeetingContextRepository::get(&pool, "m1").await.unwrap();
+    assert_eq!(ctx.context_text.as_deref(), Some("Suivi projet"));
+    assert_eq!(ctx.participants.len(), 2);
+    assert!(ctx.participants[0].is_self);
+    assert_eq!(ctx.participants[1].company.as_deref(), Some("Acme"));
+
+    let contacts = MeetingContextRepository::search_contacts(&pool, "mar").await.unwrap();
+    assert_eq!(contacts.len(), 1, "same name + company must not duplicate");
+    let by_company = MeetingContextRepository::search_contacts(&pool, "acme").await.unwrap();
+    assert_eq!(by_company.len(), 1);
+
+    // Same name without company is another contact
+    MeetingContextRepository::save(&pool, "m1", &context(None)).await.unwrap();
+    assert_eq!(MeetingContextRepository::search_contacts(&pool, "marie").await.unwrap().len(), 2);
+}
+
+#[tokio::test]
+async fn missing_context_is_empty() {
+    let pool = migrated_pool().await;
+    assert!(MeetingContextRepository::get(&pool, "m1").await.unwrap().is_empty());
+}
+
+#[tokio::test]
+async fn preferences_defaults_and_overrides() {
+    let pool = migrated_pool().await;
+    assert_eq!(PreferencesRepository::get(&pool, STT_LIVE_MODEL).await, "elevenlabs/scribe-v2");
+    let mut values = HashMap::new();
+    values.insert(UI_LANGUAGE.to_string(), "en".to_string());
+    PreferencesRepository::set_many(&pool, &values).await.unwrap();
+    values.insert(UI_LANGUAGE.to_string(), "fr".to_string());
+    PreferencesRepository::set_many(&pool, &values).await.unwrap();
+    let all = PreferencesRepository::get_all(&pool).await.unwrap();
+    assert_eq!(all[UI_LANGUAGE], "fr");
+    assert_eq!(all[STT_LIVE_MODEL], "elevenlabs/scribe-v2");
+}
+
+#[tokio::test]
+async fn speakers_replace_and_manual_rename() {
+    let pool = migrated_pool().await;
+    let auto = vec![
+        MeetingSpeaker { speaker_key: "speaker_0".into(), display_name: Some("Loïc".into()), participant_id: None, source: "mic-anchor".into(), confidence: None },
+        MeetingSpeaker { speaker_key: "speaker_1".into(), display_name: None, participant_id: None, source: "auto".into(), confidence: None },
+    ];
+    SpeakersRepository::replace_all(&pool, "m1", &auto).await.unwrap();
+    SpeakersRepository::rename(&pool, "m1", "speaker_1", Some("  Marie ")).await.unwrap();
+    SpeakersRepository::rename(&pool, "m1", "system", Some("Client")).await.unwrap();
+    let list = SpeakersRepository::list(&pool, "m1").await.unwrap();
+    assert_eq!(list.len(), 3);
+    let marie = list.iter().find(|s| s.speaker_key == "speaker_1").unwrap();
+    assert_eq!(marie.display_name.as_deref(), Some("Marie"));
+    assert_eq!(marie.source, "manual");
+}
+
+#[tokio::test]
+async fn transcripts_keep_speaker_column() {
+    let pool = migrated_pool().await;
+    sqlx::query(
+        "INSERT INTO transcripts (id, meeting_id, transcript, timestamp, audio_start_time, audio_end_time, duration, speaker)
+         VALUES ('t1', 'm1', 'Bonjour', 'now', 0.0, 1.0, 1.0, 'mic')",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    let rows = sqlx::query_as::<_, crate::database::models::Transcript>("SELECT * FROM transcripts WHERE meeting_id = 'm1'")
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+    assert_eq!(rows[0].speaker.as_deref(), Some("mic"));
+}

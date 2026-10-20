@@ -1,0 +1,146 @@
+{
+  "templateSelected": "Modèle sélectionné",
+  "templateSelectedDescription": "Le compte rendu utilisera le modèle « {{name}} »",
+  "generator": {
+    "stop": "Arrêter",
+    "stopTitle": "Arrêter la génération du compte rendu",
+    "loadingConfigTitle": "Chargement de la configuration du modèle…",
+    "generateTitle": "Générer le compte rendu par IA",
+    "regenerateTitle": "Régénérer le compte rendu par IA",
+    "processing": "Traitement…",
+    "generate": "Générer le compte rendu",
+    "regenerate": "Régénérer le compte rendu",
+    "settingsTitle": "Paramètres du compte rendu",
+    "aiModel": "Modèle d'IA",
+    "modelSettings": "Paramètres du modèle",
+    "templateTitle": "Choisir le modèle de compte rendu",
+    "template": "Modèle"
+  },
+  "updater": {
+    "savingTitle": "Enregistrement",
+    "saving": "Enregistrement…",
+    "saveTitle": "Enregistrer les modifications",
+    "save": "Enregistrer",
+    "copyTitle": "Copier le compte rendu",
+    "copy": "Copier"
+  },
+  "panel": {
+    "generating": "Génération du compte rendu…"
+  },
+  "status": {
+    "processing": "Traitement de la transcription…",
+    "summarizing": "Génération du compte rendu…",
+    "regenerating": "Régénération du compte rendu…",
+    "completed": "Compte rendu terminé",
+    "error": "Erreur lors de la génération du compte rendu"
+  },
+  "empty": {
+    "title": "Aucun compte rendu pour le moment",
+    "description": "Générez un compte rendu par IA à partir de la transcription pour obtenir les points clés, les actions à mener et les décisions.",
+    "generating": "Génération…",
+    "retry": "Relancer le compte rendu",
+    "generate": "Générer le compte rendu",
+    "selectModel": "Veuillez d'abord choisir un modèle dans les paramètres"
+  },
+  "language": {
+    "auto": "Auto",
+    "autoSubtitle": "Langue dominante de la transcription",
+    "autoSubtitleLocal": "Enregistrée sur cet appareil pour les réunions sans dossier",
+    "buttonTitle": "Langue du compte rendu : {{language}}",
+    "buttonTitleLocal": "Langue du compte rendu : {{language}} (enregistrée sur cet appareil)",
+    "ariaLabel": "Choisir la langue du compte rendu",
+    "loadError": "Impossible de charger la langue du compte rendu enregistrée",
+    "loadErrorDescription": "Mode Auto utilisé jusqu'à ce que les métadonnées de la réunion soient lisibles.",
+    "loadErrorGenerationDescription": "Mode Auto utilisé pour cette génération.",
+    "savedLocally": "Langue du compte rendu enregistrée sur cet appareil",
+    "savedLocallyDescription": "Cette réunion n'a pas de dossier d'enregistrement : la préférence ne peut pas être écrite dans les métadonnées de la réunion.",
+    "saveError": "Impossible d'enregistrer la langue du compte rendu",
+    "bilingual": "Transcription bilingue détectée",
+    "bilingualDescription": "Choisissez manuellement la langue du compte rendu si le mode Auto se trompe.",
+    "picker": {
+      "ariaLabel": "Choisir la langue du compte rendu",
+      "search": "Rechercher une langue…",
+      "recent": "Récemment utilisées",
+      "other": "Autres langues",
+      "all": "Toutes les langues",
+      "noMatches": "Aucun résultat"
+    }
+  },
+  "model": {
+    "saved": "Paramètres du modèle enregistrés",
+    "saveError": "Impossible d'enregistrer les paramètres du modèle"
+  },
+  "generation": {
+    "failedRetry": "La génération du compte rendu a échoué. Veuillez réessayer.",
+    "generateFailed": "Impossible de générer le compte rendu",
+    "regenerateFailed": "Impossible de régénérer le compte rendu",
+    "generationFailed": "La génération du compte rendu a échoué",
+    "regenerationFailed": "La régénération du compte rendu a échoué",
+    "cancelledReloadFailed": "La génération du compte rendu a été annulée, mais le compte rendu enregistré n'a pas pu être rechargé. Veuillez rouvrir cette réunion.",
+    "reloadFailed": "{{error}}. Le compte rendu enregistré n'a pas pu être rechargé. Veuillez rouvrir cette réunion.",
+    "previousRestored": "{{error}}. Votre compte rendu précédent a été restauré.",
+    "emptyResult": "La génération du compte rendu s'est terminée sans contenu visible. Veuillez réessayer.",
+    "fallbackTitle": "Compte rendu généré en mode de repli",
+    "fallbackDescription": "La normalisation en anglais a échoué : le compte rendu nettoyé d'origine a été conservé.",
+    "success": "Compte rendu généré !",
+    "ready": "Le compte rendu de votre réunion est prêt",
+    "readyReasoningStripped": "Le compte rendu de votre réunion est prêt. Le raisonnement du modèle a été retiré des notes.",
+    "usingModel": "Modèle : {{provider}}/{{model}}",
+    "noTranscriptText": "Aucun texte de transcription disponible. Veuillez d'abord ajouter du texte.",
+    "failed": "La génération du compte rendu a échoué.",
+    "fetchTranscriptsError": "Impossible de récupérer la transcription pour générer le compte rendu",
+    "loadingConfig": "Chargement de la configuration du modèle, veuillez patienter…",
+    "noTranscripts": "Aucune transcription disponible pour le compte rendu",
+    "noTranscriptsRegenerate": "Aucune transcription disponible pour régénérer le compte rendu",
+    "noOllamaModels": "Aucun modèle Ollama trouvé. Veuillez télécharger gemma3:1b depuis les paramètres du modèle.",
+    "noBuiltinModel": "Aucun modèle d'IA intégré sélectionné. Veuillez choisir un modèle dans les paramètres.",
+    "builtinNotReady": "Le modèle d'IA intégré n'est pas prêt. Vérifiez les paramètres du modèle.",
+    "validateFailed": "Impossible de vérifier le modèle de compte rendu. Vérifiez les paramètres du modèle.",
+    "stopped": "Génération du compte rendu arrêtée",
+    "stoppedDescription": "Vous pouvez générer un nouveau compte rendu à tout moment",
+    "alreadyFinishing": "Le compte rendu est presque terminé",
+    "alreadyFinishingDescription": "En attente du dernier résultat.",
+    "stopFailed": "Impossible d'arrêter la génération du compte rendu",
+    "stopFailedDescription": "La génération se poursuit ; en attente de son dernier état."
+  },
+  "copy": {
+    "noContent": "Aucun contenu de compte rendu à copier",
+    "copied": "Compte rendu copié dans le presse-papiers",
+    "failed": "Impossible de copier le compte rendu",
+    "header": "Compte rendu de réunion : {{title}}",
+    "meetingId": "ID de la réunion :",
+    "date": "Date :",
+    "copiedOn": "Copié le :"
+  },
+  "save": {
+    "noContent": "Le compte rendu ne contient aucun contenu visible à enregistrer.",
+    "success": "Modifications enregistrées",
+    "failed": "Impossible d'enregistrer les modifications"
+  },
+  "legacy": {
+    "errorTitle": "Erreur lors de la génération du compte rendu",
+    "errorHint": "Vérifiez la configuration du modèle et les clés d'API, ou réessayez.",
+    "processingTitle": "Traitement de la transcription",
+    "generatingTitle": "Génération du compte rendu",
+    "processingDescription": "Analyse de la transcription…",
+    "generatingDescription": "Rédaction d'un compte rendu détaillé de votre réunion…",
+    "noContent": "Aucun contenu de compte rendu disponible.",
+    "tryAgain": "Essayez de générer un nouveau compte rendu.",
+    "copyBlocks_one": "Copier le bloc",
+    "copyBlocks_other": "Copier {{count}} blocs",
+    "deleteBlocks_one": "Supprimer le bloc",
+    "deleteBlocks_other": "Supprimer {{count}} blocs",
+    "deleteSection": "Supprimer",
+    "placeholder": "Tapez « / » pour afficher les commandes…",
+    "commands": {
+      "text": "Texte",
+      "textDescription": "Écrire en texte simple",
+      "bullet": "Liste à puces",
+      "bulletDescription": "Créer une liste à puces",
+      "h1": "Titre 1",
+      "h1Description": "Grand titre de section",
+      "h2": "Titre 2",
+      "h2Description": "Titre de section moyen"
+    }
+  }
+}

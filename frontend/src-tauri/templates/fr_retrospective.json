@@ -1,0 +1,45 @@
+{
+  "name": "Rétrospective (agile)",
+  "description": "Rétrospective de sprint pour l'amélioration continue.",
+  "sections": [
+    {
+      "title": "Sprint",
+      "instruction": "Nom ou numéro du sprint et période couverte",
+      "format": "string"
+    },
+    {
+      "title": "Participants",
+      "instruction": "Liste des participants",
+      "format": "list"
+    },
+    {
+      "title": "À commencer",
+      "instruction": "Actions ou expériences à lancer au prochain sprint",
+      "format": "list",
+      "item_format": "| **Idée** | **Proposée par** |\n| --- | --- |"
+    },
+    {
+      "title": "À arrêter",
+      "instruction": "Pratiques à abandonner",
+      "format": "list",
+      "item_format": "| **Pratique** | **Raison** |\n| --- | --- |"
+    },
+    {
+      "title": "À continuer",
+      "instruction": "Pratiques à conserver",
+      "format": "list",
+      "item_format": "| **Pratique** | **Remarques** |\n| --- | --- |"
+    },
+    {
+      "title": "Actions d'amélioration",
+      "instruction": "Expériences concrètes avec responsable, échéance et indicateur de réussite",
+      "format": "list",
+      "item_format": "| **Responsable** | **Action** | Échéance | Indicateur de réussite |\n| --- | --- | --- | --- |"
+    },
+    {
+      "title": "Notes et votes",
+      "instruction": "Synthèse des échanges et éléments ayant reçu le plus de votes",
+      "format": "paragraph"
+    }
+  ]
+}

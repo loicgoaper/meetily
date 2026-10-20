@@ -1,0 +1,42 @@
+{
+  "name": "Réunion interne / équipe",
+  "description": "Réunion d'équipe : points abordés, décisions, tâches et sujets à suivre.",
+  "sections": [
+    {
+      "title": "Résumé",
+      "instruction": "Paragraphe de synthèse de la réunion",
+      "format": "paragraph"
+    },
+    {
+      "title": "Participants",
+      "instruction": "Liste des participants",
+      "format": "list"
+    },
+    {
+      "title": "Points abordés",
+      "instruction": "Pour chaque sujet : l'essentiel de l'échange et la conclusion",
+      "format": "list"
+    },
+    {
+      "title": "Décisions",
+      "instruction": "Décisions prises, avec qui les a prises si c'est clair",
+      "format": "list"
+    },
+    {
+      "title": "Tâches",
+      "instruction": "Qui fait quoi, et pour quand",
+      "format": "list",
+      "item_format": "| **Qui** | **Quoi** | Pour quand | Réf. [mm:ss] |\n| --- | --- | --- | --- |"
+    },
+    {
+      "title": "Sujets à suivre",
+      "instruction": "Questions ouvertes ou sujets reportés à une prochaine réunion",
+      "format": "list"
+    },
+    {
+      "title": "Informations à partager",
+      "instruction": "Annonces ou informations à diffuser au reste de l'équipe",
+      "format": "list"
+    }
+  ]
+}

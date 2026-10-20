@@ -1,7 +1,7 @@
 {
     "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
     "productName": "meetily",
-    "version": "0.4.1",
+    "version": "0.4.1-perso.1",
     "identifier": "com.meetily.ai",
     "build": {
         "frontendDist": "../out",
@@ -81,14 +81,9 @@
     "bundle": {
         "active": true,
         "targets": [
-            "deb",
-            "appimage",
-            "msi",
-            "nsis",
-            "app",
-            "dmg"
+            "nsis"
         ],
-        "createUpdaterArtifacts": true,
+        "createUpdaterArtifacts": false,
         "icon": [
             "icons/icon.png",
             "icons/app_icon.icns",
@@ -112,9 +107,9 @@
     },
     "plugins": {
         "updater": {
-            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEVDQTYzMUQ3ODc5N0M4MkEKUldRcXlKZUgxekdtN09DRkVWSHNpZlJseEVOUmpNd1dDSTNaLzZ3MXJGTnY3WW1pdnlOYjBpbkIK",
+            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEYyMDFCQjcwRThFNDQyRDIKUldUU1F1VG9jTHNCOGlEZmdqcGx6VkFZejVqWXhzbllrS3dyVS9LODFOT0xMcEV5ZkV6WXJmcksK",
             "endpoints": [
-                "https://github.com/Zackriya-Solutions/meeting-minutes/releases/latest/download/latest.json"
+                "https://github.com/loicgoaper/meetily/releases/latest/download/latest.json"
             ]
         }
     }

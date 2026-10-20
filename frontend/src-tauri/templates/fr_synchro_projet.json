@@ -1,0 +1,51 @@
+{
+  "name": "Synchro projet / point d'avancement",
+  "description": "Point hebdomadaire ou bimensuel : jalons, risques, décisions.",
+  "sections": [
+    {
+      "title": "Date et animation",
+      "instruction": "Date, heure de début et de fin, nom de la personne qui anime",
+      "format": "string"
+    },
+    {
+      "title": "Participants",
+      "instruction": "Liste des participants et de leur rôle",
+      "format": "list"
+    },
+    {
+      "title": "Jalons et statut",
+      "instruction": "Jalons en cours avec leur statut et leur date de fin estimée",
+      "format": "list",
+      "item_format": "| **Jalon** | **Statut** | Fin estimée |\n| --- | --- | --- |"
+    },
+    {
+      "title": "Avancement",
+      "instruction": "Paragraphe court sur les progrès depuis le dernier point",
+      "format": "paragraph"
+    },
+    {
+      "title": "Risques et parades",
+      "instruction": "Principaux risques avec leur impact, la parade prévue et le responsable",
+      "format": "list",
+      "item_format": "| **Risque** | **Impact** | Parade | Responsable |\n| --- | --- | --- | --- |"
+    },
+    {
+      "title": "Décisions",
+      "instruction": "Décisions prises avec leur justification et l'horodatage",
+      "format": "list",
+      "item_format": "| **Décision** | **Justification** | Réf. [mm:ss] |\n| --- | --- | --- |"
+    },
+    {
+      "title": "Actions",
+      "instruction": "Liste toutes les tâches décidées, avec le responsable (nom de la personne), l'échéance si elle a été mentionnée et le moment de la réunion où l'action a été décidée",
+      "format": "list",
+      "item_format": "| **Responsable** | **Action** | Échéance | Réf. [mm:ss] |\n| --- | --- | --- | --- |"
+    },
+    {
+      "title": "Documents liés",
+      "instruction": "Documents, tickets ou maquettes mentionnés ou montrés",
+      "format": "list",
+      "item_format": "| **Document** | **Lien ou emplacement** | Type |\n| --- | --- | --- |"
+    }
+  ]
+}

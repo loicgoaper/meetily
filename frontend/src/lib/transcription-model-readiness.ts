@@ -19,6 +19,12 @@ const PROVIDER_COMMANDS: Record<string, ProviderCommands> = {
     hasAvailableModels: 'parakeet_has_available_models',
     getAvailableModels: 'parakeet_get_available_models',
   },
+  // Fork: cloud transcription only needs the OpenRouter key
+  openrouter: {
+    initialize: 'openrouter_stt_init',
+    hasAvailableModels: 'openrouter_stt_has_key',
+    getAvailableModels: 'openrouter_stt_models_status',
+  },
 };
 
 export function getProviderCommands(provider: string): ProviderCommands | null {

@@ -1,0 +1,167 @@
+{
+  "unknownError": "Unknown error",
+  "layout": {
+    "setupFirst": "Please complete setup first",
+    "setupFirstDescription": "You need to finish onboarding before you can start recording.",
+    "betaDisabled": "Beta feature disabled",
+    "betaDisabledDescription": "Enable \"Import Audio & Retranscribe\" in Settings > Beta to use this feature.",
+    "dropAudioFile": "Please drop an audio file",
+    "supportedFormats": "Supported formats: {{formats}}"
+  },
+  "summaryPolling": {
+    "timeout": "Summary generation timed out after 15 minutes. Please try again or check your model configuration."
+  },
+  "about": {
+    "logoAlt": "Meetily Logo",
+    "tagline": "Real-time notes and summaries that never leave your machine.",
+    "checking": "Checking...",
+    "checkForUpdates": "Check for Updates",
+    "updateAvailable": "Update available: v{{version}}",
+    "latestVersion": "You are running the latest version",
+    "checkFailed": "Failed to check for updates: {{error}}",
+    "differentTitle": "What makes Meetily different",
+    "features": {
+      "privacyTitle": "Privacy-first",
+      "privacyText": "Your data & AI processing workflow can now stay within your premise. No cloud, no leaks.",
+      "anyModelTitle": "Use Any Model",
+      "anyModelText": "Prefer local open-source model? Great. Want to plug in an external API? Also fine. No lock-in.",
+      "costTitle": "Cost-Smart",
+      "costText": "Avoid pay-per-minute bills by running models locally (or pay only for the calls you choose).",
+      "everywhereTitle": "Works everywhere",
+      "everywhereText": "Google Meet, Zoom, Teams-online or offline."
+    },
+    "comingSoonLabel": "Coming soon:",
+    "comingSoonText": "A library of on-device AI agents-automating follow-ups, action tracking, and more.",
+    "ctaTitle": "Ready to push your business further?",
+    "ctaText": "If you're planning to build privacy-first custom AI agents or a fully tailored product for your <bold>business</bold>, we can help you build it.",
+    "contactButton": "Chat with the Zackriya team",
+    "builtBy": "Built by Zackriya Solutions"
+  },
+  "info": {
+    "aboutMeetily": "About Meetily",
+    "about": "About"
+  },
+  "console": {
+    "label": "Developer Console",
+    "toggle": "Toggle Console",
+    "description": "Show or hide the developer console window. On Windows, this controls the console window. On macOS, this opens Terminal with app logs."
+  },
+  "editableTitle": {
+    "editSection": "Edit section title",
+    "deleteSection": "Delete section"
+  },
+  "confirmDelete": {
+    "title": "Confirm Delete",
+    "cancel": "Cancel",
+    "delete": "Delete"
+  },
+  "update": {
+    "notificationTitle": "Update Available",
+    "notificationBody": "Version {{version}} is now available",
+    "viewDetails": "View Details",
+    "downloadingTitle": "Downloading Update",
+    "errorTitle": "Update Error",
+    "availableTitle": "Update Available",
+    "downloadingDescription": "Downloading the latest version...",
+    "errorDescription": "An error occurred while updating",
+    "availableDescription": "A new version ({{version}}) is available",
+    "currentVersion": "Current Version:",
+    "newVersion": "New Version:",
+    "releaseDate": "Release Date:",
+    "percentComplete": "{{percent}}% complete",
+    "restartNotice": "The app will restart automatically after installation",
+    "later": "Later",
+    "downloadAndInstall": "Download & Install",
+    "close": "Close",
+    "noLongerAvailable": "Update no longer available",
+    "prepareFailed": "Failed to prepare update: {{error}}",
+    "notAvailable": "Update not available",
+    "getFailed": "Failed to get update: {{error}}",
+    "installed": "Update installed successfully. The app will restart...",
+    "installFailed": "Failed to download or install update",
+    "failed": "Update failed: {{error}}",
+    "checkInProgress": "Update check already in progress",
+    "units": {
+      "bytes": "Bytes",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB"
+    }
+  },
+  "ollama": {
+    "downloaded": "Model {{model}} downloaded!",
+    "ready": "Model is now ready to use",
+    "downloadFailed": "Download failed: {{model}}"
+  },
+  "analytics": {
+    "consent": {
+      "title": "Usage Analytics",
+      "description": "Usage analytics is off by default. You can turn it on to share anonymous product and performance data; no personal content is collected.",
+      "enable": "Enable Analytics",
+      "updating": "Updating...",
+      "offByDefault": "Off unless you choose to enable it",
+      "userId": "Your User ID",
+      "userIdHint": "Share this ID when reporting issues to help us investigate your issue logs",
+      "copyUserId": "Copy User ID",
+      "copied": "Copied!",
+      "copy": "Copy",
+      "privateNotice": "Your meetings, transcripts, and recordings remain completely private and local.",
+      "privacyPolicy": "View Privacy Policy"
+    },
+    "dataModal": {
+      "title": "What Analytics Collects",
+      "privacyTitle": "Your Privacy is Protected",
+      "privacyBody": "Analytics is off by default. If you enable it, we collect <strong>anonymous usage data only</strong>. No meeting content, names, file paths, or personal information is ever collected.",
+      "collectedTitle": "Data We Collect When Enabled:",
+      "models": {
+        "title": "1. Model Preferences",
+        "transcription": "Transcription model (e.g., \"Whisper large-v3\", \"Parakeet\")",
+        "summary": "Summary model (e.g., \"Llama 3.2\", \"Claude Sonnet\")",
+        "provider": "Model provider (e.g., \"Local\", \"Ollama\", \"OpenRouter\")",
+        "note": "Helps us understand which models users prefer"
+      },
+      "metrics": {
+        "title": "2. Anonymous Meeting Metrics",
+        "recordingDuration": "Recording duration (e.g., \"125 seconds\")",
+        "pauseDuration": "Pause duration (e.g., \"5 seconds\")",
+        "segments": "Number of transcript segments",
+        "chunks": "Number of audio chunks processed",
+        "note": "Helps us optimize performance and understand usage patterns"
+      },
+      "devices": {
+        "title": "3. Device Types (Not Names)",
+        "microphone": "Microphone type: \"Bluetooth\" or \"Wired\" or \"Unknown\"",
+        "systemAudio": "System audio type: \"Bluetooth\" or \"Wired\" or \"Unknown\"",
+        "note": "Helps us improve compatibility, NOT the actual device names"
+      },
+      "usage": {
+        "title": "4. App Usage Patterns",
+        "startStop": "App started/stopped events",
+        "session": "Session duration",
+        "features": "Feature usage (e.g., \"settings changed\")",
+        "errors": "Error occurrences (helps us fix bugs)",
+        "note": "Helps us improve user experience"
+      },
+      "platform": {
+        "title": "5. Platform Information",
+        "os": "Operating system (e.g., \"macOS\", \"Windows\")",
+        "version": "App version (automatically included in all events)",
+        "architecture": "Architecture (e.g., \"x86_64\", \"aarch64\")",
+        "note": "Helps us prioritize platform support"
+      },
+      "notCollected": {
+        "title": "What We DON'T Collect:",
+        "names": "Meeting names or titles",
+        "files": "File names, file paths, or meeting folders",
+        "transcripts": "Meeting transcripts or content",
+        "audio": "Audio recordings",
+        "devices": "Device names (only types: Bluetooth/Wired)",
+        "personal": "Personal information",
+        "identifiable": "Any identifiable data"
+      },
+      "exampleTitle": "Example Event:",
+      "keepEnabled": "Keep Analytics Enabled",
+      "confirmDisable": "Confirm: Disable Analytics"
+    }
+  }
+}

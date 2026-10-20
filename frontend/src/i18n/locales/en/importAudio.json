@@ -1,0 +1,88 @@
+{
+  "common": {
+    "language": "Language",
+    "selectLanguage": "Select language",
+    "parakeetAutoOnly": "Language selection isn't supported for Parakeet. It always uses automatic detection.",
+    "model": "Model",
+    "loadingModels": "Loading models...",
+    "selectModel": "Select model",
+    "processingAudio": "Processing audio...",
+    "cancel": "Cancel",
+    "close": "Close",
+    "tryAgain": "Try Again"
+  },
+  "stages": {
+    "copying": "copying",
+    "decoding": "decoding",
+    "resampling": "resampling",
+    "vad": "vad",
+    "transcribing": "transcribing",
+    "saving": "saving",
+    "complete": "complete"
+  },
+  "dialog": {
+    "titleImporting": "Importing Audio...",
+    "titleFailed": "Import Failed",
+    "titleComplete": "Import Complete",
+    "title": "Import Audio File",
+    "errorDescription": "An error occurred during import",
+    "description": "Import an audio file to create a new meeting with transcripts",
+    "meetingTitle": "Meeting Title",
+    "meetingTitlePlaceholder": "Enter meeting title",
+    "chooseDifferentFile": "Choose Different File",
+    "validating": "Validating...",
+    "selectFile": "Select Audio File",
+    "advancedOptions": "Advanced Options",
+    "import": "Import",
+    "completeToast": "Import complete! {{count}} segments created.",
+    "failedToast": "Import failed",
+    "cancelledToast": "Import cancelled"
+  },
+  "dropOverlay": {
+    "title": "Drop audio file to import"
+  },
+  "hook": {
+    "validateFailed": "Failed to validate file",
+    "startFailed": "Failed to start import",
+    "summaryLanguageFailed": "Could not apply default summary language",
+    "summaryLanguageFailedDescription": "The imported meeting was saved, but the default summary language was not applied."
+  },
+  "retranscribe": {
+    "titleProcessing": "Retranscribing...",
+    "titleFailed": "Retranscription Failed",
+    "title": "Retranscribe Meeting",
+    "errorDescription": "An error occurred during retranscription",
+    "description": "Re-process the audio with different language settings",
+    "languageHint": "Select a specific language to improve accuracy, or use auto-detect",
+    "modelHint": "Choose a transcription model",
+    "start": "Start Retranscription",
+    "completeToast": "Retranscription complete! {{count}} segments created.",
+    "cancelledToast": "Retranscription cancelled",
+    "folderMissing": "Meeting folder path not available"
+  },
+  "database": {
+    "importSuccess": "Database imported successfully! Reloading...",
+    "importFailed": "Import failed: {{error}}",
+    "importing": "Importing...",
+    "homebrewTitle": "Previous Meetily Installation Detected!",
+    "homebrewDescription": "We found an existing database from your previous Meetily installation (Python backend version).",
+    "size": "Size: {{size}}",
+    "homebrewQuestion": "Would you like to import your previous meetings, transcripts, and summaries?",
+    "yesImport": "Yes, Import",
+    "noBrowse": "No, Browse Manually",
+    "welcomeTitle": "Welcome to Meetily!",
+    "welcomeDescription": "Do you have data from a previous Meetily installation?",
+    "browsePrompt": "Select your previous Meetily folder, backend directory, or database file:",
+    "selecting": "Selecting...",
+    "detecting": "Detecting database...",
+    "browse": "Browse for Database",
+    "found": "Database found!",
+    "notFound": "No database found at selected location. Please select the Meetily folder, backend folder, or the database file directly.",
+    "success": "Success!",
+    "importDatabase": "Import Database",
+    "or": "or",
+    "startFresh": "Start Fresh (No Import)",
+    "initSuccess": "Database initialized successfully! Starting app...",
+    "initFailed": "Initialization failed: {{error}}"
+  }
+}

@@ -22,7 +22,7 @@ pub fn set_bundled_templates_dir(path: PathBuf) {
 /// - macOS: ~/Library/Application Support/Meetily/templates/
 /// - Windows: %APPDATA%\Meetily\templates\
 /// - Linux: ~/.config/Meetily/templates/
-fn get_custom_templates_dir() -> Option<PathBuf> {
+pub(crate) fn get_custom_templates_dir() -> Option<PathBuf> {
     let mut path = dirs::data_dir()?;
     path.push("Meetily");
     path.push("templates");
@@ -36,7 +36,7 @@ fn get_custom_templates_dir() -> Option<PathBuf> {
 ///
 /// # Returns
 /// The template JSON content if found, None otherwise
-fn load_bundled_template(template_id: &str) -> Option<String> {
+pub(crate) fn load_bundled_template(template_id: &str) -> Option<String> {
     let bundled_dir = BUNDLED_TEMPLATES_DIR.read().ok()?.clone()?;
     let template_path = bundled_dir.join(format!("{}.json", template_id));
 
@@ -61,7 +61,7 @@ fn load_bundled_template(template_id: &str) -> Option<String> {
 ///
 /// # Returns
 /// The template JSON content if found, None otherwise
-fn load_custom_template(template_id: &str) -> Option<String> {
+pub(crate) fn load_custom_template(template_id: &str) -> Option<String> {
     let custom_dir = get_custom_templates_dir()?;
     let template_path = custom_dir.join(format!("{}.json", template_id));
 

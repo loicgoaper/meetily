@@ -16,6 +16,8 @@ export interface Transcript {
   audio_start_time?: number; // Seconds from recording start (e.g., 125.3)
   audio_end_time?: number;   // Seconds from recording start (e.g., 128.6)
   duration?: number;          // Segment duration in seconds (e.g., 3.3)
+  // Fork: raw speaker key ('mic' | 'system' | 'mixed' | 'speaker_N')
+  speaker?: string | null;
 }
 
 export interface TranscriptUpdate {
@@ -30,6 +32,8 @@ export interface TranscriptUpdate {
   audio_start_time: number; // Seconds from recording start
   audio_end_time: number;   // Seconds from recording start
   duration: number;          // Segment duration in seconds
+  // Fork: dominant source of the live segment ('mic' | 'system' | 'mixed')
+  speaker?: string | null;
 }
 
 export interface Block {
@@ -141,4 +145,5 @@ export interface TranscriptSegmentData {
   endTime?: number; // audio_end_time in seconds
   text: string;
   confidence?: number;
+  speaker?: string | null; // Fork: raw speaker key
 }

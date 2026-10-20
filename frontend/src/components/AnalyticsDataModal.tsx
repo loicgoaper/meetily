@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { X, Info, Shield } from 'lucide-react';
+import { Trans, useTranslation } from 'react-i18next';
 
 interface AnalyticsDataModalProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface AnalyticsDataModalProps {
 }
 
 export default function AnalyticsDataModal({ isOpen, onClose, onConfirmDisable }: AnalyticsDataModalProps) {
+  const { t } = useTranslation();
   if (!isOpen) return null;
 
   return (
@@ -19,7 +21,7 @@ export default function AnalyticsDataModal({ isOpen, onClose, onConfirmDisable }
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <Shield className="w-6 h-6 text-blue-600" />
-            <h2 className="text-xl font-semibold text-gray-900">What Analytics Collects</h2>
+            <h2 className="text-xl font-semibold text-gray-900">{t('misc.analytics.dataModal.title')}</h2>
           </div>
           <button
             onClick={onClose}
@@ -36,90 +38,90 @@ export default function AnalyticsDataModal({ isOpen, onClose, onConfirmDisable }
             <div className="flex items-start gap-3">
               <Info className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
               <div className="text-sm text-green-800">
-                <p className="font-semibold mb-1">Your Privacy is Protected</p>
-                <p>Analytics is off by default. If you enable it, we collect <strong>anonymous usage data only</strong>. No meeting content, names, file paths, or personal information is ever collected.</p>
+                <p className="font-semibold mb-1">{t('misc.analytics.dataModal.privacyTitle')}</p>
+                <p><Trans t={t} i18nKey="misc.analytics.dataModal.privacyBody" components={{ strong: <strong /> }} /></p>
               </div>
             </div>
           </div>
 
           {/* Data Categories */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900">Data We Collect When Enabled:</h3>
+            <h3 className="text-lg font-semibold text-gray-900">{t('misc.analytics.dataModal.collectedTitle')}</h3>
 
             {/* Model Preferences */}
             <div className="border border-gray-200 rounded-lg p-4">
-              <h4 className="font-semibold text-gray-900 mb-2">1. Model Preferences</h4>
+              <h4 className="font-semibold text-gray-900 mb-2">{t('misc.analytics.dataModal.models.title')}</h4>
               <ul className="text-sm text-gray-700 space-y-1 ml-4">
-                <li>• Transcription model (e.g., "Whisper large-v3", "Parakeet")</li>
-                <li>• Summary model (e.g., "Llama 3.2", "Claude Sonnet")</li>
-                <li>• Model provider (e.g., "Local", "Ollama", "OpenRouter")</li>
+                <li>• {t('misc.analytics.dataModal.models.transcription')}</li>
+                <li>• {t('misc.analytics.dataModal.models.summary')}</li>
+                <li>• {t('misc.analytics.dataModal.models.provider')}</li>
               </ul>
-              <p className="text-xs text-gray-500 mt-2 italic">Helps us understand which models users prefer</p>
+              <p className="text-xs text-gray-500 mt-2 italic">{t('misc.analytics.dataModal.models.note')}</p>
             </div>
 
             {/* Meeting Metrics */}
             <div className="border border-gray-200 rounded-lg p-4">
-              <h4 className="font-semibold text-gray-900 mb-2">2. Anonymous Meeting Metrics</h4>
+              <h4 className="font-semibold text-gray-900 mb-2">{t('misc.analytics.dataModal.metrics.title')}</h4>
               <ul className="text-sm text-gray-700 space-y-1 ml-4">
-                <li>• Recording duration (e.g., "125 seconds")</li>
-                <li>• Pause duration (e.g., "5 seconds")</li>
-                <li>• Number of transcript segments</li>
-                <li>• Number of audio chunks processed</li>
+                <li>• {t('misc.analytics.dataModal.metrics.recordingDuration')}</li>
+                <li>• {t('misc.analytics.dataModal.metrics.pauseDuration')}</li>
+                <li>• {t('misc.analytics.dataModal.metrics.segments')}</li>
+                <li>• {t('misc.analytics.dataModal.metrics.chunks')}</li>
               </ul>
-              <p className="text-xs text-gray-500 mt-2 italic">Helps us optimize performance and understand usage patterns</p>
+              <p className="text-xs text-gray-500 mt-2 italic">{t('misc.analytics.dataModal.metrics.note')}</p>
             </div>
 
             {/* Device Types */}
             <div className="border border-gray-200 rounded-lg p-4">
-              <h4 className="font-semibold text-gray-900 mb-2">3. Device Types (Not Names)</h4>
+              <h4 className="font-semibold text-gray-900 mb-2">{t('misc.analytics.dataModal.devices.title')}</h4>
               <ul className="text-sm text-gray-700 space-y-1 ml-4">
-                <li>• Microphone type: "Bluetooth" or "Wired" or "Unknown"</li>
-                <li>• System audio type: "Bluetooth" or "Wired" or "Unknown"</li>
+                <li>• {t('misc.analytics.dataModal.devices.microphone')}</li>
+                <li>• {t('misc.analytics.dataModal.devices.systemAudio')}</li>
               </ul>
-              <p className="text-xs text-gray-500 mt-2 italic">Helps us improve compatibility, NOT the actual device names</p>
+              <p className="text-xs text-gray-500 mt-2 italic">{t('misc.analytics.dataModal.devices.note')}</p>
             </div>
 
             {/* Usage Patterns */}
             <div className="border border-gray-200 rounded-lg p-4">
-              <h4 className="font-semibold text-gray-900 mb-2">4. App Usage Patterns</h4>
+              <h4 className="font-semibold text-gray-900 mb-2">{t('misc.analytics.dataModal.usage.title')}</h4>
               <ul className="text-sm text-gray-700 space-y-1 ml-4">
-                <li>• App started/stopped events</li>
-                <li>• Session duration</li>
-                <li>• Feature usage (e.g., "settings changed")</li>
-                <li>• Error occurrences (helps us fix bugs)</li>
+                <li>• {t('misc.analytics.dataModal.usage.startStop')}</li>
+                <li>• {t('misc.analytics.dataModal.usage.session')}</li>
+                <li>• {t('misc.analytics.dataModal.usage.features')}</li>
+                <li>• {t('misc.analytics.dataModal.usage.errors')}</li>
               </ul>
-              <p className="text-xs text-gray-500 mt-2 italic">Helps us improve user experience</p>
+              <p className="text-xs text-gray-500 mt-2 italic">{t('misc.analytics.dataModal.usage.note')}</p>
             </div>
 
             {/* Platform Info */}
             <div className="border border-gray-200 rounded-lg p-4">
-              <h4 className="font-semibold text-gray-900 mb-2">5. Platform Information</h4>
+              <h4 className="font-semibold text-gray-900 mb-2">{t('misc.analytics.dataModal.platform.title')}</h4>
               <ul className="text-sm text-gray-700 space-y-1 ml-4">
-                <li>• Operating system (e.g., "macOS", "Windows")</li>
-                <li>• App version (automatically included in all events)</li>
-                <li>• Architecture (e.g., "x86_64", "aarch64")</li>
+                <li>• {t('misc.analytics.dataModal.platform.os')}</li>
+                <li>• {t('misc.analytics.dataModal.platform.version')}</li>
+                <li>• {t('misc.analytics.dataModal.platform.architecture')}</li>
               </ul>
-              <p className="text-xs text-gray-500 mt-2 italic">Helps us prioritize platform support</p>
+              <p className="text-xs text-gray-500 mt-2 italic">{t('misc.analytics.dataModal.platform.note')}</p>
             </div>
           </div>
 
           {/* What We DON'T Collect */}
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <h4 className="font-semibold text-red-900 mb-2">What We DON'T Collect:</h4>
+            <h4 className="font-semibold text-red-900 mb-2">{t('misc.analytics.dataModal.notCollected.title')}</h4>
             <ul className="text-sm text-red-800 space-y-1 ml-4">
-              <li>• ❌ Meeting names or titles</li>
-              <li>• ❌ File names, file paths, or meeting folders</li>
-              <li>• ❌ Meeting transcripts or content</li>
-              <li>• ❌ Audio recordings</li>
-              <li>• ❌ Device names (only types: Bluetooth/Wired)</li>
-              <li>• ❌ Personal information</li>
-              <li>• ❌ Any identifiable data</li>
+              <li>• ❌ {t('misc.analytics.dataModal.notCollected.names')}</li>
+              <li>• ❌ {t('misc.analytics.dataModal.notCollected.files')}</li>
+              <li>• ❌ {t('misc.analytics.dataModal.notCollected.transcripts')}</li>
+              <li>• ❌ {t('misc.analytics.dataModal.notCollected.audio')}</li>
+              <li>• ❌ {t('misc.analytics.dataModal.notCollected.devices')}</li>
+              <li>• ❌ {t('misc.analytics.dataModal.notCollected.personal')}</li>
+              <li>• ❌ {t('misc.analytics.dataModal.notCollected.identifiable')}</li>
             </ul>
           </div>
 
           {/* Example Event */}
           <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-            <h4 className="font-semibold text-gray-900 mb-2">Example Event:</h4>
+            <h4 className="font-semibold text-gray-900 mb-2">{t('misc.analytics.dataModal.exampleTitle')}</h4>
             <pre className="text-xs text-gray-700 overflow-x-auto">
               {`{
   "event": "meeting_ended",
@@ -144,13 +146,13 @@ export default function AnalyticsDataModal({ isOpen, onClose, onConfirmDisable }
             onClick={onClose}
             className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
           >
-            Keep Analytics Enabled
+            {t('misc.analytics.dataModal.keepEnabled')}
           </button>
           <button
             onClick={onConfirmDisable}
             className="px-4 py-2 text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
           >
-            Confirm: Disable Analytics
+            {t('misc.analytics.dataModal.confirmDisable')}
           </button>
         </div>
       </div>

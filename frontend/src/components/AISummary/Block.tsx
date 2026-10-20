@@ -2,6 +2,7 @@
 
 import { Block } from '@/types';
 import { useRef, useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface BlockProps {
   block: Block;
@@ -20,40 +21,40 @@ interface BlockProps {
 
 interface CommandOption {
   id: string;
-  label: string;
+  labelKey: string;
   type: Block['type'];
   icon: string;
-  description: string;
+  descriptionKey: string;
 }
 
 const COMMANDS: CommandOption[] = [
-  { 
-    id: 'text', 
-    label: 'Text', 
-    type: 'text', 
-    icon: 'T', 
-    description: 'Just start writing with plain text' 
+  {
+    id: 'text',
+    labelKey: 'summary.legacy.commands.text',
+    type: 'text',
+    icon: 'T',
+    descriptionKey: 'summary.legacy.commands.textDescription'
   },
-  { 
-    id: 'bullet', 
-    label: 'Bullet List', 
-    type: 'bullet', 
-    icon: '•', 
-    description: 'Create a bulleted list' 
+  {
+    id: 'bullet',
+    labelKey: 'summary.legacy.commands.bullet',
+    type: 'bullet',
+    icon: '•',
+    descriptionKey: 'summary.legacy.commands.bulletDescription'
   },
-  { 
-    id: 'h1', 
-    label: 'Heading 1', 
-    type: 'heading1', 
-    icon: 'H1', 
-    description: 'Big section heading' 
+  {
+    id: 'h1',
+    labelKey: 'summary.legacy.commands.h1',
+    type: 'heading1',
+    icon: 'H1',
+    descriptionKey: 'summary.legacy.commands.h1Description'
   },
-  { 
-    id: 'h2', 
-    label: 'Heading 2', 
-    type: 'heading2', 
-    icon: 'H2', 
-    description: 'Medium section heading' 
+  {
+    id: 'h2',
+    labelKey: 'summary.legacy.commands.h2',
+    type: 'heading2',
+    icon: 'H2',
+    descriptionKey: 'summary.legacy.commands.h2Description'
   },
 ];
 
@@ -71,6 +72,7 @@ export const BlockComponent: React.FC<BlockProps> = ({
   onNavigate,
   onCreateNewBlock,
 }) => {
+  const { t } = useTranslation();
   const [showCommands, setShowCommands] = useState(false);
   const [commandFilter, setCommandFilter] = useState('');
   const [selectedCommandIndex, setSelectedCommandIndex] = useState(0);
@@ -101,7 +103,7 @@ export const BlockComponent: React.FC<BlockProps> = ({
   }, [selectedCommandIndex, showCommands]);
 
   const filteredCommands = COMMANDS.filter(cmd => 
-    cmd.label.toLowerCase().includes(commandFilter.toLowerCase())
+    t(cmd.labelKey).toLowerCase().includes(commandFilter.toLowerCase())
   );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -250,7 +252,7 @@ export const BlockComponent: React.FC<BlockProps> = ({
             ${block.type === 'heading1' ? 'text-xl font-bold' : ''}
             ${block.type === 'heading2' ? 'text-lg font-semibold' : ''}
           `}
-          placeholder="Type '/' for commands..."
+          placeholder={t('summary.legacy.placeholder')}
         />
 
         {showCommands && (
@@ -273,8 +275,8 @@ export const BlockComponent: React.FC<BlockProps> = ({
                   {cmd.icon}
                 </span>
                 <div className="flex-1">
-                  <div className="font-medium">{cmd.label}</div>
-                  <div className="text-sm text-gray-500">{cmd.description}</div>
+                  <div className="font-medium">{t(cmd.labelKey)}</div>
+                  <div className="text-sm text-gray-500">{t(cmd.descriptionKey)}</div>
                 </div>
               </button>
             ))}

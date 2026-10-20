@@ -1,0 +1,226 @@
+{
+  "common": {
+    "download": "Download",
+    "retry": "Retry",
+    "delete": "Delete",
+    "redownload": "Re-download",
+    "cancel": "Cancel",
+    "ready": "Ready",
+    "recommended": "Recommended",
+    "selected": "Selected",
+    "downloading": "Downloading...",
+    "cancelling": "Cancelling…",
+    "cancellationRequested": "Cancellation requested",
+    "cancelDownload": "Cancel download",
+    "deleteModelTooltip": "Delete model to free up space",
+    "loadingModels": "Loading models...",
+    "noModelsFound": "No models found.",
+    "unknownError": "Unknown error",
+    "failedToLoadModels": "Failed to load models",
+    "failedToLoadTranscriptionModels": "Failed to load transcription models",
+    "usingForTranscription": "Using {{name}} for transcription",
+    "save": "Save"
+  },
+  "toast": {
+    "downloadCompletedBeforeCancellation": "{{name}} download completed before cancellation",
+    "downloadCancelled": "{{name}} download cancelled",
+    "modelReady": "{{icon}} {{name}} ready!",
+    "modelReadyDescription": "Model downloaded and ready to use",
+    "downloadFailedFor": "Failed to download {{name}}",
+    "cancellingModel": "Cancelling {{name}}...",
+    "cancellingDescription": "The download is still shutting down. Retry will be available when cleanup completes.",
+    "cancelFailed": "Failed to cancel download",
+    "downloadingModel": "Downloading {{name}}...",
+    "downloadingDescription": "This may take a few minutes",
+    "downloadFailed": "Download failed",
+    "switchedTo": "Switched to {{name}}",
+    "modelDeleted": "{{name}} deleted",
+    "modelDeletedDescription": "Model removed to free up space",
+    "deleteFailedFor": "Failed to delete {{name}}",
+    "deleteFailed": "Delete failed",
+    "namedModelDeleted": "Model {{name}} deleted"
+  },
+  "badge": {
+    "fullPrecision": "Full Precision",
+    "balancedPlus": "Balanced+",
+    "balanced": "Balanced",
+    "fast": "Fast",
+    "standard": "Standard",
+    "int8Quantized": "Int8 Quantized"
+  },
+  "whisper": {
+    "advancedModels": "Advanced Models",
+    "accuracy": {
+      "high": "High accuracy",
+      "good": "Good accuracy",
+      "decent": "Decent accuracy",
+      "other": "{{accuracy}} accuracy"
+    },
+    "speed": {
+      "slow": "Slow processing",
+      "medium": "Medium processing",
+      "fast": "Fast processing",
+      "veryFast": "Very Fast processing",
+      "other": "{{speed}} processing"
+    },
+    "tagline": {
+      "speed": {
+        "realTime": "Real time",
+        "fast": "Fast processing",
+        "moderate": "Moderate speed",
+        "slower": "Slower processing"
+      },
+      "feature": {
+        "mostAccurate": "Most accurate",
+        "bestAccuracyWithSpeed": "Best accuracy with speed",
+        "professionalQuality": "Professional quality",
+        "balancedQuality": "Balanced quality",
+        "goodAccuracy": "Good accuracy",
+        "fastestOption": "Fastest option"
+      },
+      "optimizedSuffix": ", optimized",
+      "ultraFastSuffix": ", ultra fast"
+    }
+  },
+  "parakeet": {
+    "listenFailed": "Failed to listen for Parakeet model updates",
+    "display": {
+      "lightning": {
+        "name": "Lightning",
+        "tagline": "Real time • Best for speed, great accuracy"
+      },
+      "compact": {
+        "name": "Compact",
+        "tagline": "Real time • Smaller size"
+      },
+      "precise": {
+        "name": "Precise",
+        "tagline": "20x real-time • Higher accuracy"
+      }
+    }
+  },
+  "builtin": {
+    "title": "Built-in AI Models",
+    "noModels": "No models found. Download a model to get started with Built-in AI.",
+    "corrupted": "Corrupted",
+    "error": "Error",
+    "deleteModel": "Delete model",
+    "fileCorrupted": "File is corrupted. Retry download or delete.",
+    "errorOccurred": "An error occurred",
+    "contextTokens": "{{tokens}} tokens",
+    "downloadedSuccessfully": "Model {{name}} downloaded successfully",
+    "downloadOfCancelled": "Download of {{name}} cancelled"
+  },
+  "downloadProgress": {
+    "finalizing": "Finalizing...",
+    "downloadingModel": "Downloading {{name}}",
+    "percentComplete": "{{percent}}% complete",
+    "completedLoading": "Download completed, loading model...",
+    "modelsAvailable": "{{downloaded}} of {{total}} models available",
+    "totalSize": "{{size}} total",
+    "runsLocally": "Models run locally - no internet required for transcription"
+  },
+  "downloadToast": {
+    "downloadComplete": "Download complete",
+    "downloadCancelled": "Download cancelled",
+    "transcriptionModel": "Transcription Model (Parakeet)",
+    "summaryModel": "Summary Model ({{model}})",
+    "errors": {
+      "network": "Network error - Check your internet connection",
+      "server": "Server error - Download temporarily unavailable",
+      "storage": "Storage error - Check available disk space",
+      "validation": "File validation failed - Please retry download"
+    }
+  },
+  "chunks": {
+    "calculating": "Calculating...",
+    "title": "Processing Progress",
+    "paused": "Paused",
+    "pause": "Pause",
+    "resume": "Resume",
+    "chunksCompleted": "{{completed}} of {{total}} chunks completed",
+    "stats": {
+      "completed": "Completed",
+      "processing": "Processing",
+      "pending": "Pending",
+      "failed": "Failed"
+    },
+    "estimatedRemaining": "Estimated time remaining: {{time}}",
+    "recentChunks": "Recent Chunks ({{shown}} of {{total}})",
+    "chunk": "Chunk {{id}}",
+    "error": "Error: {{message}}",
+    "allCompleted": "Processing completed! All {{total}} chunks have been transcribed.",
+    "miniTitle": "Processing",
+    "miniChunks": "{{completed}} / {{total}} chunks",
+    "miniProcessing": "({{processing}} processing)"
+  },
+  "summarySettings": {
+    "title": "Model Settings",
+    "summarizationModel": "Summarization Model",
+    "selectProvider": "Select provider",
+    "providers": {
+      "builtinAi": "Built-in AI (Offline, No API needed)",
+      "customOpenai": "Custom Server (OpenAI)"
+    },
+    "selectModel": "Select model...",
+    "searchModels": "Search models...",
+    "custom": {
+      "endpointUrl": "Endpoint URL *",
+      "endpointHelp": "Base URL of the OpenAI-compatible API",
+      "modelName": "Model Name *",
+      "modelHelp": "Model identifier to use for requests",
+      "apiKeyOptional": "API Key (optional)",
+      "apiKeyPlaceholder": "Leave empty if not required",
+      "advancedOptions": "Advanced Options",
+      "maxTokens": "Max Tokens",
+      "temperature": "Temperature (0.0-2.0)",
+      "example": "e.g., {{value}}",
+      "testingConnection": "Testing Connection...",
+      "testConnection": "Test Connection"
+    },
+    "apiKey": {
+      "label": "API Key",
+      "placeholder": "Enter your API key",
+      "unlockToEdit": "Unlock to edit",
+      "lockToPreventEditing": "Lock to prevent editing"
+    },
+    "ollama": {
+      "customEndpoint": "Custom Endpoint (optional)",
+      "endpointHelp": "Leave empty or enter a custom endpoint (e.g., http://x.yy.zz:11434)",
+      "fetching": "Fetching...",
+      "fetchModels": "Fetch Models",
+      "endpointChangedBeforeSaving": "Endpoint changed. Please click \"Fetch Models\" to load models from the new endpoint before saving.",
+      "availableModels": "Available Ollama Models",
+      "using": "Using:",
+      "notInstalledOrRunning": "Ollama is not installed or not running. Please download and install Ollama to use local models.",
+      "downloadOllama": "Download Ollama",
+      "afterInstall": "After installing Ollama, restart this application and click \"Fetch Models\" to continue.",
+      "endpointChanged": "Endpoint changed. Click \"Fetch Models\" to load models from the new endpoint.",
+      "noModels": "No models found. Download a recommended model or click \"Fetch Models\" to load available Ollama models.",
+      "downloadingModelEllipsis": "Downloading {{model}}...",
+      "downloadRecommended": "Download {{model}} (Recommended, ~800MB)",
+      "downloadingModel": "Downloading {{model}}",
+      "noMatch": "No models found matching \"{{query}}\". Try a different search term.",
+      "withSizeOf": "with a size of "
+    },
+    "toast": {
+      "invalidEndpoint": "Invalid Ollama endpoint URL. Must start with http:// or https://",
+      "loadOllamaFailed": "Failed to load Ollama models",
+      "loadOpenRouterFailed": "Failed to load OpenRouter models",
+      "loadBuiltinFailed": "Failed to load Built-in AI models",
+      "saveCustomFailed": "Failed to save custom OpenAI configuration",
+      "enterEndpointAndModel": "Please enter endpoint URL and model name first",
+      "connectionSuccessful": "Connection successful!",
+      "alreadyDownloading": "{{model}} is already downloading",
+      "progress": "Progress: {{percent}}%",
+      "downloadModelFailed": "Failed to download model",
+      "ollamaNotInstalled": "Ollama is not installed",
+      "ollamaNotInstalledDescription": "Please download and install Ollama before downloading models.",
+      "deleteModelFailed": "Failed to delete model"
+    }
+  },
+  "config": {
+    "saved": "Summary settings Saved successfully",
+    "saveFailed": "Failed to save summary settings"
+  }
+}

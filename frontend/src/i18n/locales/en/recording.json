@@ -1,0 +1,157 @@
+{
+  "controls": {
+    "initFailed": "Failed to initialize recording. Please check the console for details.",
+    "deviceErrors": {
+      "micTitle": "Microphone Not Available",
+      "micMessage": "Unable to access your microphone. Please check that:\n• Your microphone is connected\n• The app has microphone permissions\n• No other app is using the microphone",
+      "systemTitle": "System Audio Not Available",
+      "systemMessage": "Unable to capture system audio. Please check that:\n• A virtual audio device (like BlackHole) is installed\n• The app has screen recording permissions (macOS)\n• System audio is properly configured",
+      "permissionTitle": "Permission Required",
+      "permissionMessage": "Recording permissions are required. Please:\n• Grant microphone access in System Settings\n• Grant screen recording access for system audio (macOS)\n• Restart the app after granting permissions",
+      "failedTitle": "Recording Failed",
+      "failedMessage": "Unable to start recording. Please check your audio device settings and try again."
+    },
+    "pauseFailed": "Failed to pause recording. Please check the console for details.",
+    "resumeFailed": "Failed to resume recording. Please check the console for details.",
+    "processing": "Processing recording...",
+    "start": "Start recording",
+    "pausing": "Pausing...",
+    "resuming": "Resuming...",
+    "resume": "Resume recording",
+    "pause": "Pause recording",
+    "stopping": "Stopping...",
+    "stop": "Stop recording",
+    "validating": "Validating speech recognition...",
+    "closeAlert": "Close alert"
+  },
+  "devices": {
+    "loadFailed": "Failed to load audio devices. Please check your system audio settings.",
+    "noMicToMonitor": "No microphone devices found to monitor",
+    "monitoringFailed": "Failed to start audio level monitoring",
+    "title": "Audio Devices",
+    "microphone": "Microphone",
+    "selectMicrophone": "Select Microphone",
+    "defaultMicrophone": "Default Microphone",
+    "noMicrophone": "No microphone devices found",
+    "microphoneLevels": "Microphone Levels:",
+    "systemAudio": "System Audio",
+    "selectSystemAudio": "Select System Audio",
+    "defaultSystemAudio": "Default System Audio",
+    "noSystemAudio": "No system audio devices found",
+    "info": {
+      "microphoneLabel": "Microphone:",
+      "microphone": "Records your voice and ambient sound",
+      "systemAudioLabel": "System Audio:",
+      "systemAudio": "Records computer audio (music, calls, etc.)",
+      "levelsLabel": "Mic Levels:",
+      "levels": "Green = good, Yellow = loud, Red = too loud",
+      "tipLabel": "Tip:",
+      "tip": "Click \"Test Mic\" to check if your microphone is working"
+    }
+  },
+  "permissions": {
+    "bothRequired": "Permissions Required",
+    "micRequired": "Microphone Permission Required",
+    "systemRequired": "System Audio Permission Required",
+    "openMicSettings": "Open Microphone Settings",
+    "openScreenSettings": "Open Screen Recording Settings",
+    "recheck": "Recheck",
+    "micIntro": "Meetily needs access to your microphone to record meetings. No microphone devices were detected.",
+    "pleaseCheck": "Please check:",
+    "micCheck1": "Your microphone is connected and powered on",
+    "micCheck2": "Microphone permission is granted in System Settings",
+    "micCheck3": "No other app is exclusively using the microphone",
+    "systemUnavailable": "System audio capture is not available. You can still record with your microphone, but computer audio won't be captured.",
+    "systemAlsoUnavailable": "System audio capture is also not available.",
+    "macosTitle": "To enable system audio on macOS:",
+    "macosStep1": "Install a virtual audio device (e.g., BlackHole 2ch)",
+    "macosStep2": "Grant Screen Recording permission to Meetily",
+    "macosStep3": "Configure your audio routing in Audio MIDI Setup",
+    "checkFailed": "Failed to check permissions"
+  },
+  "bluetooth": {
+    "title": "Bluetooth Playback Detected",
+    "description": "You're using <strong>{{deviceName}}</strong> for playback. Recordings may sound distorted or sped up through Bluetooth devices. For accurate review, please use <strong>computer speakers</strong> or <strong>wired headphones</strong>.",
+    "learnWhy": "Learn why this happens →",
+    "dismiss": "Dismiss warning"
+  },
+  "transcript": {
+    "silence": "[Silence]",
+    "listening": "Listening...",
+    "paused": "Recording paused",
+    "listeningForSpeech": "Listening for speech...",
+    "clickResume": "Click resume to continue recording",
+    "speakToSee": "Speak to see live transcription",
+    "welcome": "Welcome to meetily!",
+    "startToSee": "Start recording to see live transcription",
+    "loadingMore": "Loading more...",
+    "showingCount": "Showing {{loaded}} of {{total}} segments",
+    "listenerFailed": "Failed to setup transcript listener. Check console for details.",
+    "copied": "Transcript copied to clipboard"
+  },
+  "confidence": {
+    "high": "High confidence",
+    "good": "Good confidence",
+    "medium": "Medium confidence",
+    "low": "Low confidence",
+    "title": "{{percent}}% confidence - {{label}}",
+    "ariaLabel": "Transcription confidence: {{percent}}%"
+  },
+  "statusBar": {
+    "paused": "Paused",
+    "recording": "Recording"
+  },
+  "status": {
+    "starting": "Starting recording...",
+    "stopping": "Stopping recording..."
+  },
+  "micSwap": {
+    "switched": "Microphone switched to {{device}} for this meeting.",
+    "fallbackFailed": "Microphone fallback failed for {{device}}: {{error}}",
+    "unavailable": "No microphone available — recording system audio only.",
+    "recoveryExhausted": "Microphone '{{device}}' could not be recovered — recording continues without a microphone. Stop and restart to fix."
+  },
+  "start": {
+    "runtimeError": "Speech recognition could not initialize. Restart Meetily. If the problem continues, repair or reinstall the app.",
+    "modelDownloading": "Model download in progress",
+    "modelDownloadingDescription": "Please wait for the transcription model to finish downloading before recording.",
+    "modelNotReady": "Transcription model not ready",
+    "modelNotReadyDescription": "Please download a transcription model before recording.",
+    "modelSetupRequired": "Transcription model setup required",
+    "initializing": "Initializing recording...",
+    "timedOut": "Recording start timed out — please try again",
+    "failedAlert": "Failed to start recording.\n\n{{error}}"
+  },
+  "stop": {
+    "waitingTranscription": "Waiting for transcription...",
+    "processingChunks_one": "Processing {{count}} remaining chunks...",
+    "processingChunks_other": "Processing {{count}} remaining chunks...",
+    "flushing": "Flushing transcript buffer...",
+    "saving": "Saving meeting to database...",
+    "noMeetingId": "No meeting ID received from save operation",
+    "summaryLanguageNotApplied": "Could not apply default summary language",
+    "summaryLanguageNotAppliedDescription": "The meeting was saved, but the default summary language was not applied.",
+    "summaryLanguageNotDetected": "Could not detect summary language",
+    "summaryLanguageNotDetectedDescription": "The meeting was saved, but Auto could not detect the summary language.",
+    "savedTitle": "Recording saved successfully!",
+    "savedDescription_one": "{{count}} transcript segments saved.",
+    "savedDescription_other": "{{count}} transcript segments saved.",
+    "viewMeeting": "View Meeting",
+    "saveFailed": "Failed to save meeting",
+    "unknownError": "Unknown error"
+  },
+  "modals": {
+    "modelReady": "Model ready! Closing window..."
+  },
+  "notification": {
+    "title": "🔴 Recording Started",
+    "inform": "Inform all participants this meeting is being recorded.",
+    "dontShowAgain": "Don't show this again",
+    "acknowledge": "I've Notified Participants"
+  },
+  "audioPlayer": {
+    "initFailed": "Failed to initialize audio",
+    "loadFailed": "Failed to load audio file",
+    "playFailed": "Failed to play audio"
+  }
+}

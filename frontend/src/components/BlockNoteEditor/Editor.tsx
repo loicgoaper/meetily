@@ -6,6 +6,8 @@ import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/shadcn";
 import "@blocknote/shadcn/style.css";
 import "@blocknote/core/fonts/inter.css";
+import { en as blockNoteEn, fr as blockNoteFr } from "@blocknote/core/locales";
+import { useTranslation } from "react-i18next";
 
 interface EditorProps {
   initialContent?: Block[];
@@ -14,6 +16,7 @@ interface EditorProps {
 }
 
 export default function Editor({ initialContent, onChange, editable = true }: EditorProps) {
+  const { i18n } = useTranslation();
   console.log('📝 EDITOR: Initializing BlockNote editor with blocks:', {
     hasContent: !!initialContent,
     blocksCount: initialContent?.length || 0,
@@ -22,6 +25,8 @@ export default function Editor({ initialContent, onChange, editable = true }: Ed
 
   const editor = useCreateBlockNote({
     initialContent: initialContent as PartialBlock[] | undefined,
+    // Editor menus and placeholders follow the interface language
+    dictionary: i18n.language === 'en' ? blockNoteEn : blockNoteFr,
   });
 
   console.log('📝 EDITOR: BlockNote editor created successfully');

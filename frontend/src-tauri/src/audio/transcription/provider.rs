@@ -70,4 +70,15 @@ pub trait TranscriptionProvider: Send + Sync {
 
     /// Get the provider name (for logging/debugging)
     fn provider_name(&self) -> &'static str;
+
+    /// Fork: how live VAD segments should be regrouped before transcription.
+    /// `None` (local engines) sends every VAD segment as-is.
+    fn chunking_policy(&self) -> Option<crate::fork::cloud_chunker::ChunkingPolicy> {
+        None
+    }
+
+    /// Fork: how many chunks may be transcribed at the same time (cloud providers).
+    fn max_concurrency(&self) -> usize {
+        1
+    }
 }

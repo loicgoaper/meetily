@@ -1,0 +1,47 @@
+{
+  "recovery": {
+    "successTitle": "Meeting recovered successfully!",
+    "successWithAudio": "Transcripts and audio recovered",
+    "successNoAudio": "Transcripts recovered (no audio available)",
+    "viewMeeting": "View Meeting",
+    "failedTitle": "Failed to recover meeting",
+    "unknownError": "Unknown error occurred",
+    "metadataNotFound": "Meeting metadata not found",
+    "noTranscripts": "No transcripts found for this meeting",
+    "summaryLanguageNotApplied": "Could not apply default summary language",
+    "summaryLanguageNotAppliedDescription": "The recovered meeting was saved, but the default summary language was not applied."
+  },
+  "transcriptPanel": {
+    "copyTranscript": "Copy Transcript",
+    "copy": "Copy",
+    "language": "Language"
+  },
+  "recoveryDialog": {
+    "recoverFailed": "Failed to recover meeting. Please try again.",
+    "confirmDelete": "Are you sure you want to delete this meeting? This cannot be undone.",
+    "deleteFailed": "Failed to delete meeting. Please try again.",
+    "title": "Recover Interrupted Meetings",
+    "description_one": "We found {{count}} meeting that was interrupted. Select a meeting to preview and recover it.",
+    "description_other": "We found {{count}} meetings that were interrupted. Select a meeting to preview and recover it.",
+    "interruptedMeetings": "Interrupted Meetings",
+    "transcriptCount_one": "{{count}} transcript",
+    "transcriptCount_other": "{{count}} transcripts",
+    "audioAvailable": "Audio available",
+    "noAudio": "No audio",
+    "preview": "Preview",
+    "startedAt": "Started {{date}}",
+    "transcriptsTotal_one": "{{count}} transcripts",
+    "transcriptsTotal_other": "{{count}} transcripts",
+    "loadingPreview": "Loading preview...",
+    "showingFirst": "Showing first {{shown}} transcript segments (of {{total}} total)",
+    "moreTranscripts_one": "... and {{count}} more transcript",
+    "moreTranscripts_other": "... and {{count}} more transcripts",
+    "noTranscripts": "No transcripts to preview",
+    "selectMeeting": "Select a meeting to preview",
+    "cancel": "Cancel",
+    "deleting": "Deleting...",
+    "delete": "Delete",
+    "recovering": "Recovering...",
+    "recover": "Recover"
+  }
+}

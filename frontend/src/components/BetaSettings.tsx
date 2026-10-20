@@ -8,8 +8,10 @@ import {
   BETA_FEATURE_NAMES,
   BETA_FEATURE_DESCRIPTIONS
 } from "@/types/betaFeatures"
+import { useTranslation } from "react-i18next"
 
 export function BetaSettings() {
+  const { t } = useTranslation();
   const { betaFeatures, toggleBetaFeature } = useConfig();
 
   // Define feature order for display (allows custom ordering)
@@ -21,9 +23,9 @@ export function BetaSettings() {
       <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
         <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
         <div className="text-sm text-yellow-800">
-          <p className="font-medium">Beta Features</p>
+          <p className="font-medium">{t('settings.beta.bannerTitle')}</p>
           <p className="mt-1">
-            These features are still being tested. You may encounter issues, and we appreciate your feedback.
+            {t('settings.beta.bannerText')}
           </p>
         </div>
       </div>
@@ -39,14 +41,14 @@ export function BetaSettings() {
               <div className="flex items-center gap-2 mb-2">
                 <FlaskConical className="h-5 w-5 text-gray-600" />
                 <h3 className="text-lg font-semibold text-gray-900">
-                  {BETA_FEATURE_NAMES[featureKey]}
+                  {t(BETA_FEATURE_NAMES[featureKey])}
                 </h3>
                 <span className="px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
-                  BETA
+                  {t('settings.beta.badge')}
                 </span>
               </div>
               <p className="text-sm text-gray-600">
-                {BETA_FEATURE_DESCRIPTIONS[featureKey]}
+                {t(BETA_FEATURE_DESCRIPTIONS[featureKey])}
               </p>
             </div>
 
@@ -63,7 +65,7 @@ export function BetaSettings() {
       {/* Info Box */}
       <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <p className="text-sm text-blue-800">
-          <strong>Note:</strong> When disabled, beta features will be hidden. Your existing meetings remain unaffected.
+          <strong>{t('settings.actions.noteLabel')}</strong> {t('settings.beta.note')}
         </p>
       </div>
     </div>

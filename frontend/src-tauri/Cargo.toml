@@ -1,6 +1,6 @@
 [package]
 name = "meetily"
-version = "0.4.1"
+version = "0.4.1-perso.1"
 description = "A Tauri App for meeting minutes"
 authors = ["Sujith S"]
 license = "MIT"
@@ -147,6 +147,10 @@ ffmpeg-sidecar = { git = "https://github.com/nathanbabcock/ffmpeg-sidecar", bran
 
 sqlx = { version = "0.8", features = [ "runtime-tokio", "sqlite", "chrono"] }
 
+# Meetily perso (fork): cloud STT payloads, screenshots for the vision step
+base64 = "0.22"
+image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
+
 # Common Tauri configuration
 tauri = { version = "2.6.2", features = [ "macos-private-api", "protocol-asset", "tray-icon"] }
 tauri-plugin-fs = "2.4.0"
@@ -188,6 +192,8 @@ whisper-rs = { version = "0.13.2", features = ["raw-api", "metal", "coreml"] }
 whisper-rs = { version = "0.13.2", features = ["raw-api"] }
 ort = { version = "2.0.0-rc.10", features = ["load-dynamic"] }
 futures-channel = "0.3.31"
+# Meetily perso (fork): smart screenshots during recording
+xcap = "0.9.8"
 
 # Linux-specific dependencies
 # Default: CPU-only build (no BLAS)

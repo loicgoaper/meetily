@@ -3,14 +3,15 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { FileText, Sparkles } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useTranslation } from 'react-i18next';
 const STORAGE_KEY = 'meetily.meetingDetails.transcriptPaneRatio';
 const DEFAULT_RATIO = 0.3;
 const MIN_RATIO = 0.3;
 const MAX_RATIO = 0.5;
 
 const TABS = [
-  { value: 'transcript' as const, label: 'Transcript', icon: FileText },
-  { value: 'summary' as const, label: 'Summary', icon: Sparkles },
+  { value: 'transcript' as const, labelKey: 'meeting.tabs.transcript', icon: FileText },
+  { value: 'summary' as const, labelKey: 'meeting.tabs.summary', icon: Sparkles },
 ];
 
 function readStoredRatio(): number {
@@ -47,6 +48,7 @@ export function MeetingDetailsSplitView({
   activeTab,
   onTabChange,
 }: MeetingDetailsSplitViewProps) {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const [ratio, setRatio] = useState(DEFAULT_RATIO);
   const [isDesktop, setIsDesktop] = useState(true);
@@ -101,10 +103,10 @@ export function MeetingDetailsSplitView({
   }, [ratio]);
 
   const transcriptPanelProps = isDesktop
-    ? { role: 'region' as const, 'aria-label': 'Transcript', tabIndex: -1 }
+    ? { role: 'region' as const, 'aria-label': t('meeting.tabs.transcript'), tabIndex: -1 }
     : {};
   const summaryPanelProps = isDesktop
-    ? { role: 'region' as const, 'aria-label': 'Summary', tabIndex: -1 }
+    ? { role: 'region' as const, 'aria-label': t('meeting.tabs.summary'), tabIndex: -1 }
     : {};
 
   return (
@@ -124,7 +126,7 @@ export function MeetingDetailsSplitView({
                 className="relative z-10 flex items-center gap-2 rounded-none border-0 bg-transparent px-6 py-4 text-gray-600 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 data-[state=active]:shadow-none hover:text-gray-900"
               >
                 <Icon className="h-4 w-4" />
-                {tab.label}
+                {t(tab.labelKey)}
               </TabsTrigger>
             );
           })}
@@ -152,8 +154,8 @@ export function MeetingDetailsSplitView({
           aria-valuenow={Math.round(ratio * 100)}
           aria-valuemin={Math.round(MIN_RATIO * 100)}
           aria-valuemax={Math.round(MAX_RATIO * 100)}
-          aria-valuetext={`Transcript panel ${Math.round(ratio * 100)} percent`}
-          aria-label="Resize transcript and summary"
+          aria-valuetext={t('meeting.tabs.resizeValue', { percent: Math.round(ratio * 100) })}
+          aria-label={t('meeting.tabs.resize')}
           tabIndex={0}
           className="group relative z-10 hidden w-2 flex-shrink-0 cursor-col-resize items-stretch justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset md:flex"
           onPointerDown={onPointerDown}

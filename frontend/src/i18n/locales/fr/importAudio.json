@@ -1,0 +1,90 @@
+{
+  "common": {
+    "language": "Langue",
+    "selectLanguage": "Sélectionner la langue",
+    "parakeetAutoOnly": "Parakeet ne permet pas de choisir la langue : il utilise toujours la détection automatique.",
+    "model": "Modèle",
+    "loadingModels": "Chargement des modèles…",
+    "selectModel": "Sélectionner un modèle",
+    "processingAudio": "Traitement de l'audio…",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "tryAgain": "Réessayer"
+  },
+  "stages": {
+    "copying": "Copie",
+    "decoding": "Décodage",
+    "resampling": "Conversion",
+    "vad": "Détection de la parole",
+    "transcribing": "Transcription",
+    "saving": "Enregistrement",
+    "complete": "Terminé"
+  },
+  "dialog": {
+    "titleImporting": "Importation de l'audio…",
+    "titleFailed": "Échec de l'importation",
+    "titleComplete": "Importation terminée",
+    "title": "Importer un fichier audio",
+    "errorDescription": "Une erreur s'est produite pendant l'importation",
+    "description": "Importez un fichier audio pour créer une nouvelle réunion avec sa transcription",
+    "meetingTitle": "Titre de la réunion",
+    "meetingTitlePlaceholder": "Saisissez le titre de la réunion",
+    "chooseDifferentFile": "Choisir un autre fichier",
+    "validating": "Vérification…",
+    "selectFile": "Sélectionner un fichier audio",
+    "advancedOptions": "Options avancées",
+    "import": "Importer",
+    "completeToast_one": "Importation terminée ! {{count}} segment créé.",
+    "completeToast_other": "Importation terminée ! {{count}} segments créés.",
+    "failedToast": "Échec de l'importation",
+    "cancelledToast": "Importation annulée"
+  },
+  "dropOverlay": {
+    "title": "Déposez un fichier audio pour l'importer"
+  },
+  "hook": {
+    "validateFailed": "Impossible de vérifier le fichier",
+    "startFailed": "Impossible de démarrer l'importation",
+    "summaryLanguageFailed": "Impossible d'appliquer la langue de compte rendu par défaut",
+    "summaryLanguageFailedDescription": "La réunion importée a été enregistrée, mais la langue de compte rendu par défaut n'a pas été appliquée."
+  },
+  "retranscribe": {
+    "titleProcessing": "Retranscription en cours…",
+    "titleFailed": "Échec de la retranscription",
+    "title": "Retranscrire la réunion",
+    "errorDescription": "Une erreur s'est produite pendant la retranscription",
+    "description": "Traitez de nouveau l'audio avec d'autres paramètres de langue",
+    "languageHint": "Choisissez une langue précise pour améliorer l'exactitude, ou utilisez la détection automatique",
+    "modelHint": "Choisissez un modèle de transcription",
+    "start": "Lancer la retranscription",
+    "completeToast_one": "Retranscription terminée ! {{count}} segment créé.",
+    "completeToast_other": "Retranscription terminée ! {{count}} segments créés.",
+    "cancelledToast": "Retranscription annulée",
+    "folderMissing": "Le chemin du dossier de la réunion n'est pas disponible"
+  },
+  "database": {
+    "importSuccess": "Base de données importée ! Rechargement…",
+    "importFailed": "Échec de l'importation : {{error}}",
+    "importing": "Importation…",
+    "homebrewTitle": "Installation précédente de Meetily détectée !",
+    "homebrewDescription": "Nous avons trouvé une base de données provenant de votre installation précédente de Meetily (version avec backend Python).",
+    "size": "Taille : {{size}}",
+    "homebrewQuestion": "Voulez-vous importer vos réunions, transcriptions et comptes rendus précédents ?",
+    "yesImport": "Oui, importer",
+    "noBrowse": "Non, chercher manuellement",
+    "welcomeTitle": "Bienvenue dans Meetily !",
+    "welcomeDescription": "Avez-vous des données provenant d'une installation précédente de Meetily ?",
+    "browsePrompt": "Sélectionnez votre ancien dossier Meetily, le dossier du backend ou le fichier de base de données :",
+    "selecting": "Sélection…",
+    "detecting": "Recherche de la base de données…",
+    "browse": "Rechercher la base de données",
+    "found": "Base de données trouvée !",
+    "notFound": "Aucune base de données trouvée à cet emplacement. Sélectionnez le dossier Meetily, le dossier du backend ou directement le fichier de base de données.",
+    "success": "Terminé !",
+    "importDatabase": "Importer la base de données",
+    "or": "ou",
+    "startFresh": "Repartir de zéro (sans importation)",
+    "initSuccess": "Base de données initialisée ! Démarrage de l'application…",
+    "initFailed": "Échec de l'initialisation : {{error}}"
+  }
+}

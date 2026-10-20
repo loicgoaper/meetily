@@ -4,6 +4,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Speaker, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Trans, useTranslation } from 'react-i18next';
 
 interface AudioOutputInfo {
   device_name: string;
@@ -23,6 +24,7 @@ export function BluetoothPlaybackWarning({
   checkInterval = 5000,
   enabled = true
 }: BluetoothPlaybackWarningProps) {
+  const { t } = useTranslation();
   const [isBluetoothActive, setIsBluetoothActive] = useState(false);
   const [deviceName, setDeviceName] = useState<string>('');
   const [isDismissed, setIsDismissed] = useState(false);
@@ -72,13 +74,14 @@ export function BluetoothPlaybackWarning({
       <div className="flex items-start justify-between w-full">
         <div className="flex-1">
           <AlertTitle className="text-yellow-900 font-semibold">
-            Bluetooth Playback Detected
+            {t('recording.bluetooth.title')}
           </AlertTitle>
           <AlertDescription className="text-yellow-800 mt-1">
-            You're using <strong>{deviceName}</strong> for playback.
-            Recordings may sound distorted or sped up through Bluetooth devices.
-            For accurate review, please use <strong>computer speakers</strong> or{' '}
-            <strong>wired headphones</strong>.
+            <Trans
+              i18nKey="recording.bluetooth.description"
+              values={{ deviceName }}
+              components={{ strong: <strong /> }}
+            />
             <br />
             <a
               href="https://github.com/your-org/meetily/blob/main/BLUETOOTH_PLAYBACK_NOTICE.md"
@@ -86,7 +89,7 @@ export function BluetoothPlaybackWarning({
               rel="noopener noreferrer"
               className="underline hover:text-yellow-900 font-medium mt-2 inline-block"
             >
-              Learn why this happens →
+              {t('recording.bluetooth.learnWhy')}
             </a>
           </AlertDescription>
         </div>
@@ -95,7 +98,7 @@ export function BluetoothPlaybackWarning({
           size="icon"
           onClick={() => setIsDismissed(true)}
           className="ml-4 h-6 w-6 text-yellow-700 hover:text-yellow-900 hover:bg-yellow-100"
-          aria-label="Dismiss warning"
+          aria-label={t('recording.bluetooth.dismiss')}
         >
           <X className="h-4 w-4" />
         </Button>

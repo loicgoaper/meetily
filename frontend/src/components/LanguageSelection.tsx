@@ -3,6 +3,8 @@ import { Globe } from 'lucide-react';
 import Analytics from '@/lib/analytics';
 import { toast } from 'sonner';
 import { useConfig } from '@/contexts/ConfigContext';
+import { useTranslation } from 'react-i18next';
+import type { TranscriptModelProps } from '@/components/TranscriptSettings';
 
 export interface Language {
   code: string;
@@ -118,7 +120,7 @@ interface LanguageSelectionProps {
   selectedLanguage: string;
   onLanguageChange: (language: string) => void;
   disabled?: boolean;
-  provider?: 'localWhisper' | 'parakeet' | 'deepgram' | 'elevenLabs' | 'groq' | 'openai';
+  provider?: TranscriptModelProps['provider'];
 }
 
 export function LanguageSelection({
@@ -129,12 +131,29 @@ export function LanguageSelection({
 }: LanguageSelectionProps) {
   const [saving, setSaving] = useState(false);
   const { setSelectedLanguage } = useConfig();
+  const { t } = useTranslation();
+
+  // Fork: cloud transcription has its own language setting (Settings → Transcription)
+  if (provider === 'openrouter') {
+    return (
+      <div className="p-3 bg-blue-50 border border-blue-200 rounded text-sm text-blue-900">
+        {t('fork.stt.languageElsewhere')}
+      </div>
+    );
+  }
 
   // Parakeet only supports auto-detection (doesn't support manual language selection)
   const isParakeet = provider === 'parakeet';
   const availableLanguages = isParakeet
     ? LANGUAGES.filter(lang => lang.code === 'auto' || lang.code === 'auto-translate')
     : LANGUAGES;
+
+  // Display label: the two auto modes are UI labels (translated), real language names stay as listed
+  const languageLabel = (language: Language): string => {
+    if (language.code === 'auto') return t('settings.language.autoDetect');
+    if (language.code === 'auto-translate') return t('settings.language.autoTranslate');
+    return language.name;
+  };
 
   const handleLanguageChange = async (languageCode: string) => {
     setSaving(true);
@@ -154,13 +173,13 @@ export function LanguageSelection({
       });
 
       // Show success toast
-      const languageName = selectedLang?.name || languageCode;
-      toast.success("Language preference saved", {
-        description: `Transcription language set to ${languageName}`
+      const languageName = selectedLang ? languageLabel(selectedLang) : languageCode;
+      toast.success(t('settings.language.saved'), {
+        description: t('settings.language.savedDescription', { language: languageName })
       });
     } catch (error) {
       console.error('Failed to save language preference:', error);
-      toast.error("Failed to save language preference", {
+      toast.error(t('settings.language.saveError'), {
         description: error instanceof Error ? error.message : String(error)
       });
     } finally {
@@ -169,16 +188,19 @@ export function LanguageSelection({
   };
 
   // Find the selected language name for display
-  const selectedLanguageName = LANGUAGES.find(
+  const selectedLanguageEntry = LANGUAGES.find(
     lang => lang.code === selectedLanguage
-  )?.name || 'Auto Detect (Original Language)';
+  );
+  const selectedLanguageName = selectedLanguageEntry
+    ? languageLabel(selectedLanguageEntry)
+    : t('settings.language.autoDetect');
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Globe className="h-4 w-4 text-gray-600" />
-          <h4 className="text-sm font-medium text-gray-900">Transcription Language</h4>
+          <h4 className="text-sm font-medium text-gray-900">{t('settings.language.title')}</h4>
         </div>
       </div>
 
@@ -191,7 +213,7 @@ export function LanguageSelection({
         >
           {availableLanguages.map((language) => (
             <option key={language.code} value={language.code}>
-              {language.name}
+              {languageLabel(language)}
               {language.code !== 'auto' && language.code !== 'auto-translate' && ` (${language.code})`}
             </option>
           ))}
@@ -200,31 +222,31 @@ export function LanguageSelection({
         {/* Parakeet language limitation warning */}
         {isParakeet && (
           <div className="p-2 bg-amber-50 border border-amber-200 rounded text-amber-800">
-            <p className="font-medium">ℹ️ Parakeet Language Support</p>
-            <p className="mt-1 text-xs">Parakeet currently only supports automatic language detection. Manual language selection is not available. Use Whisper if you need to specify a particular language.</p>
+            <p className="font-medium">{t('settings.language.parakeetTitle')}</p>
+            <p className="mt-1 text-xs">{t('settings.language.parakeetText')}</p>
           </div>
         )}
 
         {/* Info text */}
         <div className="text-xs space-y-2 pt-2">
           <p className="text-gray-600">
-            <strong>Current:</strong> {selectedLanguageName}
+            <strong>{t('settings.language.currentLabel')}</strong> {selectedLanguageName}
           </p>
           {selectedLanguage === 'auto' && (
             <div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-800">
-              <p className="font-medium">⚠️ Auto Detect may produce incorrect results</p>
-              <p className="mt-1">For best accuracy, select your specific language (e.g., English, Spanish, etc.)</p>
+              <p className="font-medium">{t('settings.language.autoWarningTitle')}</p>
+              <p className="mt-1">{t('settings.language.autoWarningText')}</p>
             </div>
           )}
           {selectedLanguage === 'auto-translate' && (
             <div className="p-2 bg-blue-50 border border-blue-200 rounded text-blue-800">
-              <p className="font-medium">🌐 Translation Mode Active</p>
-              <p className="mt-1">All audio will be automatically translated to English. Best for multilingual meetings where you need English output.</p>
+              <p className="font-medium">{t('settings.language.translateTitle')}</p>
+              <p className="mt-1">{t('settings.language.translateText')}</p>
             </div>
           )}
           {selectedLanguage !== 'auto' && selectedLanguage !== 'auto-translate' && (
             <p className="text-gray-600">
-              Transcription will be optimized for <strong>{selectedLanguageName}</strong>
+              {t('settings.language.optimizedFor')} <strong>{selectedLanguageName}</strong>
             </p>
           )}
         </div>

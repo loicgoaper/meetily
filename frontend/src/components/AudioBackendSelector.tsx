@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { Info } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export interface BackendInfo {
   id: string;
@@ -19,9 +20,11 @@ export function AudioBackendSelector({
   onBackendChange,
   disabled = false,
 }: AudioBackendSelectorProps) {
+  const { t } = useTranslation();
   const [backends, setBackends] = useState<BackendInfo[]>([]);
   const [currentBackend, setCurrentBackend] = useState<string>('coreaudio');
   const [loading, setLoading] = useState(true);
+  // Holds an i18n key (translated at render time)
   const [error, setError] = useState<string | null>(null);
   const [showTooltip, setShowTooltip] = useState(false);
 
@@ -45,7 +48,7 @@ export function AudioBackendSelector({
         }
       } catch (err) {
         console.error('Failed to load audio backends:', err);
-        setError('Failed to load backend options');
+        setError('settings.audioBackend.loadError');
       } finally {
         setLoading(false);
       }
@@ -69,7 +72,7 @@ export function AudioBackendSelector({
       console.log(`Audio backend changed to: ${backendId}`);
     } catch (err) {
       console.error('Failed to set audio backend:', err);
-      setError('Failed to change backend. Please try again.');
+      setError('settings.audioBackend.changeError');
     }
   };
 
@@ -92,7 +95,7 @@ export function AudioBackendSelector({
     <div className="space-y-2">
       <div className="flex items-center gap-2">
         <label className="text-sm font-medium text-gray-700">
-          System Audio Backend
+          {t('settings.audioBackend.label')}
         </label>
         <div className="relative">
           <button
@@ -105,7 +108,7 @@ export function AudioBackendSelector({
           </button>
           {showTooltip && (
             <div className="absolute z-10 left-6 top-0 w-64 p-3 text-xs bg-gray-900 text-white rounded-lg shadow-lg">
-              <p className="font-semibold mb-1">Audio Capture Methods:</p>
+              <p className="font-semibold mb-1">{t('settings.audioBackend.methodsTitle')}</p>
               <ul className="space-y-1">
                 {backends.map((backend) => (
                   <li key={backend.id}>
@@ -114,7 +117,7 @@ export function AudioBackendSelector({
                 ))}
               </ul>
               <p className="mt-2 text-gray-300">
-                Try different backends to find which works best for your system.
+                {t('settings.audioBackend.tryDifferent')}
               </p>
             </div>
           )}
@@ -123,7 +126,7 @@ export function AudioBackendSelector({
 
       {error && (
         <div className="p-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-md">
-          {error}
+          {t(error)}
         </div>
       )}
 
@@ -158,12 +161,12 @@ export function AudioBackendSelector({
                   </span>
                   {currentBackend === backend.id && (
                     <span className="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-0.5 rounded">
-                      Active
+                      {t('settings.audioBackend.active')}
                     </span>
                   )}
                   {isCoreAudio && (
                     <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
-                      Disabled
+                      {t('settings.audioBackend.disabled')}
                     </span>
                   )}
                 </div>
@@ -175,9 +178,9 @@ export function AudioBackendSelector({
       </div>
 
       <div className="text-xs text-gray-500 space-y-1">
-        <p>• Backend selection only affects system audio capture</p>
-        <p>• Microphone always uses the default method</p>
-        <p>• Changes apply to new recording sessions</p>
+        <p>• {t('settings.audioBackend.hintSystemOnly')}</p>
+        <p>• {t('settings.audioBackend.hintMic')}</p>
+        <p>• {t('settings.audioBackend.hintNewSessions')}</p>
       </div>
     </div>
   );

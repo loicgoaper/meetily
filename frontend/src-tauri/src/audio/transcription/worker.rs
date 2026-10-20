@@ -42,6 +42,9 @@ pub struct TranscriptUpdate {
     pub audio_start_time: f64, // Seconds from recording start (e.g., 125.3)
     pub audio_end_time: f64,   // Seconds from recording start (e.g., 128.6)
     pub duration: f64,          // Segment duration in seconds (e.g., 3.3)
+    // Fork: dominant source of the segment ("mic" = the user, "system" = remote side, "mixed")
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub speaker: Option<String>,
 }
 
 // NOTE: get_transcript_history and get_recording_meeting_name functions
@@ -70,9 +73,13 @@ pub fn start_transcription_task<R: Runtime>(
             }
         };
 
-        // Create parallel workers for faster processing while preserving ALL chunks
-        const NUM_WORKERS: usize = 1; // Serial processing ensures transcripts emit in chronological order
-        let (work_sender, work_receiver) = tokio::sync::mpsc::unbounded_channel::<AudioChunk>();
+        // Create parallel workers for faster processing while preserving ALL chunks.
+        // Local engines stay serial (1 worker); cloud providers allow a few requests in
+        // flight. Sequence ids are assigned at dispatch, in audio order, so out-of-order
+        // completion still sorts correctly downstream.
+        let num_workers: usize = transcription_engine.max_concurrency();
+        let chunking_policy = transcription_engine.chunking_policy();
+        let (work_sender, work_receiver) = tokio::sync::mpsc::unbounded_channel::<(u64, AudioChunk)>();
         let work_receiver = Arc::new(tokio::sync::Mutex::new(work_receiver));
 
         // Track completion: AtomicU64 for chunks queued, AtomicU64 for chunks completed
@@ -80,11 +87,11 @@ pub fn start_transcription_task<R: Runtime>(
         let chunks_completed = Arc::new(AtomicU64::new(0));
         let input_finished = Arc::new(AtomicBool::new(false));
 
-        info!("📊 Starting {} transcription worker{} (serial mode for ordered emission)", NUM_WORKERS, if NUM_WORKERS == 1 { "" } else { "s" });
+        info!("📊 Starting {} transcription worker{} (engine: {})", num_workers, if num_workers == 1 { "" } else { "s" }, transcription_engine.provider_name());
 
         // Spawn worker tasks
         let mut worker_handles = Vec::new();
-        for worker_id in 0..NUM_WORKERS {
+        for worker_id in 0..num_workers {
             let engine_clone = match &transcription_engine {
                 TranscriptionEngine::Whisper(e) => TranscriptionEngine::Whisper(e.clone()),
                 TranscriptionEngine::Parakeet(e) => TranscriptionEngine::Parakeet(e.clone()),
@@ -125,7 +132,7 @@ pub fn start_transcription_task<R: Runtime>(
                     };
 
                     match chunk {
-                        Some(chunk) => {
+                        Some((sequence_id, chunk)) => {
                             // PERFORMANCE OPTIMIZATION: Reduce logging in hot path
                             // Only log every 10th chunk per worker to reduce I/O overhead
                             let should_log_this_chunk = chunk.chunk_id % 10 == 0;
@@ -189,10 +196,10 @@ pub fn start_transcription_task<R: Runtime>(
                                             info!("🔍 Speech already detected in this session, not re-emitting");
                                         }
 
-                                        // Generate sequence ID and calculate timestamps FIRST
-                                        let sequence_id = SEQUENCE_COUNTER.fetch_add(1, Ordering::SeqCst);
+                                        // Sequence ID was assigned at dispatch (audio order); calculate timestamps
                                         let audio_start_time = chunk_timestamp; // Already in seconds from recording start
                                         let audio_end_time = chunk_timestamp + chunk_duration;
+                                        let speaker = crate::fork::source_timeline::label(audio_start_time, audio_end_time);
 
                                         // Save structured transcript segment to recording manager (only final results)
                                         // Save ALL segments (partial and final) to ensure complete JSON
@@ -215,6 +222,7 @@ pub fn start_transcription_task<R: Runtime>(
                                             audio_start_time,
                                             audio_end_time,
                                             duration: chunk_duration,
+                                            speaker,
                                         };
 
                                         if let Err(e) = app_clone.emit("transcript-update", &update)
@@ -314,16 +322,48 @@ pub fn start_transcription_task<R: Runtime>(
 
         // Main dispatcher: receive chunks and distribute to workers
         let mut receiver = transcription_receiver;
-        while let Some(chunk) = receiver.recv().await {
-            let queued = chunks_queued.fetch_add(1, Ordering::SeqCst) + 1;
-            info!(
-                "📥 Dispatching chunk {} to workers (total queued: {})",
-                chunk.chunk_id, queued
-            );
-
-            if let Err(_) = work_sender.send(chunk) {
-                error!("❌ Failed to send chunk to workers - this should not happen!");
-                break;
+        if let Some(policy) = chunking_policy {
+            // Fork: cloud provider - regroup VAD segments into request-sized chunks
+            let mut accumulator = crate::fork::cloud_chunker::ChunkAccumulator::new(policy);
+            let idle = tokio::time::Duration::from_millis(policy.idle_flush_ms);
+            'dispatch: loop {
+                let next = if accumulator.has_pending() {
+                    match tokio::time::timeout(idle, receiver.recv()).await {
+                        Ok(next) => next,
+                        Err(_) => {
+                            for ready in accumulator.flush() {
+                                if !dispatch_chunk(&work_sender, &chunks_queued, ready) {
+                                    break 'dispatch;
+                                }
+                            }
+                            continue;
+                        }
+                    }
+                } else {
+                    receiver.recv().await
+                };
+                let (ready, finished) = match next {
+                    Some(chunk) => {
+                        let end = chunk.timestamp + chunk.data.len() as f64 / chunk.sample_rate.max(1) as f64;
+                        let label = crate::fork::source_timeline::label(chunk.timestamp, end);
+                        (accumulator.push(chunk, label), false)
+                    }
+                    None => (accumulator.flush(), true),
+                };
+                for chunk in ready {
+                    if !dispatch_chunk(&work_sender, &chunks_queued, chunk) {
+                        break 'dispatch;
+                    }
+                }
+                if finished {
+                    break;
+                }
+            }
+        } else {
+            while let Some(chunk) = receiver.recv().await {
+                if !dispatch_chunk(&work_sender, &chunks_queued, chunk) {
+                    break;
+                }
             }
         }
 
@@ -333,7 +373,7 @@ pub fn start_transcription_task<R: Runtime>(
 
         let total_chunks_queued = chunks_queued.load(Ordering::SeqCst);
         info!("📭 Input finished with {} total chunks queued. Waiting for all {} workers to complete...",
-              total_chunks_queued, NUM_WORKERS);
+              total_chunks_queued, num_workers);
 
         // Emit final chunk count to frontend
         let _ = app.emit("transcription-queue-complete", serde_json::json!({
@@ -393,6 +433,30 @@ pub fn start_transcription_task<R: Runtime>(
 
         info!("✅ Parallel transcription task completed - all workers finished, ready for model unload");
     })
+}
+
+/// Queue one chunk for the workers, tagging it with the next sequence id (audio order).
+/// Returns false if the workers are gone.
+fn dispatch_chunk(
+    work_sender: &tokio::sync::mpsc::UnboundedSender<(u64, AudioChunk)>,
+    chunks_queued: &AtomicU64,
+    chunk: AudioChunk,
+) -> bool {
+    let queued = chunks_queued.fetch_add(1, Ordering::SeqCst) + 1;
+    let sequence_id = SEQUENCE_COUNTER.fetch_add(1, Ordering::SeqCst);
+    info!(
+        "📥 Dispatching chunk {} (seq {}, {:.1}s) to workers (total queued: {})",
+        chunk.chunk_id,
+        sequence_id,
+        chunk.data.len() as f64 / chunk.sample_rate.max(1) as f64,
+        queued
+    );
+    if work_sender.send((sequence_id, chunk)).is_err() {
+        error!("❌ Failed to send chunk to workers - this should not happen!");
+        chunks_queued.fetch_sub(1, Ordering::SeqCst);
+        return false;
+    }
+    true
 }
 
 /// Transcribe audio chunk using the appropriate provider (Whisper, Parakeet, or trait-based)

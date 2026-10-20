@@ -1,0 +1,49 @@
+{
+  "name": "Rendez-vous client / commercial",
+  "description": "Objectifs du client, livrables convenus, conditions et suites.",
+  "sections": [
+    {
+      "title": "Informations du rendez-vous",
+      "instruction": "Date, heure, lieu ou modalité (présentiel, visio), responsable du compte",
+      "format": "string"
+    },
+    {
+      "title": "Participants",
+      "instruction": "Participants côté client et côté prestataire, avec leur rôle",
+      "format": "list"
+    },
+    {
+      "title": "Objectifs du client et critères de réussite",
+      "instruction": "Ce que le client veut obtenir et comment le succès sera mesuré",
+      "format": "paragraph"
+    },
+    {
+      "title": "Livrables convenus",
+      "instruction": "Livrables, responsables et échéances",
+      "format": "list",
+      "item_format": "| **Livrable** | **Responsable** | Échéance |\n| --- | --- | --- |"
+    },
+    {
+      "title": "Conditions commerciales évoquées",
+      "instruction": "Prix, niveaux de service, conditions de paiement ou clauses de contrat abordés",
+      "format": "paragraph"
+    },
+    {
+      "title": "Risques et préoccupations",
+      "instruction": "Inquiétudes du client, blocages ou points à escalader",
+      "format": "list",
+      "item_format": "| **Préoccupation** | **Impact** | Responsable |\n| --- | --- | --- |"
+    },
+    {
+      "title": "Éléments présentés à l'écran",
+      "instruction": "Résume ce qui a été montré à l'écran pendant la réunion (diapositives, documents, tableaux, chiffres) d'après le contenu d'écran fourni, avec l'horodatage [mm:ss]. Omets la section si rien n'a été partagé",
+      "format": "list"
+    },
+    {
+      "title": "Prochaines étapes",
+      "instruction": "Actions, responsables et échéances",
+      "format": "list",
+      "item_format": "| **Responsable** | **Action** | Échéance |\n| --- | --- | --- |"
+    }
+  ]
+}

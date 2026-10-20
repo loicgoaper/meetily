@@ -483,8 +483,15 @@ pub async fn api_process_transcript<R: Runtime>(
     );
 
     let pool = state.db_manager.pool().clone();
-    let final_prompt = custom_prompt.unwrap_or_else(|| "".to_string());
-    let final_template_id = template_id.unwrap_or_else(|| "daily_standup".to_string());
+    // Fork: meeting context, screen notes and user instructions as tagged blocks
+    let final_prompt = crate::fork::summary_context::build(&pool, &m_id, custom_prompt.as_deref()).await;
+    let final_template_id = match template_id.filter(|t| !t.trim().is_empty()) {
+        Some(id) => id,
+        None => {
+            crate::fork::preferences::PreferencesRepository::get(&pool, crate::fork::preferences::SUMMARY_DEFAULT_TEMPLATE)
+                .await
+        }
+    };
 
     // Normalise empty / whitespace-only to None so "" and null behave identically
     let summary_language = summary_language.and_then(|s| {

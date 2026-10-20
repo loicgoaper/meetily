@@ -1,0 +1,167 @@
+{
+  "title": "Settings",
+  "tabs": {
+    "general": "General",
+    "recordings": "Recordings",
+    "transcription": "Transcription",
+    "summary": "Summary",
+    "templates": "Templates",
+    "cloud": "Cloud & AI",
+    "beta": "Beta"
+  },
+  "actions": {
+    "openFolder": "Open Folder",
+    "done": "Done",
+    "cancel": "Cancel",
+    "dismiss": "Dismiss",
+    "loading": "Loading...",
+    "noteLabel": "Note:"
+  },
+  "devices": {
+    "default": "Default",
+    "summary": "Microphone: {{mic}}, System Audio: {{system}}"
+  },
+  "preferences": {
+    "loading": "Loading Preferences...",
+    "notifications": {
+      "title": "Notifications",
+      "description": "Enable or disable notifications of start and end of meeting"
+    },
+    "storage": {
+      "title": "Data Storage Locations",
+      "description": "View and access where Meetily stores your data",
+      "recordings": "Meeting Recordings",
+      "note": "Database and models are stored together in your application data directory for unified management."
+    }
+  },
+  "recording": {
+    "title": "Recording Settings",
+    "description": "Configure how your audio recordings are saved during meetings.",
+    "preferenceSaved": "Preference saved",
+    "preferenceSaveError": "Failed to save preference",
+    "devicesSaved": "Device preferences saved",
+    "devicesSaveError": "Failed to save device preferences",
+    "autoSave": {
+      "title": "Save Audio Recordings",
+      "description": "Automatically save audio files when recording stops",
+      "disabled": "Audio recording is disabled. Enable \"Save Audio Recordings\" to automatically save your meeting audio."
+    },
+    "saveLocation": "Save Location",
+    "defaultFolder": "Default folder",
+    "fileFormatLabel": "File Format:",
+    "fileFormatValue": "{{format}} files",
+    "fileNamePattern": "Recordings are saved with timestamp: recording_YYYYMMDD_HHMMSS.{{extension}}",
+    "startNotification": {
+      "title": "Recording Start Notification",
+      "description": "Show reminder to inform participants when recording starts"
+    },
+    "devices": {
+      "title": "Default Audio Devices",
+      "description": "Set your preferred microphone and system audio devices for recording. These will be automatically selected when starting new recordings.",
+      "locked": "Device selection is locked while a recording is in progress. Connecting a new device mid-recording will not switch to it. Stop the current meeting to change devices."
+    }
+  },
+  "transcript": {
+    "model": "Transcript Model",
+    "selectProvider": "Select provider",
+    "selectModel": "Select model",
+    "providers": {
+      "parakeet": "⚡ Parakeet (Recommended - Real-time / Accurate)",
+      "localWhisper": "🏠 Local Whisper (High Accuracy)"
+    },
+    "apiKey": "API Key",
+    "apiKeyPlaceholder": "Enter your API key",
+    "unlockToEdit": "Unlock to edit",
+    "lockToPreventEditing": "Lock to prevent editing"
+  },
+  "summaryModel": {
+    "loadError": "Failed to load model settings",
+    "saved": "Model settings saved successfully",
+    "saveError": "Failed to save model settings",
+    "autoSummary": {
+      "title": "Auto Summary",
+      "description": "Auto Generating summary after meeting completion(Stopping)"
+    },
+    "title": "Summary Model Configuration",
+    "description": "Configure the AI model used for generating meeting summaries."
+  },
+  "summaryLanguage": {
+    "title": "Summary Language",
+    "description": "Pin one language as the default for new meetings. Unpinned languages remain as quick-switch options in the summary generator. Auto uses the dominant transcript language.",
+    "pin": "Pin {{language}} as default",
+    "unpin": "Unpin {{language}} as default",
+    "clickToSet": "Click to set as default",
+    "clickToUnset": "Click to unset as default",
+    "remove": "Remove {{language}}",
+    "add": "＋ Add language",
+    "defaultHint": "Default: {{language}} - click it again to unset. Max 5 quick-switch options.",
+    "noDefaultHint": "Click any language to set it as your default. Max 5 quick-switch options."
+  },
+  "beta": {
+    "bannerTitle": "Beta Features",
+    "bannerText": "These features are still being tested. You may encounter issues, and we appreciate your feedback.",
+    "badge": "BETA",
+    "note": "When disabled, beta features will be hidden. Your existing meetings remain unaffected.",
+    "features": {
+      "importAndRetranscribe": {
+        "name": "Import Audio & Retranscribe",
+        "description": "Import audio files to transcribe or retranscribe existing meetings with different language settings."
+      }
+    }
+  },
+  "audioBackend": {
+    "label": "System Audio Backend",
+    "methodsTitle": "Audio Capture Methods:",
+    "tryDifferent": "Try different backends to find which works best for your system.",
+    "active": "Active",
+    "disabled": "Disabled",
+    "loadError": "Failed to load backend options",
+    "changeError": "Failed to change backend. Please try again.",
+    "hintSystemOnly": "Backend selection only affects system audio capture",
+    "hintMic": "Microphone always uses the default method",
+    "hintNewSessions": "Changes apply to new recording sessions"
+  },
+  "language": {
+    "title": "Transcription Language",
+    "autoDetect": "Auto Detect (Original Language)",
+    "autoTranslate": "Auto Detect (Translate to English)",
+    "saved": "Language preference saved",
+    "savedDescription": "Transcription language set to {{language}}",
+    "saveError": "Failed to save language preference",
+    "parakeetTitle": "ℹ️ Parakeet Language Support",
+    "parakeetText": "Parakeet currently only supports automatic language detection. Manual language selection is not available. Use Whisper if you need to specify a particular language.",
+    "currentLabel": "Current:",
+    "autoWarningTitle": "⚠️ Auto Detect may produce incorrect results",
+    "autoWarningText": "For best accuracy, select your specific language (e.g., English, Spanish, etc.)",
+    "translateTitle": "🌐 Translation Mode Active",
+    "translateText": "All audio will be automatically translated to English. Best for multilingual meetings where you need English output.",
+    "optimizedFor": "Transcription will be optimized for"
+  },
+  "legacyTabs": {
+    "transcript": "Transcript",
+    "aiSummary": "Ai Summary",
+    "preferences": "Preferences",
+    "about": "About"
+  },
+  "modal": {
+    "preferences": "Preferences",
+    "aiModelConfig": "AI Model Configuration",
+    "summarizationModel": "Summarization Model",
+    "builtinAi": "Built-in AI",
+    "ollamaModels": "Available Ollama Models",
+    "size": "Size: {{size}}",
+    "modified": "Modified: {{date}}",
+    "audioDevices": "Audio Device Settings",
+    "devicesSelected": "Devices selected",
+    "languageSettings": "Language Settings",
+    "sttSetupRequired": "Speech Recognition Setup Required",
+    "transcriptionModelSettings": "Transcription Model Settings",
+    "confidenceTitle": "Show Confidence Indicators",
+    "confidenceDescription": "Display colored dots showing transcription confidence quality",
+    "recordingStopped": "Recording Stopped",
+    "chunkDropWarning": "Transcription Performance Warning"
+  },
+  "errors": {
+    "ollamaModels": "Failed to load Ollama models"
+  }
+}

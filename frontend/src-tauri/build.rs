@@ -17,6 +17,9 @@ fn main() {
         // The swift-rs crate build will be handled in the enhanced_macos crate's build.rs
     }
 
+    // sqlx::migrate! embeds ./migrations at compile time; rebuild when a migration is added.
+    println!("cargo:rerun-if-changed=migrations");
+
     // Download and bundle FFmpeg binary at build-time to eliminate runtime download delays
     ffmpeg::ensure_ffmpeg_binary();
     onnxruntime::ensure_onnxruntime_runtime();

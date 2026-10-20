@@ -364,6 +364,28 @@ async fn run_import<R: Runtime>(
 
     info!("Copied audio to: {}", dest_path.display());
 
+    // Fork: cloud provider - create the meeting, then transcribe the whole file with
+    // speaker identification (OpenRouter) instead of local VAD + engine.
+    if provider.as_deref() == Some("openrouter") {
+        emit_progress(&app, "transcribing", 30, "Transcription cloud avec identification des intervenants...");
+        let app_state = app
+            .try_state::<AppState>()
+            .ok_or_else(|| anyhow!("App state not available"))?;
+        let meeting_id = create_meeting_with_transcripts(
+            app_state.db_manager.pool(),
+            &title,
+            &[],
+            meeting_folder.to_string_lossy().to_string(),
+        )
+        .await?;
+        let diarized = crate::fork::diarization::diarize_meeting(&app, &meeting_id)
+            .await
+            .map_err(|e| anyhow!(e))?;
+        let duration_seconds = crate::fork::diarization::audio_duration(&dest_path).unwrap_or(0.0);
+        emit_progress(&app, "complete", 100, "Import complete");
+        return Ok(ImportResult { meeting_id, title, segments_count: diarized.segments, duration_seconds });
+    }
+
     // Check for cancellation
     if IMPORT_CANCELLED.load(Ordering::SeqCst) {
         // Cleanup: remove the meeting folder
@@ -1182,6 +1204,7 @@ mod tests {
                 audio_start_time: Some(0.0),
                 audio_end_time: Some(1.5),
                 duration: Some(1.5),
+                speaker: None,
             },
             TranscriptSegment {
                 id: "t-2".to_string(),
@@ -1190,6 +1213,7 @@ mod tests {
                 audio_start_time: Some(2.0),
                 audio_end_time: Some(3.5),
                 duration: Some(1.5),
+                speaker: None,
             },
         ];
 

@@ -411,6 +411,9 @@ pub async fn start_recording_with_meeting_name<R: Runtime>(
     let device_event_receiver = manager.take_device_event_receiver();
     let session = manager.get_state().clone();
 
+    // Fork: smart screenshots alongside the recording (when requested for this meeting)
+    crate::fork::screen_capture::on_recording_started(&app, session.clone(), manager.get_meeting_folder());
+
     // Store the manager globally to keep it alive
     {
         let mut global_manager = RECORDING_MANAGER.lock().unwrap();
@@ -452,6 +455,7 @@ pub async fn start_recording_with_meeting_name<R: Runtime>(
                     display_time: update.timestamp.clone(), // Use wall-clock timestamp for display
                     confidence: update.confidence,
                     sequence_id: update.sequence_id,
+                    speaker: update.speaker.clone(),
                 };
 
                 // Save to recording manager
@@ -598,6 +602,9 @@ pub async fn start_recording_with_devices_and_meeting<R: Runtime>(
     let device_event_receiver = manager.take_device_event_receiver();
     let session = manager.get_state().clone();
 
+    // Fork: smart screenshots alongside the recording (when requested for this meeting)
+    crate::fork::screen_capture::on_recording_started(&app, session.clone(), manager.get_meeting_folder());
+
     // Store the manager globally to keep it alive
     {
         let mut global_manager = RECORDING_MANAGER.lock().unwrap();
@@ -639,6 +646,7 @@ pub async fn start_recording_with_devices_and_meeting<R: Runtime>(
                     display_time: update.timestamp.clone(), // Use wall-clock timestamp for display
                     confidence: update.confidence,
                     sequence_id: update.sequence_id,
+                    speaker: update.speaker.clone(),
                 };
 
                 // Save to recording manager
@@ -696,6 +704,9 @@ pub async fn stop_recording<R: Runtime>(
             "progress": 20
         }),
     );
+
+    // Fork: stop screenshots with the audio
+    crate::fork::screen_capture::on_recording_stopped(&app).await;
 
     // Step 1: Stop audio capture immediately (no more new chunks) with proper error handling
     let manager_for_cleanup = {
@@ -1019,6 +1030,13 @@ pub async fn stop_recording<R: Runtime>(
         // Extract meeting info BEFORE async operations
         let meeting_folder = manager.get_meeting_folder();
         let meeting_name = manager.get_meeting_name();
+
+        // Fork: keep the mic/system energy timeline next to the audio (diarization uses it)
+        if let Some(ref folder) = meeting_folder {
+            if let Err(e) = crate::fork::source_timeline::save_to_folder(folder) {
+                warn!("Could not save source_energy.json: {}", e);
+            }
+        }
 
         match tokio::time::timeout(
             tokio::time::Duration::from_secs(300), // 5 minutes max for file I/O

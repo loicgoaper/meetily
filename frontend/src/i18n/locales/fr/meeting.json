@@ -1,0 +1,32 @@
+{
+  "page": {
+    "noMeetingSelected": "Aucune réunion sélectionnée",
+    "goBack": "Retour",
+    "loadDetailsError": "Impossible de charger les détails de la réunion",
+    "loadTranscriptsError": "Impossible de charger la transcription"
+  },
+  "tabs": {
+    "transcript": "Transcription",
+    "summary": "Compte rendu",
+    "resize": "Redimensionner la transcription et le compte rendu",
+    "resizeValue": "Panneau de transcription : {{percent}} pour cent"
+  },
+  "transcript": {
+    "copy": "Copier",
+    "copyTitle": "Copier la transcription",
+    "noTranscript": "Aucune transcription disponible",
+    "recording": "Dossier",
+    "openFolderTitle": "Ouvrir le dossier de la réunion",
+    "enhance": "Améliorer",
+    "enhanceTitle": "Retranscrire l'audio enregistré pour améliorer la transcription",
+    "contextPlaceholder": "Ajoutez du contexte pour le compte rendu : participants, aperçu de la réunion, objectif, etc.",
+    "fetchForCopyError": "Impossible de récupérer la transcription à copier",
+    "noneToCopy": "Aucune transcription à copier",
+    "copied": "Transcription copiée dans le presse-papiers",
+    "clipboardHeader": "Transcription de la réunion : {{id}} - {{title}}",
+    "clipboardDate": "Date : {{date}}"
+  },
+  "folder": {
+    "openError": "Impossible d'ouvrir le dossier de la réunion"
+  }
+}

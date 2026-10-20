@@ -1,5 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { invoke } from '@tauri-apps/api/core';
+import i18n from '@/i18n';
+import { getOpenRouterKeyStatus, getPreferences, PREF } from '@/services/forkService';
 
 export interface RawModelInfo {
   name: string;
@@ -8,7 +10,7 @@ export interface RawModelInfo {
 }
 
 export interface ModelOption {
-  provider: 'whisper' | 'parakeet';
+  provider: 'whisper' | 'parakeet' | 'openrouter';
   name: string;
   displayName: string;
   size_mb: number;
@@ -77,6 +79,22 @@ export function useTranscriptionModels(transcriptModelConfig: TranscriptModelCon
       console.error('Failed to fetch Parakeet models:', err);
     }
 
+    // Fork: cloud option (full-file transcription with speaker identification)
+    try {
+      const key = await getOpenRouterKeyStatus();
+      if (key.configured) {
+        const prefs = await getPreferences();
+        allModels.unshift({
+          provider: 'openrouter',
+          name: prefs[PREF.diarizationModel] || 'elevenlabs/scribe-v2',
+          displayName: i18n.t('fork.stt.batchOption'),
+          size_mb: 0,
+        });
+      }
+    } catch (err) {
+      console.error('Failed to check OpenRouter availability:', err);
+    }
+
     setAvailableModels(allModels);
 
     // Set default model based on user's saved configuration
@@ -88,7 +106,8 @@ export function useTranscriptionModels(transcriptModelConfig: TranscriptModelCon
     const configuredMatch = allModels.find(
       (m) =>
         (configuredProvider === 'localWhisper' && m.provider === 'whisper' && m.name === configuredModel) ||
-        (configuredProvider === 'parakeet' && m.provider === 'parakeet' && m.name === configuredModel)
+        (configuredProvider === 'parakeet' && m.provider === 'parakeet' && m.name === configuredModel) ||
+        (configuredProvider === 'openrouter' && m.provider === 'openrouter')
     );
 
     // Only set default model if user hasn't manually selected one

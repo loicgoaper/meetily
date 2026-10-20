@@ -7,6 +7,7 @@ import { useRecordingState } from './RecordingStateContext';
 import { transcriptService } from '@/services/transcriptService';
 import { recordingService } from '@/services/recordingService';
 import { indexedDBService } from '@/services/indexedDBService';
+import i18n from '@/i18n';
 
 interface TranscriptContextType {
   transcripts: Transcript[];
@@ -315,6 +316,7 @@ export function TranscriptProvider({ children }: { children: ReactNode }) {
             audio_start_time: update.audio_start_time,
             audio_end_time: update.audio_end_time,
             duration: update.duration,
+            speaker: update.speaker ?? null, // Fork: 'mic' | 'system' | 'mixed'
           };
 
           // Add to buffer
@@ -338,7 +340,7 @@ export function TranscriptProvider({ children }: { children: ReactNode }) {
         console.log('✅ MAIN transcript listener setup complete');
       } catch (error) {
         console.error('❌ Failed to setup MAIN transcript listener:', error);
-        alert('Failed to setup transcript listener. Check console for details.');
+        alert(i18n.t('recording.transcript.listenerFailed'));
       }
     };
 
@@ -383,6 +385,7 @@ export function TranscriptProvider({ children }: { children: ReactNode }) {
             audio_start_time: segment.audio_start_time,
             audio_end_time: segment.audio_end_time,
             duration: segment.duration,
+            speaker: segment.speaker ?? null,
           }));
 
           setTranscripts(formattedTranscripts);
@@ -424,6 +427,7 @@ export function TranscriptProvider({ children }: { children: ReactNode }) {
       audio_start_time: update.audio_start_time,
       audio_end_time: update.audio_end_time,
       duration: update.duration,
+      speaker: update.speaker ?? null,
     };
 
     setTranscripts(prev => {
@@ -469,7 +473,7 @@ export function TranscriptProvider({ children }: { children: ReactNode }) {
       .join('\n');
     navigator.clipboard.writeText(fullTranscript);
 
-    toast.success("Transcript copied to clipboard");
+    toast.success(i18n.t('recording.transcript.copied'));
   }, [transcripts]);
 
   // Force flush buffer (for final transcript processing)

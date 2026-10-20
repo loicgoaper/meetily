@@ -13,6 +13,8 @@ use super::encode::encode_single_audio; // Correct path to encode module
 
 /// Sanitize a filename to be safe for filesystem use
 pub fn sanitize_filename(name: &str) -> String {
+    // Fork: meeting titles typed in French end up in folder names; keep those ASCII.
+    let name = crate::fork::i18n::fold_accents(name);
     name.chars()
         .map(|c| match c {
             '/' | '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|' => '_',

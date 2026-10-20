@@ -6,6 +6,7 @@ import { useSidebar } from '@/components/Sidebar/SidebarProvider';
 import Analytics from '@/lib/analytics';
 import { invoke } from '@tauri-apps/api/core';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { TranscriptPanel } from '@/components/MeetingDetails/TranscriptPanel';
 import { SummaryPanel } from '@/components/MeetingDetails/SummaryPanel';
 import { MeetingDetailsSplitView, type MeetingDetailsTab } from '@/components/MeetingDetails/MeetingDetailsSplitView';
@@ -18,12 +19,19 @@ import { useTemplates } from '@/hooks/meeting-details/useTemplates';
 import { useCopyOperations } from '@/hooks/meeting-details/useCopyOperations';
 import { useMeetingOperations } from '@/hooks/meeting-details/useMeetingOperations';
 import { useConfig } from '@/contexts/ConfigContext';
+import { useMeetingContextData } from '@/hooks/fork/useMeetingContextData';
+import { useMeetingSpeakers } from '@/hooks/fork/useMeetingSpeakers';
+import { usePostMeetingPipeline } from '@/hooks/fork/usePostMeetingPipeline';
+import { MeetingCloudBar } from '@/components/fork/MeetingCloudBar';
+import { MeetingContextPanel } from '@/components/fork/MeetingContextPanel';
+import { SpeakerChip } from '@/components/fork/SpeakerChip';
 
 export default function PageContent({
   meeting,
   summaryData,
   initialSummary,
   shouldAutoGenerate = false,
+  fromRecording = false,
   onAutoGenerateComplete,
   onMeetingUpdated,
   onRefetchTranscripts,
@@ -39,6 +47,7 @@ export default function PageContent({
   summaryData: MeetingSummary | null;
   initialSummary: SummaryProcessResponse | null;
   shouldAutoGenerate?: boolean;
+  fromRecording?: boolean;
   onAutoGenerateComplete?: () => void;
   onMeetingUpdated?: () => Promise<void>;
   onRefetchTranscripts?: () => Promise<void>;
@@ -50,14 +59,29 @@ export default function PageContent({
   loadedCount?: number;
   onLoadMore?: () => void;
 }) {
+  const { t } = useTranslation();
   console.log('📄 PAGE CONTENT: Initializing with data:', {
     meetingId: meeting.id,
     summaryDataKeys: summaryData ? Object.keys(summaryData) : null,
     transcriptsCount: meeting.transcripts?.length
   });
 
-  // State
-  const [customPrompt, setCustomPrompt] = useState<string>('');
+  // Fork: persisted context (its instructions are the summary's custom prompt),
+  // speaker names and the post-recording cloud steps
+  const meetingContext = useMeetingContextData(meeting.id);
+  const customPrompt = meetingContext.context.extraInstructions ?? '';
+  const setCustomPrompt = (value: string) =>
+    meetingContext.update({ ...meetingContext.context, extraInstructions: value });
+  const meetingSpeakers = useMeetingSpeakers(meeting.id);
+  const pipeline = usePostMeetingPipeline({
+    meetingId: meeting.id,
+    fromRecording,
+    onTranscriptsChanged: async () => {
+      await onRefetchTranscripts?.();
+      await meetingSpeakers.reload();
+    },
+  });
+
   const isRecording = false;
   const [activeTab, setActiveTab] = useState<MeetingDetailsTab>('transcript');
 
@@ -109,10 +133,10 @@ export default function PageContent({
       const { emit } = await import('@tauri-apps/api/event');
       await emit('model-config-updated', config);
 
-      toast.success('Model settings saved successfully');
+      toast.success(t('summary.model.saved'));
     } catch (error) {
       console.error('Failed to save model config:', error);
-      toast.error('Failed to save model settings');
+      toast.error(t('summary.model.saveError'));
     }
   };
 
@@ -161,6 +185,7 @@ export default function PageContent({
   useEffect(() => {
     if (
       !shouldAutoGenerate
+      || !pipeline.isDone
       || summaryGeneration.summaryStatus !== 'idle'
       || isModelConfigLoading
       || meetingData.transcripts.length === 0
@@ -172,9 +197,11 @@ export default function PageContent({
     autoGenerationStartedMeetingIdRef.current = meeting.id;
     console.log(`🤖 Auto-generating summary with ${modelConfig.provider}/${modelConfig.model}...`);
     onAutoGenerateComplete?.();
-    void summaryGeneration.handleGenerateSummary('');
+    // Fork: save a pending context edit first, the backend reads it from the database
+    void meetingContext.flush().then(() => summaryGeneration.handleGenerateSummary(''));
   }, [
     shouldAutoGenerate,
+    pipeline.isDone,
     meeting.id,
     meetingData.transcripts.length,
     isModelConfigLoading,
@@ -218,6 +245,21 @@ export default function PageContent({
               meetingId={meeting.id}
               meetingFolderPath={meeting.folder_path}
               onRefetchTranscripts={onRefetchTranscripts}
+              topBar={<MeetingCloudBar meetingId={meeting.id} pipeline={pipeline} />}
+              contextPanel={
+                <MeetingContextPanel
+                  context={meetingContext.context}
+                  onChange={meetingContext.update}
+                  saving={meetingContext.saving}
+                />
+              }
+              renderSpeaker={segment => (
+                <SpeakerChip
+                  speakerKey={segment.speaker}
+                  speakers={meetingSpeakers.speakers}
+                  onRename={meetingSpeakers.renameSpeaker}
+                />
+              )}
             />
           }
           summary={
@@ -235,14 +277,20 @@ export default function PageContent({
               modelConfig={modelConfig}
               setModelConfig={setModelConfig}
               onSaveModelConfig={handleSaveModelConfig}
-              onGenerateSummary={summaryGeneration.handleGenerateSummary}
+              onGenerateSummary={async (prompt?: string) => {
+                await meetingContext.flush();
+                return summaryGeneration.handleGenerateSummary(prompt);
+              }}
               onStopGeneration={summaryGeneration.handleStopGeneration}
               customPrompt={customPrompt}
               onSaveSummary={meetingData.handleSaveSummary}
               onSummaryChange={meetingData.handleSummaryChange}
               onDirtyChange={meetingData.setIsSummaryDirty}
               summaryError={summaryGeneration.summaryError}
-              onRegenerateSummary={summaryGeneration.handleRegenerateSummary}
+              onRegenerateSummary={async () => {
+                await meetingContext.flush();
+                return summaryGeneration.handleRegenerateSummary();
+              }}
               getSummaryStatusMessage={summaryGeneration.getSummaryStatusMessage}
               availableTemplates={templates.availableTemplates}
               selectedTemplate={templates.selectedTemplate}

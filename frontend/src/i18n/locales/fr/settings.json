@@ -1,0 +1,167 @@
+{
+  "title": "Réglages",
+  "tabs": {
+    "general": "Général",
+    "recordings": "Enregistrements",
+    "transcription": "Transcription",
+    "summary": "Compte rendu",
+    "templates": "Modèles",
+    "cloud": "Cloud & IA",
+    "beta": "Bêta"
+  },
+  "actions": {
+    "openFolder": "Ouvrir le dossier",
+    "done": "Terminé",
+    "cancel": "Annuler",
+    "dismiss": "Fermer",
+    "loading": "Chargement…",
+    "noteLabel": "Remarque :"
+  },
+  "devices": {
+    "default": "Par défaut",
+    "summary": "Micro : {{mic}}, audio système : {{system}}"
+  },
+  "preferences": {
+    "loading": "Chargement des préférences…",
+    "notifications": {
+      "title": "Notifications",
+      "description": "Activer ou désactiver les notifications de début et de fin de réunion"
+    },
+    "storage": {
+      "title": "Emplacement des données",
+      "description": "Consultez et ouvrez les dossiers où Meetily stocke vos données",
+      "recordings": "Enregistrements des réunions",
+      "note": "La base de données et les modèles sont regroupés dans le dossier de données de l'application."
+    }
+  },
+  "recording": {
+    "title": "Réglages d'enregistrement",
+    "description": "Choisissez comment l'audio de vos réunions est sauvegardé.",
+    "preferenceSaved": "Préférence enregistrée",
+    "preferenceSaveError": "Impossible d'enregistrer la préférence",
+    "devicesSaved": "Préférences de périphériques enregistrées",
+    "devicesSaveError": "Impossible d'enregistrer les préférences de périphériques",
+    "autoSave": {
+      "title": "Sauvegarder les enregistrements audio",
+      "description": "Sauvegarder automatiquement les fichiers audio à l'arrêt de l'enregistrement",
+      "disabled": "La sauvegarde de l'audio est désactivée. Activez « Sauvegarder les enregistrements audio » pour conserver automatiquement l'audio de vos réunions."
+    },
+    "saveLocation": "Emplacement de sauvegarde",
+    "defaultFolder": "Dossier par défaut",
+    "fileFormatLabel": "Format de fichier :",
+    "fileFormatValue": "fichiers {{format}}",
+    "fileNamePattern": "Les enregistrements sont horodatés : recording_YYYYMMDD_HHMMSS.{{extension}}",
+    "startNotification": {
+      "title": "Avis de début d'enregistrement",
+      "description": "Afficher un rappel pour informer les participants au début de l'enregistrement"
+    },
+    "devices": {
+      "title": "Périphériques audio par défaut",
+      "description": "Choisissez le micro et la source d'audio système à utiliser. Ils seront sélectionnés automatiquement au début de chaque nouvel enregistrement.",
+      "locked": "Le choix des périphériques est verrouillé pendant un enregistrement. Un périphérique branché en cours d'enregistrement ne sera pas utilisé. Arrêtez la réunion en cours pour changer de périphérique."
+    }
+  },
+  "transcript": {
+    "model": "Modèle de transcription",
+    "selectProvider": "Choisir un fournisseur",
+    "selectModel": "Choisir un modèle",
+    "providers": {
+      "parakeet": "⚡ Parakeet (recommandé : temps réel, précis)",
+      "localWhisper": "🏠 Whisper local (haute précision)"
+    },
+    "apiKey": "Clé d'API",
+    "apiKeyPlaceholder": "Saisissez votre clé d'API",
+    "unlockToEdit": "Déverrouiller pour modifier",
+    "lockToPreventEditing": "Verrouiller pour empêcher la modification"
+  },
+  "summaryModel": {
+    "loadError": "Impossible de charger les réglages du modèle",
+    "saved": "Réglages du modèle enregistrés",
+    "saveError": "Impossible d'enregistrer les réglages du modèle",
+    "autoSummary": {
+      "title": "Compte rendu automatique",
+      "description": "Générer automatiquement le compte rendu à la fin de la réunion (à l'arrêt de l'enregistrement)"
+    },
+    "title": "Modèle de compte rendu",
+    "description": "Choisissez le modèle d'IA qui rédige les comptes rendus de réunion."
+  },
+  "summaryLanguage": {
+    "title": "Langue du compte rendu",
+    "description": "Épinglez une langue pour en faire la langue par défaut des nouvelles réunions. Les autres langues restent proposées en accès rapide dans le générateur de compte rendu. « Auto » utilise la langue dominante de la transcription.",
+    "pin": "Définir {{language}} comme langue par défaut",
+    "unpin": "Retirer {{language}} comme langue par défaut",
+    "clickToSet": "Cliquez pour en faire la langue par défaut",
+    "clickToUnset": "Cliquez pour retirer la langue par défaut",
+    "remove": "Retirer {{language}}",
+    "add": "＋ Ajouter une langue",
+    "defaultHint": "Par défaut : {{language}}. Cliquez de nouveau dessus pour la retirer. Jusqu'à 5 langues en accès rapide.",
+    "noDefaultHint": "Cliquez sur une langue pour en faire la langue par défaut. Jusqu'à 5 langues en accès rapide."
+  },
+  "beta": {
+    "bannerTitle": "Fonctions bêta",
+    "bannerText": "Ces fonctions sont encore en test. Vous pourriez rencontrer des problèmes ; vos commentaires sont les bienvenus.",
+    "badge": "BÊTA",
+    "note": "Une fois désactivées, les fonctions bêta sont masquées. Vos réunions existantes ne sont pas modifiées.",
+    "features": {
+      "importAndRetranscribe": {
+        "name": "Importer un audio et retranscrire",
+        "description": "Importez des fichiers audio à transcrire, ou retranscrivez des réunions existantes avec d'autres réglages de langue."
+      }
+    }
+  },
+  "audioBackend": {
+    "label": "Méthode de capture de l'audio système",
+    "methodsTitle": "Méthodes de capture audio :",
+    "tryDifferent": "Essayez différentes méthodes pour trouver celle qui fonctionne le mieux sur votre ordinateur.",
+    "active": "Active",
+    "disabled": "Désactivée",
+    "loadError": "Impossible de charger les méthodes de capture",
+    "changeError": "Impossible de changer de méthode de capture. Veuillez réessayer.",
+    "hintSystemOnly": "Le choix de la méthode ne concerne que la capture du son de l'ordinateur",
+    "hintMic": "Le micro utilise toujours la méthode par défaut",
+    "hintNewSessions": "Les changements s'appliquent aux prochains enregistrements"
+  },
+  "language": {
+    "title": "Langue de transcription",
+    "autoDetect": "Détection automatique (langue d'origine)",
+    "autoTranslate": "Détection automatique (traduction en anglais)",
+    "saved": "Langue enregistrée",
+    "savedDescription": "Langue de transcription : {{language}}",
+    "saveError": "Impossible d'enregistrer la langue",
+    "parakeetTitle": "ℹ️ Langues prises en charge par Parakeet",
+    "parakeetText": "Parakeet ne prend en charge que la détection automatique de la langue. Le choix manuel n'est pas disponible. Utilisez Whisper si vous devez indiquer une langue précise.",
+    "currentLabel": "Langue actuelle :",
+    "autoWarningTitle": "⚠️ La détection automatique peut donner des résultats erronés",
+    "autoWarningText": "Pour une meilleure précision, choisissez la langue parlée (p. ex. anglais, espagnol, etc.)",
+    "translateTitle": "🌐 Mode traduction activé",
+    "translateText": "Tout l'audio sera traduit automatiquement en anglais. Idéal pour les réunions multilingues dont vous voulez une transcription en anglais.",
+    "optimizedFor": "La transcription sera optimisée pour :"
+  },
+  "legacyTabs": {
+    "transcript": "Transcription",
+    "aiSummary": "Compte rendu IA",
+    "preferences": "Préférences",
+    "about": "À propos"
+  },
+  "modal": {
+    "preferences": "Préférences",
+    "aiModelConfig": "Configuration du modèle d'IA",
+    "summarizationModel": "Modèle de compte rendu",
+    "builtinAi": "IA intégrée",
+    "ollamaModels": "Modèles Ollama disponibles",
+    "size": "Taille : {{size}}",
+    "modified": "Modifié : {{date}}",
+    "audioDevices": "Réglages des périphériques audio",
+    "devicesSelected": "Périphériques sélectionnés",
+    "languageSettings": "Réglages de langue",
+    "sttSetupRequired": "Configuration de la reconnaissance vocale requise",
+    "transcriptionModelSettings": "Réglages du modèle de transcription",
+    "confidenceTitle": "Afficher les indicateurs de confiance",
+    "confidenceDescription": "Des points de couleur indiquent le niveau de confiance de la transcription",
+    "recordingStopped": "Enregistrement arrêté",
+    "chunkDropWarning": "Avertissement sur les performances de transcription"
+  },
+  "errors": {
+    "ollamaModels": "Impossible de charger les modèles Ollama"
+  }
+}

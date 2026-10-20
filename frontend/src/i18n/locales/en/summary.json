@@ -1,0 +1,146 @@
+{
+  "templateSelected": "Template selected",
+  "templateSelectedDescription": "Using the “{{name}}” template for the summary",
+  "generator": {
+    "stop": "Stop",
+    "stopTitle": "Stop summary generation",
+    "loadingConfigTitle": "Loading model configuration...",
+    "generateTitle": "Generate AI Summary",
+    "regenerateTitle": "Regenerate AI Summary",
+    "processing": "Processing...",
+    "generate": "Generate Summary",
+    "regenerate": "Regenerate Summary",
+    "settingsTitle": "Summary Settings",
+    "aiModel": "AI Model",
+    "modelSettings": "Model Settings",
+    "templateTitle": "Select summary template",
+    "template": "Template"
+  },
+  "updater": {
+    "savingTitle": "Saving",
+    "saving": "Saving...",
+    "saveTitle": "Save Changes",
+    "save": "Save",
+    "copyTitle": "Copy Summary",
+    "copy": "Copy"
+  },
+  "panel": {
+    "generating": "Generating AI Summary..."
+  },
+  "status": {
+    "processing": "Processing transcript...",
+    "summarizing": "Generating summary...",
+    "regenerating": "Regenerating summary...",
+    "completed": "Summary completed",
+    "error": "Error generating summary"
+  },
+  "empty": {
+    "title": "No Summary Generated Yet",
+    "description": "Generate an AI-powered summary of your meeting transcript to get key points, action items, and decisions.",
+    "generating": "Generating...",
+    "retry": "Retry summary",
+    "generate": "Generate Summary",
+    "selectModel": "Please select a model in Settings first"
+  },
+  "language": {
+    "auto": "Auto",
+    "autoSubtitle": "Uses dominant transcript language",
+    "autoSubtitleLocal": "Saved on this device for folderless meetings",
+    "buttonTitle": "Summary language: {{language}}",
+    "buttonTitleLocal": "Summary language: {{language}} (saved on this device)",
+    "ariaLabel": "Set summary language",
+    "loadError": "Could not load saved summary language",
+    "loadErrorDescription": "Using Auto until meeting metadata can be read.",
+    "loadErrorGenerationDescription": "Using Auto for this generation.",
+    "savedLocally": "Summary language saved on this device",
+    "savedLocallyDescription": "This meeting has no recording folder, so the preference cannot be written to meeting metadata.",
+    "saveError": "Failed to save summary language",
+    "bilingual": "Bilingual transcript detected",
+    "bilingualDescription": "Pick a summary language manually if Auto chooses the wrong fallback.",
+    "picker": {
+      "ariaLabel": "Pick summary language",
+      "search": "Search language...",
+      "recent": "Recently Used",
+      "other": "Other Languages",
+      "all": "All Languages",
+      "noMatches": "No matches"
+    }
+  },
+  "model": {
+    "saved": "Model settings saved successfully",
+    "saveError": "Failed to save model settings"
+  },
+  "generation": {
+    "failedRetry": "Summary generation failed. Please retry.",
+    "generateFailed": "Failed to generate summary",
+    "regenerateFailed": "Failed to regenerate summary",
+    "generationFailed": "Summary generation failed",
+    "regenerationFailed": "Summary regeneration failed",
+    "cancelledReloadFailed": "Summary generation was cancelled, but the saved summary could not be reloaded. Please reopen this meeting.",
+    "reloadFailed": "{{error}}. The saved summary could not be reloaded. Please reopen this meeting.",
+    "previousRestored": "{{error}}. Your previous summary has been restored.",
+    "emptyResult": "Summary generation completed without visible content. Please retry.",
+    "fallbackTitle": "Summary generated with fallback",
+    "fallbackDescription": "English normalization failed, so the original sanitized summary was kept.",
+    "success": "Summary generated successfully!",
+    "ready": "Your meeting summary is ready",
+    "readyReasoningStripped": "Your meeting summary is ready. Model reasoning was filtered out of the notes.",
+    "usingModel": "Using {{provider}}/{{model}}",
+    "noTranscriptText": "No transcript text available. Please add some text first.",
+    "failed": "Summary generation failed.",
+    "fetchTranscriptsError": "Failed to fetch transcripts for summary generation",
+    "loadingConfig": "Loading model configuration, please wait...",
+    "noTranscripts": "No transcripts available for summary",
+    "noTranscriptsRegenerate": "No transcripts available for summary regeneration",
+    "noOllamaModels": "No Ollama models found. Please download gemma3:1b from Model Settings.",
+    "noBuiltinModel": "No built-in AI model selected. Please select a model in settings.",
+    "builtinNotReady": "Built-in AI model is not ready. Please check model settings.",
+    "validateFailed": "Failed to validate summary model. Please check model settings.",
+    "stopped": "Summary generation stopped",
+    "stoppedDescription": "You can generate a new summary anytime",
+    "alreadyFinishing": "Summary is already finishing",
+    "alreadyFinishingDescription": "Waiting for the latest result.",
+    "stopFailed": "Failed to stop summary generation",
+    "stopFailedDescription": "Generation is still running; waiting for its latest status."
+  },
+  "copy": {
+    "noContent": "No summary content available to copy",
+    "copied": "Summary copied to clipboard",
+    "failed": "Failed to copy summary",
+    "header": "Meeting Summary: {{title}}",
+    "meetingId": "Meeting ID:",
+    "date": "Date:",
+    "copiedOn": "Copied on:"
+  },
+  "save": {
+    "noContent": "Summary contains no visible content to save.",
+    "success": "Changes saved successfully",
+    "failed": "Failed to save changes"
+  },
+  "legacy": {
+    "errorTitle": "Error Generating Summary",
+    "errorHint": "Please check your model configuration and API keys, or try again.",
+    "processingTitle": "Processing Transcript",
+    "generatingTitle": "Generating Summary",
+    "processingDescription": "Analyzing your transcript...",
+    "generatingDescription": "Creating a detailed summary of your meeting...",
+    "noContent": "No summary content available.",
+    "tryAgain": "Try generating a new summary.",
+    "copyBlocks_one": "Copy block",
+    "copyBlocks_other": "Copy {{count}} blocks",
+    "deleteBlocks_one": "Delete block",
+    "deleteBlocks_other": "Delete {{count}} blocks",
+    "deleteSection": "Delete",
+    "placeholder": "Type '/' for commands...",
+    "commands": {
+      "text": "Text",
+      "textDescription": "Just start writing with plain text",
+      "bullet": "Bullet List",
+      "bulletDescription": "Create a bulleted list",
+      "h1": "Heading 1",
+      "h1Description": "Big section heading",
+      "h2": "Heading 2",
+      "h2Description": "Medium section heading"
+    }
+  }
+}

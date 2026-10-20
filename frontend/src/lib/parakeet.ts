@@ -1,4 +1,6 @@
 // Types for Parakeet (NVIDIA NeMo) integration
+import i18n from '@/i18n';
+
 export interface ParakeetModelInfo {
   name: string;
   path: string;
@@ -51,24 +53,26 @@ export interface ModelDisplayInfo {
   tier: 'fastest' | 'balanced' | 'precise';
 }
 
+// friendlyName and tagline hold translation keys; getModelDisplayInfo() and
+// getModelDisplayName() resolve them in the current UI language.
 export const MODEL_DISPLAY_CONFIG: Record<string, ModelDisplayInfo> = {
   'parakeet-tdt-0.6b-v3-int8': {
-    friendlyName: 'Lightning',
+    friendlyName: 'models.parakeet.display.lightning.name',
     icon: '⚡',
-    tagline: 'Real time • Best for speed, great accuracy',
+    tagline: 'models.parakeet.display.lightning.tagline',
     recommended: true,
     tier: 'fastest'
   },
   'parakeet-tdt-0.6b-v2-int8': {
-    friendlyName: 'Compact',
+    friendlyName: 'models.parakeet.display.compact.name',
     icon: '📦',
-    tagline: 'Real time • Smaller size',
+    tagline: 'models.parakeet.display.compact.tagline',
     tier: 'balanced'
   },
   'parakeet-tdt-0.6b-v3-fp32': {
-    friendlyName: 'Precise',
+    friendlyName: 'models.parakeet.display.precise.name',
     icon: '🎯',
-    tagline: '20x real-time • Higher accuracy',
+    tagline: 'models.parakeet.display.precise.tagline',
     tier: 'precise'
   }
 };
@@ -113,12 +117,18 @@ export function getModelIcon(accuracy: ModelAccuracy): string {
 // Get user-friendly display name for a model
 export function getModelDisplayName(modelName: string): string {
   const displayInfo = MODEL_DISPLAY_CONFIG[modelName];
-  return displayInfo?.friendlyName || modelName;
+  return displayInfo?.friendlyName ? i18n.t(displayInfo.friendlyName) : modelName;
 }
 
-// Get model display info (icon, tagline, etc.)
+// Get model display info (icon, tagline, etc.), with friendlyName and tagline translated
 export function getModelDisplayInfo(modelName: string): ModelDisplayInfo | null {
-  return MODEL_DISPLAY_CONFIG[modelName] || null;
+  const displayInfo = MODEL_DISPLAY_CONFIG[modelName];
+  if (!displayInfo) return null;
+  return {
+    ...displayInfo,
+    friendlyName: i18n.t(displayInfo.friendlyName),
+    tagline: i18n.t(displayInfo.tagline),
+  };
 }
 
 export function getStatusColor(status: ModelStatus): string {
@@ -145,11 +155,11 @@ export function isQuantizedModel(modelName: string): boolean {
 export function getModelPerformanceBadge(quantization: QuantizationType): { label: string; color: string } {
   switch (quantization) {
     case 'FP32':
-      return { label: 'Full Precision', color: 'blue' };
+      return { label: i18n.t('models.badge.fullPrecision'), color: 'blue' };
     case 'Int8':
-      return { label: 'Int8 Quantized', color: 'green' };
+      return { label: i18n.t('models.badge.int8Quantized'), color: 'green' };
     default:
-      return { label: 'Standard', color: 'gray' };
+      return { label: i18n.t('models.badge.standard'), color: 'gray' };
   }
 }
 

@@ -1,0 +1,3 @@
+[test]
+# Meetily perso: the UI defaults to French; tests run with the English UI
+preload = ["./tests/setup-i18n.ts"]

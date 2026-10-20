@@ -1,0 +1,42 @@
+{
+  "name": "Réunion – compte rendu standard",
+  "description": "Compte rendu général : résumé, décisions, actions et points clés.",
+  "sections": [
+    {
+      "title": "Résumé",
+      "instruction": "Rédige un résumé exécutif d'un paragraphe : objet de la réunion, principales conclusions et suites",
+      "format": "paragraph"
+    },
+    {
+      "title": "Participants",
+      "instruction": "Liste les participants avec leur rôle ou leur organisation quand ils sont connus",
+      "format": "list"
+    },
+    {
+      "title": "Décisions",
+      "instruction": "Liste les décisions prises pendant la réunion, avec qui les a portées si c'est clair",
+      "format": "list"
+    },
+    {
+      "title": "Actions",
+      "instruction": "Liste toutes les tâches décidées, avec le responsable (nom de la personne), l'échéance si elle a été mentionnée et le moment de la réunion où l'action a été décidée",
+      "format": "list",
+      "item_format": "| **Responsable** | **Action** | Échéance | Réf. [mm:ss] |\n| --- | --- | --- | --- |"
+    },
+    {
+      "title": "Points discutés",
+      "instruction": "Résume les principaux sujets abordés, les arguments importants et les informations clés, sujet par sujet",
+      "format": "paragraph"
+    },
+    {
+      "title": "Éléments présentés à l'écran",
+      "instruction": "Résume ce qui a été montré à l'écran pendant la réunion (diapositives, documents, tableaux, chiffres) d'après le contenu d'écran fourni, avec l'horodatage [mm:ss]. Omets la section si rien n'a été partagé",
+      "format": "list"
+    },
+    {
+      "title": "Prochaines étapes",
+      "instruction": "Indique les prochaines étapes et le prochain rendez-vous s'il a été fixé",
+      "format": "list"
+    }
+  ]
+}

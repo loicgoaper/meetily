@@ -8,6 +8,7 @@
 import { check, Update } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { getVersion } from '@tauri-apps/api/app';
+import i18n from '@/i18n';
 
 export interface UpdateInfo {
   available: boolean;
@@ -41,7 +42,7 @@ export class UpdateService {
   async checkForUpdates(force = false): Promise<UpdateInfo> {
     // Prevent concurrent update checks
     if (this.updateCheckInProgress) {
-      throw new Error('Update check already in progress');
+      throw new Error(i18n.t('misc.update.checkInProgress'));
     }
 
     // Skip if checked recently (unless forced)

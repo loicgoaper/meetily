@@ -21,6 +21,8 @@ import {
   SummaryLanguageStorage,
 } from '@/lib/summary-language-preferences';
 import { hasVisibleSummaryContent } from '@/lib/summary-content';
+import { useTranslation } from 'react-i18next';
+import i18n from '@/i18n';
 
 interface SummaryPanelProps {
   meeting: {
@@ -85,6 +87,7 @@ export function SummaryPanel({
   isModelConfigLoading = false,
   onOpenModelSettings,
 }: SummaryPanelProps) {
+  const { t } = useTranslation();
   const [summaryLang, setSummaryLang] = useState<string | null>(null);
   const [summaryLangStorage, setSummaryLangStorage] = useState<SummaryLanguageStorage>('metadata');
   const [langPickerOpen, setLangPickerOpen] = useState(false);
@@ -104,11 +107,11 @@ export function SummaryPanel({
   activeMeetingIdRef.current = meeting.id;
   const { addRecent } = useRecentLanguages();
 
-  const effectiveLangLabel = summaryLang ? labelForCode(summaryLang) : 'Auto';
+  const effectiveLangLabel = summaryLang ? labelForCode(summaryLang) : t('summary.language.auto');
   const isLocalFallbackLanguage = summaryLangStorage === 'local_fallback';
   const autoSubtitle = isLocalFallbackLanguage
-    ? 'Saved on this device for folderless meetings'
-    : 'Uses dominant transcript language';
+    ? t('summary.language.autoSubtitleLocal')
+    : t('summary.language.autoSubtitle');
 
   useEffect(() => {
     let cancelled = false;
@@ -124,8 +127,8 @@ export function SummaryPanel({
         }
       } catch (err) {
         console.error('Failed to load summary language:', err);
-        toast.warning('Could not load saved summary language', {
-          description: 'Using Auto until meeting metadata can be read.',
+        toast.warning(i18n.t('summary.language.loadError'), {
+          description: i18n.t('summary.language.loadErrorDescription'),
         });
         if (!cancelled && languageLoadVersionRef.current === loadVersion) setSummaryLang(null);
       }
@@ -157,8 +160,8 @@ export function SummaryPanel({
             setSummaryLang(saved.language);
             setSummaryLangStorage(saved.storage);
             if (saved.storage === 'local_fallback') {
-              toast.info('Summary language saved on this device', {
-                description: 'This meeting has no recording folder, so the preference cannot be written to meeting metadata.',
+              toast.info(t('summary.language.savedLocally'), {
+                description: t('summary.language.savedLocallyDescription'),
               });
             }
             if (request.language) {
@@ -175,7 +178,7 @@ export function SummaryPanel({
             activeMeetingIdRef.current === request.meetingId
           ) {
             console.error('Failed to persist summary language:', err);
-            toast.error('Failed to save summary language');
+            toast.error(t('summary.language.saveError'));
             setSummaryLang(request.rollback.language);
             setSummaryLangStorage(request.rollback.storage);
             return;
@@ -219,8 +222,10 @@ export function SummaryPanel({
         <Button
           variant="outline"
           size="sm"
-          title={`Summary language: ${effectiveLangLabel}${isLocalFallbackLanguage ? ' (saved on this device)' : ''}`}
-          aria-label="Set summary language"
+          title={isLocalFallbackLanguage
+            ? t('summary.language.buttonTitleLocal', { language: effectiveLangLabel })
+            : t('summary.language.buttonTitle', { language: effectiveLangLabel })}
+          aria-label={t('summary.language.ariaLabel')}
         >
           <Languages size={18} />
           <span className="hidden @[40rem]:inline">{effectiveLangLabel}</span>
@@ -283,7 +288,7 @@ export function SummaryPanel({
         <div className="flex items-center justify-center flex-1">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
-            <p className="text-gray-600">Generating AI Summary...</p>
+            <p className="text-gray-600">{t('summary.panel.generating')}</p>
           </div>
         </div>
       ) : !hasSummary ? (

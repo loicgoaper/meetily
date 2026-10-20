@@ -31,16 +31,18 @@ export const DEFAULT_BETA_FEATURES: BetaFeatures = {
 
 /**
  * Human-readable feature names for UI display
+ * (i18n keys, translated at render time with t())
  */
 export const BETA_FEATURE_NAMES: Record<keyof BetaFeatures, string> = {
-  importAndRetranscribe: 'Import Audio & Retranscribe',
+  importAndRetranscribe: 'settings.beta.features.importAndRetranscribe.name',
 };
 
 /**
  * Feature descriptions for UI tooltips/help text
+ * (i18n keys, translated at render time with t())
  */
 export const BETA_FEATURE_DESCRIPTIONS: Record<keyof BetaFeatures, string> = {
-  importAndRetranscribe: 'Import audio files to transcribe or retranscribe existing meetings with different language settings.',
+  importAndRetranscribe: 'settings.beta.features.importAndRetranscribe.description',
 };
 
 /**

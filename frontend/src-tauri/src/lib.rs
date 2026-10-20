@@ -41,6 +41,7 @@ pub mod audio;
 pub mod config;
 pub mod console_utils;
 pub mod database;
+pub mod fork;
 pub mod notifications;
 pub mod ollama;
 pub mod onboarding;
@@ -595,6 +596,13 @@ pub fn run() {
                 log::warn!("Failed to resolve resource directory for templates");
             }
 
+            // Fork: apply the saved UI language to Rust-side strings (tray menu)
+            let app_for_lang = _app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                let lang = fork::preferences::get_pref(&app_for_lang, fork::preferences::UI_LANGUAGE).await;
+                fork::i18n::set_ui_language(&app_for_lang, &lang);
+            });
+
             Ok(())
         })
         .on_window_event(|window, event| {
@@ -830,6 +838,46 @@ pub fn run() {
             audio::import::start_import_audio_command,
             audio::import::cancel_import_command,
             audio::import::is_import_in_progress_command,
+            // Fork (Meetily perso)
+            fork::preferences::api_get_app_preferences,
+            fork::preferences::api_set_app_preferences,
+            fork::meeting_context::api_get_meeting_context,
+            fork::meeting_context::api_save_meeting_context,
+            fork::meeting_context::api_set_live_meeting_context,
+            fork::meeting_context::api_get_live_meeting_context,
+            fork::meeting_context::api_search_contacts,
+            fork::openrouter_stt::get_openrouter_transcription_models,
+            fork::openrouter_chat::api_get_openrouter_key_status,
+            fork::openrouter_chat::api_set_openrouter_key,
+            fork::stt_provider::openrouter_stt_init,
+            fork::stt_provider::openrouter_stt_has_key,
+            fork::stt_provider::openrouter_stt_models_status,
+            fork::usage::api_get_meeting_usage,
+            fork::speakers::api_get_meeting_speakers,
+            fork::speakers::api_rename_speaker,
+            fork::speakers::api_set_segment_speaker,
+            fork::diarization::api_diarize_meeting,
+            fork::diarization::api_cancel_diarization,
+            fork::diarization::api_is_diarization_in_progress,
+            fork::diarization::api_revert_diarization,
+            fork::diarization::api_has_live_transcript_backup,
+            fork::screen_capture::api_list_monitors,
+            fork::screen_capture::api_start_screen_capture,
+            fork::screen_capture::api_stop_screen_capture,
+            fork::screen_capture::api_screen_capture_status,
+            fork::screen_capture::api_list_meeting_screenshots,
+            fork::screen_capture::api_get_screenshot,
+            fork::screen_capture::api_set_screenshot_excluded,
+            fork::vision::api_analyze_screenshots,
+            fork::vision::api_get_screen_notes,
+            fork::templates_admin::api_list_templates_full,
+            fork::templates_admin::api_get_template_full,
+            fork::templates_admin::api_save_custom_template,
+            fork::templates_admin::api_delete_custom_template,
+            fork::templates_admin::api_duplicate_template,
+            fork::templates_admin::api_import_template,
+            fork::templates_admin::api_export_template,
+            fork::templates_admin::api_preview_template,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

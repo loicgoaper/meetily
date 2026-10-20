@@ -10,6 +10,11 @@ import { usePermissionCheck } from '@/hooks/usePermissionCheck';
 import { ModalType } from '@/hooks/useModalState';
 import { useIsLinux } from '@/hooks/usePlatform';
 import { useMemo } from 'react';
+import { SpeakerChip } from '@/components/fork/SpeakerChip';
+import { useTranslation } from 'react-i18next';
+
+// Live labels need no names: 'mic' shows "Moi", 'system' shows "Interlocuteurs"
+const NO_SPEAKER_NAMES = {};
 
 /**
  * TranscriptPanel Component
@@ -30,6 +35,7 @@ export function TranscriptPanel({
   isStopping,
   showModal
 }: TranscriptPanelProps) {
+  const { t } = useTranslation();
   // Contexts
   const { transcripts, transcriptContainerRef, copyTranscript } = useTranscripts();
   const { transcriptModelConfig } = useConfig();
@@ -39,12 +45,13 @@ export function TranscriptPanel({
 
   // Convert transcripts to segments for virtualized view
   const segments = useMemo(() =>
-    transcripts.map(t => ({
-      id: t.id,
-      timestamp: t.audio_start_time ?? 0,
-      endTime: t.audio_end_time,
-      text: t.text,
-      confidence: t.confidence,
+    transcripts.map(tr => ({
+      id: tr.id,
+      timestamp: tr.audio_start_time ?? 0,
+      endTime: tr.audio_end_time,
+      text: tr.text,
+      confidence: tr.confidence,
+      speaker: tr.speaker,
     })),
     [transcripts]
   );
@@ -62,11 +69,11 @@ export function TranscriptPanel({
                     variant="outline"
                     size="sm"
                     onClick={copyTranscript}
-                    title="Copy Transcript"
+                    title={t('home.transcriptPanel.copyTranscript')}
                   >
                     <Copy />
                     <span className='hidden md:inline'>
-                      Copy
+                      {t('home.transcriptPanel.copy')}
                     </span>
                   </Button>
                 )}
@@ -75,11 +82,11 @@ export function TranscriptPanel({
                     variant="outline"
                     size="sm"
                     onClick={() => showModal('languageSettings')}
-                    title="Language"
+                    title={t('home.transcriptPanel.language')}
                   >
                     <GlobeIcon />
                     <span className='hidden md:inline'>
-                      Language
+                      {t('home.transcriptPanel.language')}
                     </span>
                   </Button>
                 }
@@ -113,6 +120,7 @@ export function TranscriptPanel({
               isStopping={isStopping}
               enableStreaming={isRecording}
               showConfidence={true}
+              renderSpeaker={segment => <SpeakerChip speakerKey={segment.speaker} speakers={NO_SPEAKER_NAMES} />}
             />
           </div>
         </div>

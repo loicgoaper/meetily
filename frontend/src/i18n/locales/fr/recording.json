@@ -1,0 +1,157 @@
+{
+  "controls": {
+    "initFailed": "Impossible d'initialiser l'enregistrement. Consultez la console pour plus de détails.",
+    "deviceErrors": {
+      "micTitle": "Micro indisponible",
+      "micMessage": "Impossible d'accéder à votre micro. Vérifiez que :\n• votre micro est branché\n• l'application a l'autorisation d'utiliser le micro\n• aucune autre application n'utilise le micro",
+      "systemTitle": "Son de l'ordinateur indisponible",
+      "systemMessage": "Impossible de capter le son de l'ordinateur. Vérifiez que :\n• un périphérique audio virtuel (comme BlackHole) est installé\n• l'application a l'autorisation d'enregistrer l'écran (macOS)\n• l'audio système est correctement configuré",
+      "permissionTitle": "Autorisation requise",
+      "permissionMessage": "Des autorisations d'enregistrement sont nécessaires. Veuillez :\n• autoriser l'accès au micro dans les réglages du système\n• autoriser l'enregistrement de l'écran pour l'audio système (macOS)\n• redémarrer l'application après avoir accordé les autorisations",
+      "failedTitle": "Échec de l'enregistrement",
+      "failedMessage": "Impossible de démarrer l'enregistrement. Vérifiez les réglages de vos périphériques audio, puis réessayez."
+    },
+    "pauseFailed": "Impossible de mettre l'enregistrement en pause. Consultez la console pour plus de détails.",
+    "resumeFailed": "Impossible de reprendre l'enregistrement. Consultez la console pour plus de détails.",
+    "processing": "Traitement de l'enregistrement...",
+    "start": "Démarrer l'enregistrement",
+    "pausing": "Mise en pause...",
+    "resuming": "Reprise...",
+    "resume": "Reprendre l'enregistrement",
+    "pause": "Mettre l'enregistrement en pause",
+    "stopping": "Arrêt...",
+    "stop": "Arrêter l'enregistrement",
+    "validating": "Vérification de la reconnaissance vocale...",
+    "closeAlert": "Fermer l'alerte"
+  },
+  "devices": {
+    "loadFailed": "Impossible de charger les périphériques audio. Vérifiez les réglages audio de votre système.",
+    "noMicToMonitor": "Aucun micro à surveiller",
+    "monitoringFailed": "Impossible de démarrer la mesure du niveau audio",
+    "title": "Périphériques audio",
+    "microphone": "Micro",
+    "selectMicrophone": "Choisir un micro",
+    "defaultMicrophone": "Micro par défaut",
+    "noMicrophone": "Aucun micro détecté",
+    "microphoneLevels": "Niveaux des micros :",
+    "systemAudio": "Son de l'ordinateur",
+    "selectSystemAudio": "Choisir la source du son de l'ordinateur",
+    "defaultSystemAudio": "Son de l'ordinateur par défaut",
+    "noSystemAudio": "Aucun périphérique de son de l'ordinateur détecté",
+    "info": {
+      "microphoneLabel": "Micro :",
+      "microphone": "enregistre votre voix et le son ambiant",
+      "systemAudioLabel": "Son de l'ordinateur :",
+      "systemAudio": "enregistre l'audio de l'ordinateur (musique, appels, etc.)",
+      "levelsLabel": "Niveaux du micro :",
+      "levels": "vert = bon, jaune = fort, rouge = trop fort",
+      "tipLabel": "Astuce :",
+      "tip": "cliquez sur « Tester le micro » pour vérifier que votre micro fonctionne"
+    }
+  },
+  "permissions": {
+    "bothRequired": "Autorisations requises",
+    "micRequired": "Autorisation du micro requise",
+    "systemRequired": "Autorisation de l'audio système requise",
+    "openMicSettings": "Ouvrir les réglages du micro",
+    "openScreenSettings": "Ouvrir les réglages d'enregistrement de l'écran",
+    "recheck": "Vérifier de nouveau",
+    "micIntro": "Meetily a besoin d'accéder à votre micro pour enregistrer les réunions. Aucun micro n'a été détecté.",
+    "pleaseCheck": "Vérifiez que :",
+    "micCheck1": "votre micro est branché et allumé",
+    "micCheck2": "l'accès au micro est autorisé dans les réglages du système",
+    "micCheck3": "aucune autre application n'utilise le micro en exclusivité",
+    "systemUnavailable": "La capture du son de l'ordinateur n'est pas disponible. Vous pouvez tout de même enregistrer avec votre micro, mais le son de l'ordinateur ne sera pas capté.",
+    "systemAlsoUnavailable": "La capture du son de l'ordinateur n'est pas disponible non plus.",
+    "macosTitle": "Pour activer l'audio système sur macOS :",
+    "macosStep1": "Installez un périphérique audio virtuel (par exemple BlackHole 2ch)",
+    "macosStep2": "Autorisez Meetily à enregistrer l'écran",
+    "macosStep3": "Configurez le routage audio dans Configuration audio et MIDI",
+    "checkFailed": "Impossible de vérifier les autorisations"
+  },
+  "bluetooth": {
+    "title": "Lecture Bluetooth détectée",
+    "description": "Vous utilisez <strong>{{deviceName}}</strong> pour la lecture. Les enregistrements peuvent sembler déformés ou accélérés sur un appareil Bluetooth. Pour une écoute fidèle, utilisez plutôt <strong>les haut-parleurs de l'ordinateur</strong> ou <strong>un casque filaire</strong>.",
+    "learnWhy": "Comprendre pourquoi →",
+    "dismiss": "Ignorer l'avertissement"
+  },
+  "transcript": {
+    "silence": "[Silence]",
+    "listening": "À l'écoute...",
+    "paused": "Enregistrement en pause",
+    "listeningForSpeech": "En attente de parole...",
+    "clickResume": "Cliquez sur Reprendre pour poursuivre l'enregistrement",
+    "speakToSee": "Parlez pour voir la transcription en direct",
+    "welcome": "Bienvenue dans Meetily !",
+    "startToSee": "Démarrez l'enregistrement pour voir la transcription en direct",
+    "loadingMore": "Chargement de la suite...",
+    "showingCount": "{{loaded}} segments affichés sur {{total}}",
+    "listenerFailed": "Impossible de démarrer la réception de la transcription. Consultez la console pour plus de détails.",
+    "copied": "Transcription copiée dans le presse-papiers"
+  },
+  "confidence": {
+    "high": "Confiance élevée",
+    "good": "Bonne confiance",
+    "medium": "Confiance moyenne",
+    "low": "Faible confiance",
+    "title": "Confiance : {{percent}} % - {{label}}",
+    "ariaLabel": "Confiance de la transcription : {{percent}} %"
+  },
+  "statusBar": {
+    "paused": "En pause",
+    "recording": "Enregistrement"
+  },
+  "status": {
+    "starting": "Démarrage de l'enregistrement...",
+    "stopping": "Arrêt de l'enregistrement..."
+  },
+  "micSwap": {
+    "switched": "Micro remplacé par {{device}} pour cette réunion.",
+    "fallbackFailed": "Échec du basculement vers le micro {{device}} : {{error}}",
+    "unavailable": "Aucun micro disponible : seul le son de l'ordinateur est enregistré.",
+    "recoveryExhausted": "Le micro « {{device}} » n'a pas pu être rétabli : l'enregistrement se poursuit sans micro. Arrêtez puis relancez l'enregistrement pour corriger le problème."
+  },
+  "start": {
+    "runtimeError": "La reconnaissance vocale n'a pas pu démarrer. Redémarrez Meetily. Si le problème persiste, réparez ou réinstallez l'application.",
+    "modelDownloading": "Téléchargement du modèle en cours",
+    "modelDownloadingDescription": "Attendez la fin du téléchargement du modèle de transcription avant d'enregistrer.",
+    "modelNotReady": "Modèle de transcription non prêt",
+    "modelNotReadyDescription": "Téléchargez un modèle de transcription avant d'enregistrer.",
+    "modelSetupRequired": "Configuration du modèle de transcription requise",
+    "initializing": "Initialisation de l'enregistrement...",
+    "timedOut": "Le démarrage de l'enregistrement a expiré. Veuillez réessayer.",
+    "failedAlert": "Impossible de démarrer l'enregistrement.\n\n{{error}}"
+  },
+  "stop": {
+    "waitingTranscription": "En attente de la transcription...",
+    "processingChunks_one": "Traitement de {{count}} segment audio restant...",
+    "processingChunks_other": "Traitement des {{count}} segments audio restants...",
+    "flushing": "Finalisation de la transcription...",
+    "saving": "Enregistrement de la réunion dans la base de données...",
+    "noMeetingId": "Aucun identifiant de réunion reçu après l'enregistrement",
+    "summaryLanguageNotApplied": "Impossible d'appliquer la langue par défaut du compte rendu",
+    "summaryLanguageNotAppliedDescription": "La réunion a été enregistrée, mais la langue par défaut du compte rendu n'a pas été appliquée.",
+    "summaryLanguageNotDetected": "Impossible de détecter la langue du compte rendu",
+    "summaryLanguageNotDetectedDescription": "La réunion a été enregistrée, mais la détection automatique n'a pas pu déterminer la langue du compte rendu.",
+    "savedTitle": "Enregistrement sauvegardé avec succès !",
+    "savedDescription_one": "{{count}} segment de transcription enregistré.",
+    "savedDescription_other": "{{count}} segments de transcription enregistrés.",
+    "viewMeeting": "Voir la réunion",
+    "saveFailed": "Impossible d'enregistrer la réunion",
+    "unknownError": "Erreur inconnue"
+  },
+  "modals": {
+    "modelReady": "Modèle prêt ! Fermeture de la fenêtre..."
+  },
+  "notification": {
+    "title": "🔴 Enregistrement démarré",
+    "inform": "Informez tous les participants que cette réunion est enregistrée.",
+    "dontShowAgain": "Ne plus afficher ce message",
+    "acknowledge": "J'ai informé les participants"
+  },
+  "audioPlayer": {
+    "initFailed": "Impossible d'initialiser l'audio",
+    "loadFailed": "Impossible de charger le fichier audio",
+    "playFailed": "Impossible de lire l'audio"
+  }
+}

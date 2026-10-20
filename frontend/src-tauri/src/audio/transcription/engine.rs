@@ -45,6 +45,22 @@ impl TranscriptionEngine {
             Self::Provider(provider) => provider.provider_name(),
         }
     }
+
+    /// Fork: chunk regrouping policy (cloud providers only)
+    pub fn chunking_policy(&self) -> Option<crate::fork::cloud_chunker::ChunkingPolicy> {
+        match self {
+            Self::Provider(provider) => provider.chunking_policy(),
+            _ => None,
+        }
+    }
+
+    /// Fork: parallel requests allowed (1 keeps local engines serial)
+    pub fn max_concurrency(&self) -> usize {
+        match self {
+            Self::Provider(provider) => provider.max_concurrency().max(1),
+            _ => 1,
+        }
+    }
 }
 
 // ============================================================================
@@ -135,6 +151,10 @@ pub async fn validate_transcription_model_ready<R: Runtime>(app: &AppHandle<R>) 
                 }
             }
         }
+        "openrouter" => {
+            info!("🔍 Validating OpenRouter cloud transcription (key + local fallback)...");
+            crate::fork::stt_provider::validate(app).await
+        }
         other => {
             warn!("❌ Unsupported transcription provider for local recording: {}", other);
             Err(format!(
@@ -211,6 +231,11 @@ pub async fn get_or_init_transcription_engine<R: Runtime>(
                     Err("Parakeet engine not initialized. This should not happen after validation.".to_string())
                 }
             }
+        }
+        "openrouter" => {
+            info!("☁️ Initializing OpenRouter cloud transcription");
+            let provider = crate::fork::stt_provider::build(app, &config.model).await?;
+            Ok(TranscriptionEngine::Provider(Arc::new(provider)))
         }
         "localWhisper" | _ => {
             info!("🎤 Initializing Whisper transcription engine");

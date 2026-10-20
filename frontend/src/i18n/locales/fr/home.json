@@ -1,0 +1,47 @@
+{
+  "recovery": {
+    "successTitle": "Réunion récupérée avec succès !",
+    "successWithAudio": "Transcription et audio récupérés",
+    "successNoAudio": "Transcription récupérée (aucun audio disponible)",
+    "viewMeeting": "Voir la réunion",
+    "failedTitle": "Impossible de récupérer la réunion",
+    "unknownError": "Une erreur inconnue s'est produite",
+    "metadataNotFound": "Informations de la réunion introuvables",
+    "noTranscripts": "Aucune transcription trouvée pour cette réunion",
+    "summaryLanguageNotApplied": "Impossible d'appliquer la langue par défaut du compte rendu",
+    "summaryLanguageNotAppliedDescription": "La réunion récupérée a été enregistrée, mais la langue par défaut du compte rendu n'a pas été appliquée."
+  },
+  "transcriptPanel": {
+    "copyTranscript": "Copier la transcription",
+    "copy": "Copier",
+    "language": "Langue"
+  },
+  "recoveryDialog": {
+    "recoverFailed": "Impossible de récupérer la réunion. Veuillez réessayer.",
+    "confirmDelete": "Voulez-vous vraiment supprimer cette réunion ? Cette action est irréversible.",
+    "deleteFailed": "Impossible de supprimer la réunion. Veuillez réessayer.",
+    "title": "Récupérer les réunions interrompues",
+    "description_one": "Nous avons trouvé {{count}} réunion interrompue. Sélectionnez une réunion pour l'afficher et la récupérer.",
+    "description_other": "Nous avons trouvé {{count}} réunions interrompues. Sélectionnez une réunion pour l'afficher et la récupérer.",
+    "interruptedMeetings": "Réunions interrompues",
+    "transcriptCount_one": "{{count}} segment",
+    "transcriptCount_other": "{{count}} segments",
+    "audioAvailable": "Audio disponible",
+    "noAudio": "Aucun audio",
+    "preview": "Aperçu",
+    "startedAt": "Commencée le {{date}}",
+    "transcriptsTotal_one": "{{count}} segment",
+    "transcriptsTotal_other": "{{count}} segments",
+    "loadingPreview": "Chargement de l'aperçu...",
+    "showingFirst": "Affichage des {{shown}} premiers segments (sur {{total}} au total)",
+    "moreTranscripts_one": "... et {{count}} autre segment",
+    "moreTranscripts_other": "... et {{count}} autres segments",
+    "noTranscripts": "Aucune transcription à afficher",
+    "selectMeeting": "Sélectionnez une réunion pour en voir l'aperçu",
+    "cancel": "Annuler",
+    "deleting": "Suppression...",
+    "delete": "Supprimer",
+    "recovering": "Récupération...",
+    "recover": "Récupérer"
+  }
+}

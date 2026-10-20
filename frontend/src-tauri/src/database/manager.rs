@@ -32,7 +32,11 @@ impl DatabaseManager {
 
         let pool = SqlitePool::connect(tauri_db_path).await?;
 
-        sqlx::migrate!("./migrations").run(&pool).await?;
+        // Fork: tolerate migrations applied by another build (upstream or fork) that this
+        // binary does not ship, instead of refusing to start.
+        let mut migrator = sqlx::migrate!("./migrations");
+        migrator.set_ignore_missing(true);
+        migrator.run(&pool).await?;
 
         Ok(DatabaseManager { pool })
     }

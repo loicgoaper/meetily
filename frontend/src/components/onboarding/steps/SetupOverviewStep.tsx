@@ -9,8 +9,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useTranslation } from 'react-i18next';
 
 export function SetupOverviewStep() {
+  const { t } = useTranslation();
   const { goNext } = useOnboarding();
   const [isMac, setIsMac] = useState(false);
 
@@ -30,12 +32,12 @@ export function SetupOverviewStep() {
     {
       number: 1,
       type: 'transcription',
-      title: 'Download Transcription Engine',
+      title: t('onboarding.setup.stepTranscription'),
     },
     {
       number: 2,
       type: 'summarization',
-      title: 'Download Summarization Engine',
+      title: t('onboarding.setup.stepSummarization'),
     },
   ];
 
@@ -45,8 +47,8 @@ export function SetupOverviewStep() {
 
   return (
     <OnboardingContainer
-      title="Setup Overview"
-      description="Meetily requires that you download the Transcription & Summarization AI models for the software to work."
+      title={t('onboarding.setup.title')}
+      description={t('onboarding.setup.description')}
       step={2}
       totalSteps={isMac ? 4 : 3}
     >
@@ -62,7 +64,7 @@ export function SetupOverviewStep() {
                 >
                   <div className="flex-1 ml-1">
                     <h3 className="font-medium text-gray-900 flex items-center gap-2">
-                        Step {step.number} :  {step.title}
+                        {t('onboarding.setup.stepLabel', { number: step.number, title: step.title })}
 
                         {step.type === "summarization" && (
                             <TooltipProvider>
@@ -73,8 +75,7 @@ export function SetupOverviewStep() {
                                 </button>
                                 </TooltipTrigger>
                                 <TooltipContent className="max-w-xs text-sm">
-                                You can also select external AI providers like OpenAI, Claude, or
-                                Ollama for summary generation in settings.
+                                {t('onboarding.setup.externalProvidersTip')}
                                 </TooltipContent>
                             </Tooltip>
                             </TooltipProvider>
@@ -94,7 +95,7 @@ export function SetupOverviewStep() {
             onClick={handleContinue}
             className="w-full h-11 bg-gray-900 hover:bg-gray-800 text-white"
           >
-            Let's Go
+            {t('onboarding.setup.letsGo')}
           </Button>
           <div className="text-center">
             <a
@@ -103,7 +104,7 @@ export function SetupOverviewStep() {
               rel="noopener noreferrer"
               className="text-xs text-gray-600 hover:underline"
             >
-              Report issues on GitHub
+              {t('onboarding.setup.reportIssues')}
             </a>
           </div>
         </div>

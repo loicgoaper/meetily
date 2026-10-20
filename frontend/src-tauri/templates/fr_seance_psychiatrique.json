@@ -1,0 +1,64 @@
+{
+  "name": "Note de séance psychiatrique (SOAP + IA)",
+  "description": "Note d'évolution psychiatrique au format SOAP, avec métadonnées cliniques et résumé IA. Données de santé : à relire par le professionnel.",
+  "sections": [
+    {
+      "title": "Métadonnées de la séance",
+      "instruction": "Initiales ou identifiant du patient, date, intervenant, type et durée de la séance (renseignements sensibles)",
+      "format": "string"
+    },
+    {
+      "title": "Résumé IA de la séance",
+      "instruction": "Une phrase clé puis un paragraphe de synthèse (généré par l'IA), avec un niveau de confiance",
+      "format": "paragraph"
+    },
+    {
+      "title": "Subjectif (S)",
+      "instruction": "Humeur, symptômes, sommeil, appétit et facteurs de stress rapportés par le patient",
+      "format": "paragraph"
+    },
+    {
+      "title": "Objectif (O)",
+      "instruction": "Éléments observables : affect, discours, comportement, orientation, signes vitaux si pertinent",
+      "format": "paragraph"
+    },
+    {
+      "title": "Évaluation (A)",
+      "instruction": "Impression diagnostique, évaluation du risque (idées suicidaires ou homicidaires), progrès par rapport aux objectifs de traitement",
+      "format": "paragraph"
+    },
+    {
+      "title": "Plan (P)",
+      "instruction": "Interventions, changements de médication, orientations, tâches thérapeutiques et suivi",
+      "format": "list",
+      "item_format": "| **Intervention** | **Responsable** | Fréquence | Date de suivi |\n| --- | --- | --- | --- |"
+    },
+    {
+      "title": "Médication",
+      "instruction": "Médicaments actuels, doses, changements et justification",
+      "format": "list",
+      "item_format": "| **Médicament** | **Dose** | Voie | Date de début ou de changement |\n| --- | --- | --- | --- |"
+    },
+    {
+      "title": "Diagnostics (DSM/CIM)",
+      "instruction": "Codes diagnostiques et diagnostic de travail",
+      "format": "list",
+      "item_format": "| **Code** | **Système** | Diagnostic |\n| --- | --- | --- |"
+    },
+    {
+      "title": "Sécurité et gestion du risque",
+      "instruction": "Plan de sécurité, contacts d'urgence, éventuelle hospitalisation",
+      "format": "paragraph"
+    },
+    {
+      "title": "Prochain rendez-vous",
+      "instruction": "Date, heure et modalité de la prochaine séance",
+      "format": "string"
+    },
+    {
+      "title": "Traçabilité",
+      "instruction": "Indicateur de relecture humaine, nom du relecteur et date, version de l'IA",
+      "format": "paragraph"
+    }
+  ]
+}

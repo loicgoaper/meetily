@@ -333,10 +333,7 @@ pub async fn show_recording_started_notification<R: Runtime>(
 
                 // Fallback: Use Tauri's notification API directly
                 let title = "Meetily";
-                let body = match meeting_name {
-                    Some(name) => format!("Recording started for meeting: {}", name),
-                    None => "Recording has started. Please inform others in the meeting that you are recording.".to_string(),
-                };
+                let body = crate::fork::i18n::notif_recording_started(meeting_name.as_deref());
 
                 log_info!("Using direct Tauri notification fallback: {} - {}", title, body);
 

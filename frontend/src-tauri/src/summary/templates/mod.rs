@@ -48,6 +48,10 @@ pub use loader::{
 };
 pub use types::{Template, TemplateSection};
 
+// Fork: template manager (crate::fork::templates_admin) needs the per-source loaders
+pub(crate) use defaults::get_builtin_template;
+pub(crate) use loader::{get_custom_templates_dir, load_bundled_template, load_custom_template};
+
 #[cfg(test)]
 mod tests {
     use super::*;

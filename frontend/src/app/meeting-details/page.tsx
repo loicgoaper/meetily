@@ -10,6 +10,8 @@ import { LoaderIcon } from "lucide-react";
 import { useConfig } from "@/contexts/ConfigContext";
 import { usePaginatedTranscripts } from "@/hooks/usePaginatedTranscripts";
 import { parseSummaryContent } from "@/lib/summary-content";
+import { useTranslation } from "react-i18next";
+import i18n from "@/i18n";
 
 interface MeetingDetailsResponse {
   id: string;
@@ -21,6 +23,7 @@ interface MeetingDetailsResponse {
 }
 
 function MeetingDetailsContent() {
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   const meetingId = searchParams.get('id');
   const source = searchParams.get('source'); // Check if navigated from recording
@@ -179,7 +182,7 @@ function MeetingDetailsContent() {
 
     if (!meetingId || meetingId === 'intro-call') {
       console.warn('No valid meeting ID in URL - meetingId:', meetingId);
-      setError("No meeting selected");
+      setError(i18n.t('meeting.page.noMeetingSelected'));
       setIsLoading(false);
       Analytics.trackPageView('meeting_details');
       return;
@@ -256,7 +259,7 @@ function MeetingDetailsContent() {
             onClick={() => router.push('/')}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
-            Go Back
+            {t('meeting.page.goBack')}
           </button>
         </div>
       </div>
@@ -276,6 +279,7 @@ function MeetingDetailsContent() {
     meeting={meetingDetails}
     summaryData={meetingSummary}
     shouldAutoGenerate={shouldAutoGenerate}
+    fromRecording={source === 'recording'}
     onAutoGenerateComplete={() => setShouldAutoGenerate(false)}
     onMeetingUpdated={async () => {
       // Refetch meeting details to get updated title from backend

@@ -9,6 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useTranslation } from 'react-i18next';
 
 interface EmptyStateSummaryProps {
   onGenerate: () => void;
@@ -23,6 +24,7 @@ export function EmptyStateSummary({
   isGenerating = false,
   error = null,
 }: EmptyStateSummaryProps) {
+  const { t } = useTranslation();
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -32,10 +34,10 @@ export function EmptyStateSummary({
     >
       <FileQuestion className="w-16 h-16 text-gray-300 mb-4" />
       <h3 className="text-lg font-semibold text-gray-900 mb-2">
-        No Summary Generated Yet
+        {t('summary.empty.title')}
       </h3>
       <p className="text-sm text-gray-500 mb-6 max-w-md">
-        Generate an AI-powered summary of your meeting transcript to get key points, action items, and decisions.
+        {t('summary.empty.description')}
       </p>
 
       {error && (
@@ -54,13 +56,13 @@ export function EmptyStateSummary({
                 className="gap-2"
               >
                 <Sparkles className="w-4 h-4" />
-                {isGenerating ? 'Generating...' : error ? 'Retry summary' : 'Generate Summary'}
+                {isGenerating ? t('summary.empty.generating') : error ? t('summary.empty.retry') : t('summary.empty.generate')}
               </Button>
             </div>
           </TooltipTrigger>
           {!hasModel && (
             <TooltipContent>
-              <p>Please select a model in Settings first</p>
+              <p>{t('summary.empty.selectModel')}</p>
             </TooltipContent>
           )}
         </Tooltip>
@@ -68,7 +70,7 @@ export function EmptyStateSummary({
 
       {!hasModel && (
         <p className="text-xs text-amber-600 mt-3">
-          Please select a model in Settings first
+          {t('summary.empty.selectModel')}
         </p>
       )}
     </motion.div>

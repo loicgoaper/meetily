@@ -1,0 +1,37 @@
+{
+  "name": "Point quotidien (daily)",
+  "description": "Point d'équipe court : fait hier, prévu aujourd'hui, blocages.",
+  "sections": [
+    {
+      "title": "Date",
+      "instruction": "AAAA-MM-JJ",
+      "format": "string"
+    },
+    {
+      "title": "Participants",
+      "instruction": "Liste des participants présents",
+      "format": "list"
+    },
+    {
+      "title": "Hier",
+      "instruction": "Ce que chacun a terminé hier (puces courtes, avec le nom de la personne)",
+      "format": "list"
+    },
+    {
+      "title": "Aujourd'hui",
+      "instruction": "Le travail prévu aujourd'hui par chacun (puces courtes)",
+      "format": "list"
+    },
+    {
+      "title": "Blocages",
+      "instruction": "Obstacles rencontrés, avec la personne concernée si elle est connue",
+      "format": "list",
+      "item_format": "| **Responsable** | **Blocage** | Impact |\n| --- | --- | --- |"
+    },
+    {
+      "title": "Notes",
+      "instruction": "Annonces ou remarques rapides, facultatif",
+      "format": "paragraph"
+    }
+  ]
+}

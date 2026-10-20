@@ -1,0 +1,167 @@
+{
+  "unknownError": "Erreur inconnue",
+  "layout": {
+    "setupFirst": "Veuillez d'abord terminer la configuration",
+    "setupFirstDescription": "Vous devez terminer la configuration initiale avant de pouvoir lancer un enregistrement.",
+    "betaDisabled": "Fonctionnalité bêta désactivée",
+    "betaDisabledDescription": "Activez « Importer un audio et retranscrire » dans Réglages > Bêta pour utiliser cette fonctionnalité.",
+    "dropAudioFile": "Veuillez déposer un fichier audio",
+    "supportedFormats": "Formats pris en charge : {{formats}}"
+  },
+  "summaryPolling": {
+    "timeout": "La génération du compte rendu a dépassé 15 minutes. Veuillez réessayer ou vérifier la configuration de votre modèle."
+  },
+  "about": {
+    "logoAlt": "Logo Meetily",
+    "tagline": "Des notes et des comptes rendus en temps réel qui ne quittent jamais votre ordinateur.",
+    "checking": "Vérification…",
+    "checkForUpdates": "Rechercher des mises à jour",
+    "updateAvailable": "Mise à jour disponible : v{{version}}",
+    "latestVersion": "Vous utilisez la dernière version",
+    "checkFailed": "Impossible de rechercher des mises à jour : {{error}}",
+    "differentTitle": "Ce qui distingue Meetily",
+    "features": {
+      "privacyTitle": "Confidentialité avant tout",
+      "privacyText": "Vos données et le traitement par l'IA peuvent désormais rester chez vous. Pas de nuage, pas de fuite.",
+      "anyModelTitle": "Le modèle de votre choix",
+      "anyModelText": "Vous préférez un modèle local open source ? Parfait. Vous voulez brancher une API externe ? Aucun problème. Aucune dépendance.",
+      "costTitle": "Économique",
+      "costText": "Évitez la facturation à la minute en exécutant les modèles localement (ou ne payez que les appels que vous choisissez).",
+      "everywhereTitle": "Fonctionne partout",
+      "everywhereText": "Google Meet, Zoom, Teams, en ligne ou hors ligne."
+    },
+    "comingSoonLabel": "Bientôt :",
+    "comingSoonText": "une bibliothèque d'agents IA exécutés sur l'appareil pour automatiser les relances, le suivi des actions et plus encore.",
+    "ctaTitle": "Prêt à faire progresser votre entreprise ?",
+    "ctaText": "Si vous envisagez de créer des agents IA personnalisés respectueux de la vie privée ou un produit entièrement adapté à votre <bold>entreprise</bold>, nous pouvons vous aider à le concevoir.",
+    "contactButton": "Discuter avec l'équipe Zackriya",
+    "builtBy": "Conçu par Zackriya Solutions"
+  },
+  "info": {
+    "aboutMeetily": "À propos de Meetily",
+    "about": "À propos"
+  },
+  "console": {
+    "label": "Console de développement",
+    "toggle": "Afficher/masquer la console",
+    "description": "Affiche ou masque la fenêtre de la console de développement. Sous Windows, cela contrôle la fenêtre de console. Sous macOS, cela ouvre le Terminal avec les journaux de l'application."
+  },
+  "editableTitle": {
+    "editSection": "Modifier le titre de la section",
+    "deleteSection": "Supprimer la section"
+  },
+  "confirmDelete": {
+    "title": "Confirmer la suppression",
+    "cancel": "Annuler",
+    "delete": "Supprimer"
+  },
+  "update": {
+    "notificationTitle": "Mise à jour disponible",
+    "notificationBody": "La version {{version}} est disponible",
+    "viewDetails": "Voir les détails",
+    "downloadingTitle": "Téléchargement de la mise à jour",
+    "errorTitle": "Erreur de mise à jour",
+    "availableTitle": "Mise à jour disponible",
+    "downloadingDescription": "Téléchargement de la dernière version…",
+    "errorDescription": "Une erreur s'est produite pendant la mise à jour",
+    "availableDescription": "Une nouvelle version ({{version}}) est disponible",
+    "currentVersion": "Version actuelle :",
+    "newVersion": "Nouvelle version :",
+    "releaseDate": "Date de publication :",
+    "percentComplete": "{{percent}} % terminé",
+    "restartNotice": "L'application redémarrera automatiquement après l'installation",
+    "later": "Plus tard",
+    "downloadAndInstall": "Télécharger et installer",
+    "close": "Fermer",
+    "noLongerAvailable": "La mise à jour n'est plus disponible",
+    "prepareFailed": "Impossible de préparer la mise à jour : {{error}}",
+    "notAvailable": "Aucune mise à jour disponible",
+    "getFailed": "Impossible d'obtenir la mise à jour : {{error}}",
+    "installed": "Mise à jour installée. L'application va redémarrer…",
+    "installFailed": "Impossible de télécharger ou d'installer la mise à jour",
+    "failed": "Échec de la mise à jour : {{error}}",
+    "checkInProgress": "Une recherche de mises à jour est déjà en cours",
+    "units": {
+      "bytes": "octets",
+      "kb": "Ko",
+      "mb": "Mo",
+      "gb": "Go"
+    }
+  },
+  "ollama": {
+    "downloaded": "Modèle {{model}} téléchargé !",
+    "ready": "Le modèle est prêt à être utilisé",
+    "downloadFailed": "Échec du téléchargement : {{model}}"
+  },
+  "analytics": {
+    "consent": {
+      "title": "Statistiques d'utilisation",
+      "description": "Les statistiques d'utilisation sont désactivées par défaut. Vous pouvez les activer pour partager des données anonymes sur l'utilisation et les performances ; aucun contenu personnel n'est collecté.",
+      "enable": "Activer les statistiques",
+      "updating": "Mise à jour…",
+      "offByDefault": "Désactivées, sauf si vous choisissez de les activer",
+      "userId": "Votre identifiant utilisateur",
+      "userIdHint": "Communiquez cet identifiant lorsque vous signalez un problème pour nous aider à analyser vos journaux",
+      "copyUserId": "Copier l'identifiant utilisateur",
+      "copied": "Copié !",
+      "copy": "Copier",
+      "privateNotice": "Vos réunions, transcriptions et enregistrements restent entièrement privés et locaux.",
+      "privacyPolicy": "Consulter la politique de confidentialité"
+    },
+    "dataModal": {
+      "title": "Ce que collectent les statistiques",
+      "privacyTitle": "Votre vie privée est protégée",
+      "privacyBody": "Les statistiques sont désactivées par défaut. Si vous les activez, nous collectons <strong>uniquement des données d'utilisation anonymes</strong>. Aucun contenu de réunion, nom, chemin de fichier ni renseignement personnel n'est jamais collecté.",
+      "collectedTitle": "Données collectées lorsque l'option est activée :",
+      "models": {
+        "title": "1. Préférences de modèles",
+        "transcription": "Modèle de transcription (p. ex. « Whisper large-v3 », « Parakeet »)",
+        "summary": "Modèle de compte rendu (p. ex. « Llama 3.2 », « Claude Sonnet »)",
+        "provider": "Fournisseur du modèle (p. ex. « Local », « Ollama », « OpenRouter »)",
+        "note": "Nous aide à comprendre quels modèles les utilisateurs préfèrent"
+      },
+      "metrics": {
+        "title": "2. Mesures anonymes des réunions",
+        "recordingDuration": "Durée de l'enregistrement (p. ex. « 125 secondes »)",
+        "pauseDuration": "Durée des pauses (p. ex. « 5 secondes »)",
+        "segments": "Nombre de segments de transcription",
+        "chunks": "Nombre de blocs audio traités",
+        "note": "Nous aide à optimiser les performances et à comprendre les habitudes d'utilisation"
+      },
+      "devices": {
+        "title": "3. Types d'appareils (pas leurs noms)",
+        "microphone": "Type de microphone : « Bluetooth », « Filaire » ou « Inconnu »",
+        "systemAudio": "Type d'audio système : « Bluetooth », « Filaire » ou « Inconnu »",
+        "note": "Nous aide à améliorer la compatibilité, SANS les noms réels des appareils"
+      },
+      "usage": {
+        "title": "4. Habitudes d'utilisation de l'application",
+        "startStop": "Démarrages et arrêts de l'application",
+        "session": "Durée des sessions",
+        "features": "Utilisation des fonctionnalités (p. ex. « réglages modifiés »)",
+        "errors": "Erreurs rencontrées (pour nous aider à corriger les bogues)",
+        "note": "Nous aide à améliorer l'expérience utilisateur"
+      },
+      "platform": {
+        "title": "5. Informations sur la plateforme",
+        "os": "Système d'exploitation (p. ex. « macOS », « Windows »)",
+        "version": "Version de l'application (incluse automatiquement dans tous les événements)",
+        "architecture": "Architecture (p. ex. « x86_64 », « aarch64 »)",
+        "note": "Nous aide à prioriser la prise en charge des plateformes"
+      },
+      "notCollected": {
+        "title": "Ce que nous ne collectons PAS :",
+        "names": "Noms ou titres des réunions",
+        "files": "Noms de fichiers, chemins de fichiers ou dossiers de réunions",
+        "transcripts": "Transcriptions ou contenu des réunions",
+        "audio": "Enregistrements audio",
+        "devices": "Noms des appareils (seulement le type : Bluetooth/filaire)",
+        "personal": "Renseignements personnels",
+        "identifiable": "Toute donnée permettant de vous identifier"
+      },
+      "exampleTitle": "Exemple d'événement :",
+      "keepEnabled": "Garder les statistiques activées",
+      "confirmDisable": "Confirmer : désactiver les statistiques"
+    }
+  }
+}
