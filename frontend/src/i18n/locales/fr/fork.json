@@ -287,12 +287,12 @@
     "keySaved": "Clé Notion enregistrée",
     "database": "Base « Réunions Meetily »",
     "databaseReady": "La base est prête : les réunions y sont envoyées.",
-    "shareHint": "Dans Notion, ouvrez la page qui accueillera la base, menu « … » → Connexions → ajoutez « {{integration}} ». Rafraîchissez ensuite la liste et choisissez cette page.",
+    "shareHint": "Notion n'autorise pas une clé d'intégration à créer une page à la racine de l'espace : il faut connecter une page à « {{integration}} » (menu « … » de la page → Plus → Connexions). Elle apparaît ici dès votre retour dans Meetily, déjà sélectionnée.",
     "choosePage": "Page parente",
     "noPage": "Aucune page partagée avec l'intégration",
     "refreshPages": "Rafraîchir la liste des pages",
     "create": "Créer la base",
-    "recreate": "Recréer la base",
+    "recreate": "Utiliser cette page",
     "databaseCreated": "Base Notion créée",
     "open": "Ouvrir dans Notion",
     "syncTitle": "Synchronisation",
@@ -306,7 +306,9 @@
     "openPage": "Ouvrir la page Notion",
     "pending": "Envoi à Notion en attente",
     "syncNow": "Envoyer dans Notion maintenant",
-    "openIntegrations": "Créer l'intégration"
+    "openIntegrations": "Créer l'intégration",
+    "openNotion": "Ouvrir Notion",
+    "databaseReused": "Base « Réunions Meetily » existante reprise : les réunions de ce poste y seront ajoutées"
   },
   "search": {
     "button": "Recherche IA",

@@ -41,6 +41,7 @@ const PROP_PEOPLE: &str = "Participants";
 const PROP_DURATION: &str = "Durée (min)";
 const PROP_COST: &str = "Coût cloud ($)";
 const PROP_ID: &str = "Meetily ID";
+const DATABASE_TITLE: &str = "Réunions Meetily";
 
 // ---------------------------------------------------------------------------
 // Dirty queue
@@ -529,33 +530,92 @@ pub async fn api_notion_list_pages(state: tauri::State<'_, AppState>) -> Result<
         .collect())
 }
 
-/// Create the "Réunions Meetily" database under the chosen page. Returns its URL.
+/// Columns of the "Réunions Meetily" database.
+fn database_properties(options: Vec<Value>) -> Value {
+    json!({
+        PROP_TITLE: { "title": {} },
+        PROP_DATE: { "date": {} },
+        PROP_TAGS: { "multi_select": { "options": options } },
+        PROP_PEOPLE: { "rich_text": {} },
+        PROP_DURATION: { "number": { "format": "number" } },
+        PROP_COST: { "number": { "format": "dollar" } },
+        PROP_ID: { "rich_text": {} },
+    })
+}
+
+/// Columns of `expected` missing from an existing database (`existing` = its "properties").
+pub fn missing_properties(expected: &Value, existing: &Value) -> serde_json::Map<String, Value> {
+    expected
+        .as_object()
+        .map(|props| props.iter().filter(|(name, _)| existing.get(name.as_str()).is_none()).map(|(k, v)| (k.clone(), v.clone())).collect())
+        .unwrap_or_default()
+}
+
+/// A "Réunions Meetily" database already under this page (set up from another PC, or
+/// before a reinstall), so it is reused instead of creating a second one.
+async fn find_existing_database(notion: &Notion, parent_page_id: &str) -> Result<Option<Value>, String> {
+    let children = notion.get(&format!("blocks/{}/children?page_size=100", parent_page_id)).await?;
+    for block in children["results"].as_array().into_iter().flatten() {
+        if block["type"] == "child_database" && block["child_database"]["title"].as_str() == Some(DATABASE_TITLE) {
+            let id = block["id"].as_str().unwrap_or_default();
+            let database = notion.get(&format!("databases/{}", id)).await?;
+            if database["archived"] != true && database["in_trash"] != true {
+                return Ok(Some(database));
+            }
+        }
+    }
+    Ok(None)
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NotionDatabase {
+    pub url: String,
+    /// True when an existing "Réunions Meetily" database was found and reused
+    pub reused: bool,
+}
+
+/// Set up the "Réunions Meetily" database under the chosen page: reuse the one already
+/// there (adding any missing column), or create it.
 #[tauri::command]
-pub async fn api_notion_create_database(state: tauri::State<'_, AppState>, parent_page_id: String) -> Result<String, String> {
+pub async fn api_notion_create_database(state: tauri::State<'_, AppState>, parent_page_id: String) -> Result<NotionDatabase, String> {
     let pool = state.db_manager.pool();
     let notion = client(pool).await?;
     let tags = super::tags::TagsRepository::list(pool).await.map_err(|e| e.to_string())?;
     let options: Vec<Value> = tags.iter().map(|t| json!({ "name": t.name.replace(',', " "), "color": t.color })).collect();
-    let body = json!({
-        "parent": { "type": "page_id", "page_id": parent_page_id },
-        "title": [{ "type": "text", "text": { "content": "Réunions Meetily" } }],
-        "properties": {
-            PROP_TITLE: { "title": {} },
-            PROP_DATE: { "date": {} },
-            PROP_TAGS: { "multi_select": { "options": options } },
-            PROP_PEOPLE: { "rich_text": {} },
-            PROP_DURATION: { "number": { "format": "number" } },
-            PROP_COST: { "number": { "format": "dollar" } },
-            PROP_ID: { "rich_text": {} },
+
+    let (database, reused) = match find_existing_database(&notion, &parent_page_id).await? {
+        Some(existing) => {
+            // Tag options are added at sync time; only whole columns are added here
+            let missing = missing_properties(&database_properties(Vec::new()), &existing["properties"]);
+            if !missing.is_empty() {
+                let id = existing["id"].as_str().unwrap_or_default();
+                notion.patch(&format!("databases/{}", id), &json!({ "properties": missing })).await?;
+            }
+            (existing, true)
         }
-    });
-    let created = notion.post("databases", &body).await?;
-    let id = created["id"].as_str().ok_or("Réponse Notion sans identifiant de base")?.to_string();
-    let url = created["url"].as_str().unwrap_or_default().to_string();
+        None => {
+            let body = json!({
+                "parent": { "type": "page_id", "page_id": parent_page_id },
+                "title": [{ "type": "text", "text": { "content": DATABASE_TITLE } }],
+                "properties": database_properties(options),
+            });
+            (notion.post("databases", &body).await?, false)
+        }
+    };
+    let id = database["id"].as_str().ok_or("Réponse Notion sans identifiant de base")?.to_string();
+    let url = database["url"].as_str().unwrap_or_default().to_string();
+    let previous = PreferencesRepository::get(pool, PREF_DATABASE).await;
     set_prefs(pool, &[(PREF_PARENT, &parent_page_id), (PREF_DATABASE, &id), (PREF_DATABASE_URL, &url)]).await?;
-    // Pages of the previous database (if any) are not reused
-    sqlx::query("DELETE FROM notion_pages").execute(pool).await.map_err(|e| e.to_string())?;
-    Ok(url)
+    // Page links belong to a database: forget them only when the database changes
+    if normalize_id(&previous) != normalize_id(&id) {
+        sqlx::query("DELETE FROM notion_pages").execute(pool).await.map_err(|e| e.to_string())?;
+    }
+    Ok(NotionDatabase { url, reused })
+}
+
+fn normalize_id(id: &str) -> String {
+    id.replace('-', "").to_lowercase()
 }
 
 #[tauri::command]
@@ -621,6 +681,16 @@ pub async fn api_notion_meeting_state(state: tauri::State<'_, AppState>, meeting
 mod tests {
     use super::*;
     use super::super::meeting_doc::TranscriptLine;
+
+    #[test]
+    fn reused_database_gets_only_missing_columns() {
+        let existing = json!({ "Nom": {}, "Date": {}, "Tags": {}, "Participants": {}, "Meetily ID": {}, "Notes perso": {} });
+        let missing = missing_properties(&database_properties(Vec::new()), &existing);
+        let mut names: Vec<&String> = missing.keys().collect();
+        names.sort();
+        assert_eq!(names, vec!["Coût cloud ($)", "Durée (min)"]);
+        assert!(missing_properties(&database_properties(Vec::new()), &database_properties(Vec::new())).is_empty());
+    }
 
     fn doc() -> MeetingDoc {
         MeetingDoc {

@@ -358,7 +358,13 @@ export interface NotionMeetingState {
 export const getNotionStatus = () => invoke<NotionStatus>('api_notion_status');
 export const setNotionToken = (token: string) => invoke<void>('api_notion_set_token', { token });
 export const listNotionPages = () => invoke<NotionPage[]>('api_notion_list_pages');
-export const createNotionDatabase = (parentPageId: string) => invoke<string>('api_notion_create_database', { parentPageId });
+export interface NotionDatabase {
+  url: string;
+  /** An existing "Réunions Meetily" database (another PC) was reused */
+  reused: boolean;
+}
+
+export const createNotionDatabase = (parentPageId: string) => invoke<NotionDatabase>('api_notion_create_database', { parentPageId });
 export const syncMeetingToNotion = (meetingId: string) => invoke<string>('api_notion_sync_meeting', { meetingId });
 export const syncAllToNotion = () => invoke<number>('api_notion_sync_all');
 export const getNotionMeetingState = (meetingId: string) => invoke<NotionMeetingState>('api_notion_meeting_state', { meetingId });

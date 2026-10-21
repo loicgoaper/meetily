@@ -45,7 +45,11 @@ export function NotionSettings() {
 
   const loadPages = useCallback(async () => {
     try {
-      setPages(await listNotionPages());
+      const list = await listNotionPages();
+      setPages(list);
+      // Ready for a one-click "Create database": a page named Meetily, or the only page
+      const pick = list.find(p => p.title.trim().toLowerCase() === 'meetily') ?? (list.length === 1 ? list[0] : undefined);
+      setParent(current => current || pick?.id || '');
     } catch (error) {
       toast.error(String(error));
     }
@@ -62,6 +66,15 @@ export function NotionSettings() {
   useEffect(() => {
     if (status?.hasToken && pages === null) void loadPages();
   }, [status?.hasToken, pages, loadPages]);
+
+  // Coming back from Notion after connecting a page: refresh the list by itself
+  const waitingForPage = !!status?.hasToken && !status.databaseId;
+  useEffect(() => {
+    if (!waitingForPage) return;
+    const onFocus = () => void loadPages();
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [waitingForPage, loadPages]);
 
   const saveKey = async () => {
     setBusy(true);
@@ -83,9 +96,9 @@ export function NotionSettings() {
     if (!parent) return;
     setBusy(true);
     try {
-      await createNotionDatabase(parent);
+      const database = await createNotionDatabase(parent);
       await refresh();
-      toast.success(t('fork.notion.databaseCreated'));
+      toast.success(database.reused ? t('fork.notion.databaseReused') : t('fork.notion.databaseCreated'));
     } catch (error) {
       toast.error(String(error));
     } finally {
@@ -153,7 +166,14 @@ export function NotionSettings() {
                 )}
               </div>
             ) : (
-              <p className="text-xs text-gray-600">{t('fork.notion.shareHint', { integration: status.integration ?? 'Meetily' })}</p>
+              <div className="flex items-start justify-between gap-3">
+                <p className="text-xs text-gray-600">{t('fork.notion.shareHint', { integration: status.integration ?? 'Meetily' })}</p>
+                {pages?.length === 0 && (
+                  <Button variant="outline" size="sm" className="shrink-0" onClick={() => openExternal('https://www.notion.so')}>
+                    <ExternalLink /> {t('fork.notion.openNotion')}
+                  </Button>
+                )}
+              </div>
             )}
             <div className="flex items-center gap-2">
               <Select value={parent} onValueChange={setParent}>

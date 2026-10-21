@@ -27,7 +27,7 @@ Le code ajouté vit dans `frontend/src-tauri/src/fork/` (Rust) et dans `frontend
 
 ## Clé Notion
 
-Réglages → Notion. Meetily appelle lui-même l'API Notion, sans service intermédiaire. La clé est celle d'une intégration interne dédiée, nommée « Meetily » (notion.so/profile/integrations). Pour que Meetily puisse créer sa base, il faut partager une page avec l'intégration dans Notion : menu « … » de la page → Connexions → ajouter l'intégration. La page apparaît ensuite dans la liste des pages parentes. La clé et les identifiants de la base sont dans `app_preferences` (`notion.token`, `notion.parent_page_id`, `notion.database_id`, `notion.auto_sync`), l'état de chaque réunion dans `notion_pages`.
+Réglages → Notion. Meetily appelle lui-même l'API Notion, sans service intermédiaire. La clé est celle d'une intégration interne dédiée, nommée « Meetily » (notion.so/profile/integrations). Notion interdit à une clé d'intégration interne de créer une page à la racine de l'espace (seules les intégrations publiques OAuth le peuvent) : il faut donc connecter une page à l'intégration, menu « … » de la page → Plus → Connexions → Meetily. De retour dans Meetily, la liste se rafraîchit seule et présélectionne la page « Meetily » (ou la seule page connectée) : « Créer la base » suffit. En place depuis le 2026-10-21 : page privée « Meetily » contenant la base « Réunions Meetily ». La clé et les identifiants de la base sont dans `app_preferences` (`notion.token`, `notion.parent_page_id`, `notion.database_id`, `notion.auto_sync`), l'état de chaque réunion dans `notion_pages`.
 
 ## Clé OpenRouter
 
@@ -54,6 +54,8 @@ pnpm install
 cmd /c "scripts\fork-dev-env.cmd pnpm tauri:dev:cpu"     # développement
 cmd /c "scripts\fork-dev-env.cmd pnpm tauri:build:cpu"   # installateur NSIS
 ```
+
+Pour un installateur à copier sur un autre poste : `frontend\scripts\fork-build-installer.cmd`. Il compile, puis place `Meetily-perso-<version>-setup.exe` dans le dossier `installateur\` à la racine du dépôt (ignoré par git à cause de sa taille). `installateur\LISEZMOI.md` décrit l'installation et les réglages à refaire sur le nouveau poste.
 
 Tests : `cmd /c "scripts\fork-dev-env.cmd cargo test --lib"` (dans `src-tauri`), `node scripts/check-i18n-keys.mjs` et `npx tsc --noEmit -p tsconfig.json` (dans `frontend`).
 

@@ -287,12 +287,12 @@
     "keySaved": "Notion key saved",
     "database": "\"Réunions Meetily\" database",
     "databaseReady": "The database is ready: meetings are sent to it.",
-    "shareHint": "In Notion, open the page that will hold the database, \"…\" menu → Connections → add \"{{integration}}\". Then refresh the list and pick that page.",
+    "shareHint": "Notion does not let an integration key create a page at the root of the workspace: connect a page to \"{{integration}}\" (page \"…\" menu → More → Connections). It shows up here, already selected, as soon as you come back to Meetily.",
     "choosePage": "Parent page",
     "noPage": "No page shared with the integration",
     "refreshPages": "Refresh the page list",
     "create": "Create database",
-    "recreate": "Recreate database",
+    "recreate": "Use this page",
     "databaseCreated": "Notion database created",
     "open": "Open in Notion",
     "syncTitle": "Sync",
@@ -306,7 +306,9 @@
     "openPage": "Open the Notion page",
     "pending": "Waiting to be sent to Notion",
     "syncNow": "Send to Notion now",
-    "openIntegrations": "Create the integration"
+    "openIntegrations": "Create the integration",
+    "openNotion": "Open Notion",
+    "databaseReused": "Existing \"Réunions Meetily\" database reused: this computer's meetings will be added to it"
   },
   "search": {
     "button": "AI search",
