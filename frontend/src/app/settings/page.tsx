@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
-import { ArrowLeft, Settings2, Mic, Database as DatabaseIcon, SparkleIcon, FlaskConical, Cloud, LayoutTemplate, NotebookPen } from 'lucide-react';
+import { ArrowLeft, Settings2, Mic, Database as DatabaseIcon, SparkleIcon, FlaskConical, Cloud, LayoutTemplate, NotebookPen, Tags } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import { invoke } from '@tauri-apps/api/core';
@@ -27,6 +27,7 @@ const TABS = [
   { value: 'summaryModels', labelKey: 'settings.tabs.summary', icon: SparkleIcon },
   { value: 'templates', labelKey: 'settings.tabs.templates', icon: LayoutTemplate },
   { value: 'cloud', labelKey: 'settings.tabs.cloud', icon: Cloud },
+  { value: 'tags', labelKey: 'settings.tabs.tags', icon: Tags },
   { value: 'notion', labelKey: 'settings.tabs.notion', icon: NotebookPen },
   { value: 'beta', labelKey: 'settings.tabs.beta', icon: FlaskConical }
 ] as const;
@@ -95,7 +96,7 @@ export default function SettingsPage() {
         <div className="max-w-6xl mx-auto p-8 pt-6">
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="bg-transparent relative rounded-none border-b border-gray-200 p-0 h-auto">
+            <TabsList className="bg-transparent relative rounded-none border-b border-gray-200 p-0 h-auto w-full justify-start overflow-x-auto overflow-y-hidden">
               {TABS.map((tab, index) => {
                 const Icon = tab.icon;
                 return (
@@ -103,7 +104,7 @@ export default function SettingsPage() {
                     key={tab.value}
                     value={tab.value}
                     ref={el => { tabRefs.current[index] = el }}
-                    className="flex items-center gap-2 px-6 py-4 bg-transparent rounded-none border-0 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 data-[state=active]:shadow-none text-gray-600 hover:text-gray-900 relative z-10"
+                    className="flex shrink-0 items-center gap-2 px-4 py-4 bg-transparent rounded-none border-0 data-[state=active]:bg-transparent data-[state=active]:text-blue-600 data-[state=active]:shadow-none text-gray-600 hover:text-gray-900 relative z-10"
                   >
                     <Icon className="w-4 h-4" />
                     {t(tab.labelKey)}
@@ -122,7 +123,6 @@ export default function SettingsPage() {
             <TabsContent value="general">
               <div className="space-y-6">
                 <LanguageSettings />
-                <TagManager />
                 <PreferenceSettings />
               </div>
             </TabsContent>
@@ -143,6 +143,9 @@ export default function SettingsPage() {
             </TabsContent>
             <TabsContent value="cloud" className="mt-6">
               <CloudAiSettings />
+            </TabsContent>
+            <TabsContent value="tags" className="mt-6">
+              <TagManager />
             </TabsContent>
             <TabsContent value="notion" className="mt-6">
               <NotionSettings />

@@ -225,7 +225,7 @@
     "newPlaceholder": "Nouveau tag (client, projet…)",
     "create": "Créer",
     "delete": "Supprimer le tag",
-    "deleteConfirm": "Supprimer le tag « {{name}} » ? Il sera retiré de toutes les réunions.",
+    "deleteConfirm": "Retirer « {{name}} » de toutes les réunions et le supprimer ?",
     "usage_one": "{{count}} réunion",
     "usage_other": "{{count}} réunions",
     "clearFilter": "Retirer le filtre",
@@ -240,7 +240,20 @@
       "purple": "Violet",
       "pink": "Rose",
       "red": "Rouge"
-    }
+    },
+    "manage": "Gérer les tags",
+    "emptyList": "Aucun tag. Créez ceux dont vous aurez besoin (clients, projets, types de réunion…).",
+    "deleteConfirmUnused": "Supprimer ce tag ?",
+    "deleteConfirmButton": "Supprimer",
+    "suggestions": "Suggestions",
+    "suggesting": "Recherche de tags…",
+    "acceptSuggestion": "Ajouter ce tag à la réunion",
+    "dismissSuggestion": "Ignorer cette suggestion",
+    "acceptAll": "Tout ajouter",
+    "suggestAgain": "Suggérer des tags avec l'IA",
+    "suggestionsTitle": "Suggestions automatiques",
+    "autoSuggest": "Suggérer des tags automatiquement",
+    "autoSuggestHint": "Après chaque compte rendu, l'IA propose jusqu'à 5 tags (client, projet, type de réunion, sujet), en réutilisant vos tags existants. Rien n'est ajouté sans votre clic."
   },
   "export": {
     "button": "Exporter",
@@ -267,10 +280,10 @@
   },
   "notion": {
     "title": "Notion",
-    "description": "Sauvegarde automatique de vos réunions dans une base Notion : compte rendu, transcription et informations (date, tags, participants, durée).",
+    "description": "Meetily envoie lui-même vos réunions dans une base Notion (compte rendu, transcription, date, tags, participants, durée), sans aucun service intermédiaire.",
     "key": "Clé d'intégration Notion",
     "noKey": "Aucune clé enregistrée",
-    "keyHint": "Créez une intégration interne sur notion.so/my-integrations et collez son « Internal Integration Secret ».",
+    "keyHint": "Créez une intégration interne nommée « Meetily » dans Notion, puis collez ici son « Internal Integration Secret ».",
     "keySaved": "Clé Notion enregistrée",
     "database": "Base « Réunions Meetily »",
     "databaseReady": "La base est prête : les réunions y sont envoyées.",
@@ -292,7 +305,8 @@
     "synced": "Réunion envoyée dans Notion",
     "openPage": "Ouvrir la page Notion",
     "pending": "Envoi à Notion en attente",
-    "syncNow": "Envoyer dans Notion maintenant"
+    "syncNow": "Envoyer dans Notion maintenant",
+    "openIntegrations": "Créer l'intégration"
   },
   "search": {
     "button": "Recherche IA",

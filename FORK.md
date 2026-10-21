@@ -17,7 +17,8 @@ Version personnelle de [Meetily](https://github.com/Zackriya-Solutions/meetily) 
 | Coût cloud | Barre au-dessus de la transcription d'une réunion | Somme des appels OpenRouter de la réunion (hors compte rendu). |
 | Réécoute et correction des intervenants | Transcription d'une réunion : ▶ devant chaque ligne, clic sur le nom | Le bouton ▶ rejoue le passage (extrait mp3 produit par ffmpeg). Le menu du nom permet de renommer, ou d'indiquer que « Intervenant 4 » est en fait « Intervenant 1 », pour toutes ses lignes ou pour cette ligne seulement. |
 | Export | Bouton « Exporter » d'une réunion | Compte rendu, transcription, contexte en Markdown, audio d'origine, captures. Un seul élément est enregistré tel quel, plusieurs sont réunis dans un zip. |
-| Tags | Bouton « Ajouter un tag » d'une réunion, Réglages → Général → Tags | Tags personnalisés avec 10 couleurs (celles de Notion). Pastilles dans la barre latérale, filtre par tag sous la recherche (une réunion doit porter tous les tags choisis). |
+| Tags | Bouton « Ajouter un tag » d'une réunion, Réglages → Tags, ⚙ sous la recherche de la barre latérale | Tags personnalisés avec 10 couleurs (celles de Notion), créés à l'avance ou à la volée, renommés, recolorés, supprimés. Pastilles dans la barre latérale, filtre par tag sous la recherche (une réunion doit porter tous les tags choisis). |
+| Suggestions de tags | Barre de la réunion, à côté des tags | Après chaque compte rendu (ou à la première ouverture d'une réunion), l'IA propose jusqu'à 5 tags (client, projet, type de réunion, sujet) en réutilisant les tags existants. Un clic les ajoute, rien n'est appliqué sans accord. Désactivable dans Réglages → Tags. |
 | Sauvegarde Notion | Réglages → Notion | Une base « Réunions Meetily » créée sous une page partagée avec l'intégration. Une page par réunion : propriétés (date, tags, participants, durée, coût), compte rendu, contexte, transcription dans un bloc dépliable. Envoi 15 s après chaque modification, et bouton « Tout synchroniser ». |
 | Recherche IA | Bouton « Recherche IA » sous la recherche de la barre latérale | Question en langage naturel (« la réunion où l'on a parlé de SIRIS avec Olivier et Maxime »). L'IA extrait personnes, sujets et période, Meetily cherche dans toutes les transcriptions, puis l'IA classe les réunions trouvées et explique pourquoi. |
 | Choix de l'écran capturé | Réglages → Cloud & IA → Écran capturé | Écran principal, un écran précis, ou tous les écrans (une capture par écran, numérotée). |
@@ -26,7 +27,7 @@ Le code ajouté vit dans `frontend/src-tauri/src/fork/` (Rust) et dans `frontend
 
 ## Clé Notion
 
-Réglages → Notion. La clé est celle d'une intégration interne (notion.so/my-integrations). Pour que Meetily puisse créer sa base, il faut partager une page avec l'intégration dans Notion : menu « … » de la page → Connexions → ajouter l'intégration. La page apparaît ensuite dans la liste des pages parentes. La clé et les identifiants de la base sont dans `app_preferences` (`notion.token`, `notion.parent_page_id`, `notion.database_id`, `notion.auto_sync`), l'état de chaque réunion dans `notion_pages`.
+Réglages → Notion. Meetily appelle lui-même l'API Notion, sans service intermédiaire. La clé est celle d'une intégration interne dédiée, nommée « Meetily » (notion.so/profile/integrations). Pour que Meetily puisse créer sa base, il faut partager une page avec l'intégration dans Notion : menu « … » de la page → Connexions → ajouter l'intégration. La page apparaît ensuite dans la liste des pages parentes. La clé et les identifiants de la base sont dans `app_preferences` (`notion.token`, `notion.parent_page_id`, `notion.database_id`, `notion.auto_sync`), l'état de chaque réunion dans `notion_pages`.
 
 ## Clé OpenRouter
 
@@ -85,3 +86,7 @@ Tests : `cmd /c "scripts\fork-dev-env.cmd cargo test --lib"` (dans `src-tauri`),
 ## Confidentialité
 
 Toutes les requêtes OpenRouter excluent les fournisseurs qui conservent ou réutilisent les données (`data_collection: deny`). L'option ZDR, dans Réglages → Cloud & IA, restreint encore aux fournisseurs qui ne conservent rien. Les captures d'écran ne sont prises que pour les réunions où la case est cochée, et chaque capture peut être exclue de l'analyse.
+
+## Sécurité du contenu (CSP)
+
+`tauri.conf.json` autorise `media-src 'self' data: blob:` (réécoute des lignes de transcription) et `ipc: http://ipc.localhost` dans `connect-src`. Sans cette dernière entrée, chaque appel Tauri était refusé puis rejoué par le canal de secours `postMessage`, plus lent.

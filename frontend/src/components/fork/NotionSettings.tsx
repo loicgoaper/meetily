@@ -130,7 +130,14 @@ export function NotionSettings() {
             </div>
           )}
           {status?.error && <p className="text-xs text-red-600">{status.error}</p>}
-          <p className="text-xs text-gray-500">{t('fork.notion.keyHint')}</p>
+          <div className="flex items-start justify-between gap-3">
+            <p className="text-xs text-gray-500">{t('fork.notion.keyHint')}</p>
+            {!status?.hasToken && (
+              <Button variant="outline" size="sm" className="shrink-0" onClick={() => openExternal('https://www.notion.so/profile/integrations')}>
+                <ExternalLink /> {t('fork.notion.openIntegrations')}
+              </Button>
+            )}
+          </div>
         </div>
 
         {status?.hasToken && (

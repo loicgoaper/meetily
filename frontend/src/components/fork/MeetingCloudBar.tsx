@@ -8,7 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { formatUsd, getMeetingUsage, hasLiveTranscriptBackup, listMeetingScreenshots } from '@/services/forkService';
 import type { usePostMeetingPipeline } from '@/hooks/fork/usePostMeetingPipeline';
 import { ScreenshotGallery } from './ScreenshotGallery';
-import { MeetingTagPicker } from './Tags';
+import { MeetingTagPicker, TagSuggestionsBar } from './MeetingTags';
 import { ExportButton } from './ExportDialog';
 import { NotionMeetingBadge } from './NotionMeetingBadge';
 
@@ -54,6 +54,7 @@ export function MeetingCloudBar({ meetingId, pipeline }: { meetingId: string; pi
 
       <div className="flex flex-wrap items-center gap-1 border-b border-gray-100 px-3 py-1.5">
         <MeetingTagPicker meetingId={meetingId} />
+        <TagSuggestionsBar meetingId={meetingId} />
         <span className="ml-auto inline-flex items-center gap-1">
           <ExportButton meetingId={meetingId} hasScreenshots={screenshotCount > 0} />
           <NotionMeetingBadge meetingId={meetingId} />

@@ -637,7 +637,7 @@ const Sidebar: React.FC = () => {
                 <span className="flex-1 break-words">{item.title}</span>
                 {isMeetingItem && <TagDots tags={tagsFor(item.id)} />}
                 {isMeetingItem && (
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                  <div className="hidden items-center gap-1 group-hover:flex">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();

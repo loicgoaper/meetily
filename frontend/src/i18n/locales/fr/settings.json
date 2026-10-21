@@ -8,7 +8,8 @@
     "templates": "Modèles",
     "cloud": "Cloud & IA",
     "beta": "Bêta",
-    "notion": "Notion"
+    "notion": "Notion",
+    "tags": "Tags"
   },
   "actions": {
     "openFolder": "Ouvrir le dossier",

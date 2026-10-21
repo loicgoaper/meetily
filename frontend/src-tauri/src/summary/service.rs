@@ -615,6 +615,7 @@ impl SummaryService {
                             }
                         }
                         info!("Summary saved successfully for meeting_id: {}", meeting_id);
+                        crate::fork::tag_suggest::spawn_after_summary(_app.clone(), meeting_id.clone());
                     }
                     Ok(false) => warn!("Skipped stale summary completion for meeting_id: {}", meeting_id),
                     Err(error) => error!(

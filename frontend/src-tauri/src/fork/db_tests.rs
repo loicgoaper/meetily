@@ -160,3 +160,34 @@ async fn merge_speakers_moves_every_line() {
     let left: Vec<(String,)> = sqlx::query_as("SELECT DISTINCT speaker FROM transcripts WHERE meeting_id = 'm1'").fetch_all(&pool).await.unwrap();
     assert_eq!(left, vec![("speaker_0".to_string(),)]);
 }
+
+#[tokio::test]
+async fn tag_suggestions_accept_and_dismiss() {
+    use super::tag_suggest;
+    let pool = migrated_pool().await;
+    sqlx::query("INSERT INTO tags (id, name, color, created_at) VALUES ('a', 'Acme', 'blue', 'now')")
+        .execute(&pool)
+        .await
+        .unwrap();
+    assert!(!tag_suggest::current(&pool, "m1").await.unwrap().generated);
+    sqlx::query("INSERT INTO tag_suggestions (meeting_id, names, generated_at) VALUES ('m1', '[\"acme\", \"Migration SQL\", \"Budget\"]', 'now')")
+        .execute(&pool)
+        .await
+        .unwrap();
+    let s = tag_suggest::current(&pool, "m1").await.unwrap();
+    assert!(s.generated);
+    assert_eq!(s.items.iter().map(|i| i.name.as_str()).collect::<Vec<_>>(), vec!["Acme", "Migration SQL", "Budget"]);
+
+    // Accepting an existing tag reuses it; accepting a new one creates it with a colour
+    let acme = tag_suggest::accept(&pool, "m1", "acme").await.unwrap();
+    assert_eq!(acme.id, "a");
+    let created = tag_suggest::accept(&pool, "m1", "Migration SQL").await.unwrap();
+    assert!(created.id.starts_with("tag-"));
+    assert_ne!(created.color, "default");
+    tag_suggest::dismiss(&pool, "m1", "budget").await.unwrap();
+
+    let names: Vec<String> = TagsRepository::for_meeting(&pool, "m1").await.unwrap().into_iter().map(|t| t.name).collect();
+    assert_eq!(names, vec!["Acme", "Migration SQL"]);
+    let s = tag_suggest::current(&pool, "m1").await.unwrap();
+    assert!(s.generated && s.items.is_empty());
+}

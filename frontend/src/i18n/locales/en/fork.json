@@ -225,7 +225,7 @@
     "newPlaceholder": "New tag (client, project…)",
     "create": "Create",
     "delete": "Delete tag",
-    "deleteConfirm": "Delete the tag \"{{name}}\"? It will be removed from every meeting.",
+    "deleteConfirm": "Remove \"{{name}}\" from every meeting and delete it?",
     "usage_one": "{{count}} meeting",
     "usage_other": "{{count}} meetings",
     "clearFilter": "Clear filter",
@@ -240,7 +240,20 @@
       "purple": "Purple",
       "pink": "Pink",
       "red": "Red"
-    }
+    },
+    "manage": "Manage tags",
+    "emptyList": "No tags yet. Create the ones you need (clients, projects, kinds of meeting…).",
+    "deleteConfirmUnused": "Delete this tag?",
+    "deleteConfirmButton": "Delete",
+    "suggestions": "Suggestions",
+    "suggesting": "Looking for tags…",
+    "acceptSuggestion": "Add this tag to the meeting",
+    "dismissSuggestion": "Dismiss this suggestion",
+    "acceptAll": "Add all",
+    "suggestAgain": "Suggest tags with AI",
+    "suggestionsTitle": "Automatic suggestions",
+    "autoSuggest": "Suggest tags automatically",
+    "autoSuggestHint": "After each summary, the AI suggests up to 5 tags (client, project, kind of meeting, topic), reusing your existing tags. Nothing is added until you click."
   },
   "export": {
     "button": "Export",
@@ -267,10 +280,10 @@
   },
   "notion": {
     "title": "Notion",
-    "description": "Automatic backup of your meetings to a Notion database: summary, transcript and details (date, tags, participants, duration).",
+    "description": "Meetily itself sends your meetings to a Notion database (summary, transcript, date, tags, participants, duration), with no service in between.",
     "key": "Notion integration key",
     "noKey": "No key saved",
-    "keyHint": "Create an internal integration at notion.so/my-integrations and paste its \"Internal Integration Secret\".",
+    "keyHint": "Create an internal integration named \"Meetily\" in Notion, then paste its \"Internal Integration Secret\" here.",
     "keySaved": "Notion key saved",
     "database": "\"Réunions Meetily\" database",
     "databaseReady": "The database is ready: meetings are sent to it.",
@@ -292,7 +305,8 @@
     "synced": "Meeting sent to Notion",
     "openPage": "Open the Notion page",
     "pending": "Waiting to be sent to Notion",
-    "syncNow": "Send to Notion now"
+    "syncNow": "Send to Notion now",
+    "openIntegrations": "Create the integration"
   },
   "search": {
     "button": "AI search",

@@ -20,6 +20,7 @@ pub mod source_timeline;
 pub mod speakers;
 pub mod stt_provider;
 pub mod summary_context;
+pub mod tag_suggest;
 pub mod tags;
 pub mod templates_admin;
 pub mod usage;

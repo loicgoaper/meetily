@@ -21,6 +21,7 @@ export const PREF = {
   screenMonitor: 'screen.monitor',
   summaryDefaultTemplate: 'summary.default_template',
   uiLanguage: 'ui.language',
+  tagsAutoSuggest: 'tags.auto_suggest',
 } as const;
 
 export type Preferences = Record<string, string>;
@@ -306,6 +307,23 @@ export const deleteTag = (id: string) => invoke<void>('api_delete_tag', { id });
 export const getMeetingTags = (meetingId: string) => invoke<Tag[]>('api_get_meeting_tags', { meetingId });
 export const setMeetingTags = (meetingId: string, tagIds: string[]) => invoke<void>('api_set_meeting_tags', { meetingId, tagIds });
 export const getAllMeetingTags = () => invoke<Record<string, string[]>>('api_get_all_meeting_tags');
+
+export interface TagSuggestion {
+  name: string;
+  /** Set when the suggestion is an existing tag */
+  tagId?: string | null;
+  color?: string | null;
+}
+
+export interface TagSuggestions {
+  generated: boolean;
+  items: TagSuggestion[];
+}
+
+export const getTagSuggestions = (meetingId: string) => invoke<TagSuggestions>('api_get_tag_suggestions', { meetingId });
+export const suggestTags = (meetingId: string) => invoke<TagSuggestions>('api_suggest_tags', { meetingId });
+export const acceptTagSuggestion = (meetingId: string, name: string) => invoke<Tag>('api_accept_tag_suggestion', { meetingId, name });
+export const dismissTagSuggestion = (meetingId: string, name: string) => invoke<void>('api_dismiss_tag_suggestion', { meetingId, name });
 
 /** Fired on window when tags or their assignments change (sidebar refresh). */
 export const TAGS_CHANGED_EVENT = 'fork-tags-changed';

@@ -206,3 +206,29 @@ async fn live_ai_search_finds_meeting_by_intent() {
     }
     assert_eq!(results.first().map(|r| r.meeting_id.as_str()), Some("m_target"));
 }
+
+#[tokio::test]
+#[ignore]
+async fn live_tag_suggestions_for_a_meeting() {
+    let pool = sqlx::SqlitePool::connect("sqlite::memory:").await.unwrap();
+    let mut migrator = sqlx::migrate!("./migrations");
+    migrator.set_ignore_missing(true);
+    migrator.run(&pool).await.unwrap();
+    sqlx::query("INSERT INTO meetings (id, title, created_at, updated_at) VALUES ('m1', 'Point migration Acme', '2026-10-14T14:00:00+00:00', 'now')")
+        .execute(&pool).await.unwrap();
+    sqlx::query("INSERT INTO tags (id, name, color, created_at) VALUES ('t-acme', 'Acme', 'blue', 'now'), ('t-perso', 'Perso', 'pink', 'now')")
+        .execute(&pool).await.unwrap();
+    let summary = "# Point migration Acme\n\n## Avancement\n- Migration des bases SQL Server vers Azure : 60 %.\n- Bascule du serveur IIS de recette prévue le 15 novembre.\n\n## Décisions\n- Budget formation réduit de moitié.\n\n## Actions\n- Loïc : proposition révisée pour mardi.";
+    let result = serde_json::json!({ "markdown": summary }).to_string();
+    sqlx::query("INSERT INTO summary_processes (meeting_id, status, created_at, updated_at, result) VALUES ('m1', 'completed', 'now', 'now', ?)")
+        .bind(result)
+        .execute(&pool).await.unwrap();
+
+    let started = Instant::now();
+    let s = super::tag_suggest::generate(&pool, &key(), "google/gemini-3.1-flash-lite", false, "m1").await.unwrap();
+    println!("{:.1}s {:?}", started.elapsed().as_secs_f64(), s.items);
+    assert!(s.generated);
+    assert!(!s.items.is_empty() && s.items.len() <= 5);
+    assert!(s.items.iter().any(|i| i.tag_id.as_deref() == Some("t-acme")), "existing tag Acme should be reused");
+    assert!(!s.items.iter().any(|i| i.name == "Perso"));
+}

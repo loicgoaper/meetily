@@ -4,11 +4,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Loader2, Sparkles, X } from 'lucide-react';
+import { Loader2, Settings2, Sparkles, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { aiSearch, formatTimestamp, TAG_COLOR_CLASSES, type AiSearchResult, type Tag } from '@/services/forkService';
+import { TagManagerDialog } from './TagManager';
 
 const FILTER_KEY = 'fork.tagFilter';
 
@@ -61,7 +62,7 @@ export function applyTagFilter<T extends TreeItem>(items: T[], selected: string[
     .filter(item => item.type === 'folder' || keep(item.id));
 }
 
-/** Tag chips under the search box; click to filter meetings. */
+/** Tag chips under the search box (click to filter meetings), and the tag manager. */
 export function SidebarTagFilter({ tags, selected, onToggle, onClear }: {
   tags: Tag[];
   selected: string[];
@@ -69,7 +70,6 @@ export function SidebarTagFilter({ tags, selected, onToggle, onClear }: {
   onClear: () => void;
 }) {
   const { t } = useTranslation();
-  if (tags.length === 0) return null;
   return (
     <div className="mt-2 flex flex-wrap items-center gap-1">
       {tags.map(tag => {
@@ -93,6 +93,18 @@ export function SidebarTagFilter({ tags, selected, onToggle, onClear }: {
           <X className="h-3.5 w-3.5" />
         </button>
       )}
+      <TagManagerDialog
+        trigger={
+          <button
+            type="button"
+            title={t('fork.tags.manage')}
+            className="inline-flex items-center gap-1 rounded px-1 py-0.5 text-[11px] text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+          >
+            <Settings2 className="h-3.5 w-3.5" />
+            {tags.length === 0 && t('fork.tags.manage')}
+          </button>
+        }
+      />
     </div>
   );
 }
