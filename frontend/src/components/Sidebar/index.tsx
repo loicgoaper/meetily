@@ -17,6 +17,9 @@ import { useRecordingState } from '@/contexts/RecordingStateContext';
 import { useImportDialog } from '@/contexts/ImportDialogContext';
 import { useConfig } from '@/contexts/ConfigContext';
 import { useTranslation } from 'react-i18next';
+import { useTags } from '@/hooks/fork/useTags';
+import { TagDots } from '@/components/fork/Tags';
+import { AiSearchButton, applyTagFilter, SidebarTagFilter, useTagFilter } from '@/components/fork/SidebarExtras';
 
 import {
   Dialog,
@@ -256,6 +259,10 @@ const Sidebar: React.FC = () => {
       setExpandedFolders(newExpanded);
     }
   }, [expandedFolders, searchTranscripts]);
+
+  // Fork: tags (dots on meetings, filter chips under the search box)
+  const { tags: allTags, tagsFor } = useTags();
+  const tagFilter = useTagFilter();
 
   // Combine search results with sidebar items
   const filteredSidebarItems = useMemo(() => {
@@ -552,6 +559,12 @@ const Sidebar: React.FC = () => {
   };
 
   // Find matching transcript snippet for a meeting item
+  // Fork: apply the tag filter on top of the search
+  const visibleSidebarItems = useMemo(
+    () => applyTagFilter(filteredSidebarItems, tagFilter.selected, tagsFor),
+    [filteredSidebarItems, tagFilter.selected, tagsFor],
+  );
+
   const findMatchingSnippet = (itemId: string) => {
     if (!searchQuery.trim() || !searchResults.length) return null;
     return searchResults.find(result => result.id === itemId);
@@ -622,6 +635,7 @@ const Sidebar: React.FC = () => {
                   </div>
                 )}
                 <span className="flex-1 break-words">{item.title}</span>
+                {isMeetingItem && <TagDots tags={tagsFor(item.id)} />}
                 {isMeetingItem && (
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
                     <button
@@ -718,6 +732,13 @@ const Sidebar: React.FC = () => {
                       </InputGroupAddon>
                     }
                   </InputGroup>
+                  <AiSearchButton />
+                  <SidebarTagFilter
+                    tags={allTags}
+                    selected={tagFilter.selected}
+                    onToggle={tagFilter.toggle}
+                    onClear={tagFilter.clear}
+                  />
                 </div>
               </div>
             )}
@@ -745,7 +766,7 @@ const Sidebar: React.FC = () => {
             {/* Meeting Notes folder header - fixed */}
             {!isCollapsed && (
               <div className="flex-shrink-0">
-                {filteredSidebarItems.filter(item => item.type === 'folder').map(item => (
+                {visibleSidebarItems.filter(item => item.type === 'folder').map(item => (
                   <div key={item.id}>
                     <div
                       className="flex items-center transition-all duration-150 p-3 text-lg font-semibold h-10 mx-3 mt-3 rounded-lg"
@@ -764,7 +785,7 @@ const Sidebar: React.FC = () => {
             {/* Scrollable meeting items */}
             {!isCollapsed && (
               <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0">
-                {filteredSidebarItems
+                {visibleSidebarItems
                   .filter(item => item.type === 'folder' && expandedFolders.has(item.id) && item.children)
                   .map(item => (
                     <div key={`${item.id}-children`} className="mx-3">

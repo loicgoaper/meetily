@@ -7,7 +7,8 @@
     "summary": "Compte rendu",
     "templates": "Modèles",
     "cloud": "Cloud & IA",
-    "beta": "Bêta"
+    "beta": "Bêta",
+    "notion": "Notion"
   },
   "actions": {
     "openFolder": "Ouvrir le dossier",

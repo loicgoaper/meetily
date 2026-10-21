@@ -8,6 +8,9 @@ import { Progress } from '@/components/ui/progress';
 import { formatUsd, getMeetingUsage, hasLiveTranscriptBackup, listMeetingScreenshots } from '@/services/forkService';
 import type { usePostMeetingPipeline } from '@/hooks/fork/usePostMeetingPipeline';
 import { ScreenshotGallery } from './ScreenshotGallery';
+import { MeetingTagPicker } from './Tags';
+import { ExportButton } from './ExportDialog';
+import { NotionMeetingBadge } from './NotionMeetingBadge';
 
 type Pipeline = ReturnType<typeof usePostMeetingPipeline>;
 
@@ -48,6 +51,14 @@ export function MeetingCloudBar({ meetingId, pipeline }: { meetingId: string; pi
           {pipeline.stage === 'diarizing' && <Progress value={pipeline.progress?.value ?? 5} className="h-1" />}
         </div>
       )}
+
+      <div className="flex flex-wrap items-center gap-1 border-b border-gray-100 px-3 py-1.5">
+        <MeetingTagPicker meetingId={meetingId} />
+        <span className="ml-auto inline-flex items-center gap-1">
+          <ExportButton meetingId={meetingId} hasScreenshots={screenshotCount > 0} />
+          <NotionMeetingBadge meetingId={meetingId} />
+        </span>
+      </div>
 
       <div className="flex flex-wrap items-center gap-1 px-3 py-1.5">
         <Button

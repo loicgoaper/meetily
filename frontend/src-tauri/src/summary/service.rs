@@ -602,6 +602,7 @@ impl SummaryService {
                 .await
                 {
                     Ok(true) => {
+                        crate::fork::notion::mark_dirty(&meeting_id);
                         if let Some(name) =
                             extract_meeting_name_from_markdown(&generated.final_markdown)
                                 .filter(|name| !name.is_empty())

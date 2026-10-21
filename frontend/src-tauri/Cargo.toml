@@ -147,8 +147,9 @@ ffmpeg-sidecar = { git = "https://github.com/nathanbabcock/ffmpeg-sidecar", bran
 
 sqlx = { version = "0.8", features = [ "runtime-tokio", "sqlite", "chrono"] }
 
-# Meetily perso (fork): cloud STT payloads, screenshots for the vision step
+# Meetily perso (fork): cloud STT payloads, screenshots for the vision step, meeting export
 base64 = "0.22"
+zip = { version = "2.2", default-features = false, features = ["deflate"] }
 image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
 
 # Common Tauri configuration

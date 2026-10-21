@@ -155,6 +155,8 @@ export interface ScreenFrame {
   t: number;
   excluded: boolean;
   change: number;
+  /** Screen number (from 1) when every screen is captured. */
+  monitor?: number | null;
 }
 
 export interface ScreenNote {
@@ -249,3 +251,107 @@ export function formatTimestamp(seconds: number): string {
 export function formatUsd(value: number): string {
   return value < 0.01 ? `${value.toFixed(4)} $` : `${value.toFixed(2)} $`;
 }
+
+// ---------------------------------------------------------------------------
+// Lot 2: speakers merge, audio clips, export, tags, Notion, AI search
+// ---------------------------------------------------------------------------
+
+export const mergeSpeakers = (meetingId: string, fromKey: string, intoKey: string) =>
+  invoke<number>('api_merge_speakers', { meetingId, fromKey, intoKey });
+
+/** A passage of the meeting audio as an mp3 data URL. */
+export const getAudioClip = (meetingId: string, start: number, end: number) =>
+  invoke<string>('api_get_audio_clip', { meetingId, start, end });
+
+export interface ExportParts {
+  audio: boolean;
+  transcript: boolean;
+  summary: boolean;
+  context: boolean;
+  screenshots: boolean;
+}
+
+/** Opens a save dialog; resolves to the saved path, or null if cancelled. */
+export const exportMeeting = (meetingId: string, parts: ExportParts) =>
+  invoke<string | null>('api_export_meeting', { meetingId, parts });
+
+/** Notion colour names (also used for tags in the app). */
+export const TAG_COLORS = ['default', 'gray', 'brown', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'red'] as const;
+export type TagColor = (typeof TAG_COLORS)[number];
+
+/** Tailwind classes matching the Notion colours. */
+export const TAG_COLOR_CLASSES: Record<string, { chip: string; dot: string }> = {
+  default: { chip: 'bg-gray-100 text-gray-700 border-gray-200', dot: 'bg-gray-400' },
+  gray: { chip: 'bg-gray-200 text-gray-800 border-gray-300', dot: 'bg-gray-500' },
+  brown: { chip: 'bg-amber-100 text-amber-900 border-amber-200', dot: 'bg-amber-700' },
+  orange: { chip: 'bg-orange-100 text-orange-800 border-orange-200', dot: 'bg-orange-500' },
+  yellow: { chip: 'bg-yellow-100 text-yellow-800 border-yellow-200', dot: 'bg-yellow-400' },
+  green: { chip: 'bg-green-100 text-green-800 border-green-200', dot: 'bg-green-500' },
+  blue: { chip: 'bg-blue-100 text-blue-800 border-blue-200', dot: 'bg-blue-500' },
+  purple: { chip: 'bg-purple-100 text-purple-800 border-purple-200', dot: 'bg-purple-500' },
+  pink: { chip: 'bg-pink-100 text-pink-800 border-pink-200', dot: 'bg-pink-500' },
+  red: { chip: 'bg-red-100 text-red-800 border-red-200', dot: 'bg-red-500' },
+};
+
+export interface Tag {
+  id: string;
+  name: string;
+  color: TagColor | string;
+}
+
+export const listTags = () => invoke<Tag[]>('api_list_tags');
+export const createTag = (name: string, color: string) => invoke<Tag>('api_create_tag', { name, color });
+export const updateTag = (id: string, name: string, color: string) => invoke<void>('api_update_tag', { id, name, color });
+export const deleteTag = (id: string) => invoke<void>('api_delete_tag', { id });
+export const getMeetingTags = (meetingId: string) => invoke<Tag[]>('api_get_meeting_tags', { meetingId });
+export const setMeetingTags = (meetingId: string, tagIds: string[]) => invoke<void>('api_set_meeting_tags', { meetingId, tagIds });
+export const getAllMeetingTags = () => invoke<Record<string, string[]>>('api_get_all_meeting_tags');
+
+/** Fired on window when tags or their assignments change (sidebar refresh). */
+export const TAGS_CHANGED_EVENT = 'fork-tags-changed';
+export const notifyTagsChanged = () => window.dispatchEvent(new Event(TAGS_CHANGED_EVENT));
+
+export interface NotionStatus {
+  hasToken: boolean;
+  tokenMasked?: string | null;
+  workspace?: string | null;
+  integration?: string | null;
+  parentPageId?: string | null;
+  databaseId?: string | null;
+  databaseUrl?: string | null;
+  autoSync: boolean;
+  pending: number;
+  error?: string | null;
+}
+
+export interface NotionPage {
+  id: string;
+  title: string;
+  url: string;
+}
+
+export interface NotionMeetingState {
+  pageUrl?: string | null;
+  syncedAt?: string | null;
+  lastError?: string | null;
+  pending: boolean;
+}
+
+export const getNotionStatus = () => invoke<NotionStatus>('api_notion_status');
+export const setNotionToken = (token: string) => invoke<void>('api_notion_set_token', { token });
+export const listNotionPages = () => invoke<NotionPage[]>('api_notion_list_pages');
+export const createNotionDatabase = (parentPageId: string) => invoke<string>('api_notion_create_database', { parentPageId });
+export const syncMeetingToNotion = (meetingId: string) => invoke<string>('api_notion_sync_meeting', { meetingId });
+export const syncAllToNotion = () => invoke<number>('api_notion_sync_all');
+export const getNotionMeetingState = (meetingId: string) => invoke<NotionMeetingState>('api_notion_meeting_state', { meetingId });
+
+export interface AiSearchResult {
+  meetingId: string;
+  title: string;
+  date: string;
+  score: number;
+  reason: string;
+  hits: { t?: number | null; text: string }[];
+}
+
+export const aiSearch = (query: string) => invoke<AiSearchResult[]>('api_ai_search', { query });

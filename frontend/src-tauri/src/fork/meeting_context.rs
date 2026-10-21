@@ -284,7 +284,9 @@ pub async fn api_save_meeting_context(
     info!("Saving context for meeting {} ({} participants)", meeting_id, context.participants.len());
     MeetingContextRepository::save(state.db_manager.pool(), &meeting_id, &context)
         .await
-        .map_err(|e| e.to_string())
+        .map_err(|e| e.to_string())?;
+    super::notion::mark_dirty(&meeting_id);
+    Ok(())
 }
 
 /// Set (or clear with `null`) the context of the recording in progress. Also written to

@@ -6,6 +6,7 @@
 use super::meeting_context::{MeetingContext, MeetingContextRepository, Participant};
 use super::preferences::{PreferencesRepository, STT_LIVE_MODEL, UI_LANGUAGE};
 use super::speakers::{MeetingSpeaker, SpeakersRepository};
+use super::tags::TagsRepository;
 use sqlx::SqlitePool;
 use std::collections::HashMap;
 
@@ -108,4 +109,54 @@ async fn transcripts_keep_speaker_column() {
         .await
         .unwrap();
     assert_eq!(rows[0].speaker.as_deref(), Some("mic"));
+}
+
+#[tokio::test]
+async fn tags_unique_names_and_cascades() {
+    let pool = migrated_pool().await;
+    sqlx::query("INSERT INTO tags (id, name, color, created_at) VALUES ('a', 'Acme', 'blue', 'now'), ('b', 'SIRIS', 'red', 'now')")
+        .execute(&pool)
+        .await
+        .unwrap();
+    sqlx::query("INSERT INTO meeting_tags (meeting_id, tag_id) VALUES ('m1', 'a'), ('m1', 'b')")
+        .execute(&pool)
+        .await
+        .unwrap();
+    let names: Vec<String> = TagsRepository::for_meeting(&pool, "m1").await.unwrap().into_iter().map(|t| t.name).collect();
+    assert_eq!(names, vec!["Acme", "SIRIS"]);
+    assert_eq!(TagsRepository::meetings_with_tag(&pool, "b").await.unwrap(), vec!["m1"]);
+
+    // Names are unique whatever the case
+    assert!(sqlx::query("INSERT INTO tags (id, name, created_at) VALUES ('c', 'acme', 'now')").execute(&pool).await.is_err());
+
+    // Deleting a tag, then the meeting, removes the assignments
+    sqlx::query("DELETE FROM tags WHERE id = 'b'").execute(&pool).await.unwrap();
+    assert_eq!(TagsRepository::all_assignments(&pool).await.unwrap()["m1"], vec!["a"]);
+    sqlx::query("DELETE FROM meetings WHERE id = 'm1'").execute(&pool).await.unwrap();
+    assert!(TagsRepository::all_assignments(&pool).await.unwrap().is_empty());
+}
+
+#[tokio::test]
+async fn merge_speakers_moves_every_line() {
+    let pool = migrated_pool().await;
+    sqlx::query(
+        "INSERT INTO transcripts (id, meeting_id, transcript, timestamp, audio_start_time, audio_end_time, duration, speaker) VALUES
+         ('t1', 'm1', 'Bonjour', 'now', 0.0, 1.0, 1.0, 'speaker_0'),
+         ('t2', 'm1', 'Salut', 'now', 1.0, 2.0, 1.0, 'speaker_3'),
+         ('t3', 'm1', 'Ça va ?', 'now', 2.0, 3.0, 1.0, 'speaker_3')",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    let speakers = vec![
+        MeetingSpeaker { speaker_key: "speaker_0".into(), display_name: Some("Olivier".into()), participant_id: None, source: "auto".into(), confidence: None },
+        MeetingSpeaker { speaker_key: "speaker_3".into(), display_name: None, participant_id: None, source: "auto".into(), confidence: None },
+    ];
+    SpeakersRepository::replace_all(&pool, "m1", &speakers).await.unwrap();
+
+    assert_eq!(SpeakersRepository::merge(&pool, "m1", "speaker_3", "speaker_0").await.unwrap(), 2);
+    let keys: Vec<String> = SpeakersRepository::list(&pool, "m1").await.unwrap().into_iter().map(|s| s.speaker_key).collect();
+    assert_eq!(keys, vec!["speaker_0"]);
+    let left: Vec<(String,)> = sqlx::query_as("SELECT DISTINCT speaker FROM transcripts WHERE meeting_id = 'm1'").fetch_all(&pool).await.unwrap();
+    assert_eq!(left, vec![("speaker_0".to_string(),)]);
 }

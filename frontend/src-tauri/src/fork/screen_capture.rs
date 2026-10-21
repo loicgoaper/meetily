@@ -32,6 +32,9 @@ pub struct ScreenFrame {
     pub excluded: bool,
     #[serde(default)]
     pub change: f32,
+    /// Screen number (1-based) when several screens are captured
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub monitor: Option<u32>,
 }
 
 // ---------------------------------------------------------------------------
@@ -223,9 +226,9 @@ async fn capture_loop<R: Runtime>(
     stop_flag: Arc<AtomicBool>,
     frames: Arc<AtomicU32>,
 ) {
-    let mut detector = change_detect::Detector::default();
-    // Active time at which the current change was first seen
-    let mut change_started: Option<f64> = None;
+    // One change detector per screen, plus the active time at which its current
+    // change was first seen
+    let mut detectors: std::collections::HashMap<u32, (change_detect::Detector, Option<f64>)> = std::collections::HashMap::new();
     let mut ticker = tokio::time::interval(std::time::Duration::from_secs_f64(interval));
     ticker.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
 
@@ -243,8 +246,8 @@ async fn capture_loop<R: Runtime>(
         let t = state.get_active_recording_duration().unwrap_or(0.0);
         let monitor_choice = monitor.clone();
         let captured = tokio::task::spawn_blocking(move || capture(&monitor_choice)).await;
-        let image = match captured {
-            Ok(Ok(img)) => img,
+        let screens = match captured {
+            Ok(Ok(screens)) => screens,
             Ok(Err(e)) => {
                 warn!("Screen capture failed: {}", e);
                 continue;
@@ -254,30 +257,44 @@ async fn capture_loop<R: Runtime>(
                 continue;
             }
         };
-        let sig = signature(&image);
-        match detector.observe(sig, t, MIN_GAP_SECS) {
-            change_detect::Decision::Skip => change_started = None,
-            change_detect::Decision::Wait => {
-                change_started.get_or_insert(t);
-            }
-            change_detect::Decision::Keep(change) => {
-                // Keep the settled (latest) image, timestamped when the change appeared
-                let first_seen = change_started.take().unwrap_or(t);
-                let n = index.len() + 1;
-                let file = format!("{:04}_{}.jpg", n, mm_ss(first_seen).replace(':', "-"));
-                let path = dir.join(&file);
-                let save = tokio::task::spawn_blocking(move || save_jpeg(&image, &path)).await;
-                match save {
-                    Ok(Ok(())) => {
-                        index.push(ScreenFrame { file: file.clone(), t: first_seen, excluded: false, change });
-                        if let Err(e) = write_index(&dir, &index) {
-                            warn!("Could not write screens index: {}", e);
+        let several = screens.len() > 1;
+        for (screen_number, image) in screens {
+            let (detector, change_started) = detectors.entry(screen_number).or_default();
+            let sig = signature(&image);
+            match detector.observe(sig, t, MIN_GAP_SECS) {
+                change_detect::Decision::Skip => *change_started = None,
+                change_detect::Decision::Wait => {
+                    change_started.get_or_insert(t);
+                }
+                change_detect::Decision::Keep(change) => {
+                    // Keep the settled (latest) image, timestamped when the change appeared
+                    let first_seen = change_started.take().unwrap_or(t);
+                    let n = index.len() + 1;
+                    let file = if several {
+                        format!("{:04}_{}_e{}.jpg", n, mm_ss(first_seen).replace(':', "-"), screen_number)
+                    } else {
+                        format!("{:04}_{}.jpg", n, mm_ss(first_seen).replace(':', "-"))
+                    };
+                    let path = dir.join(&file);
+                    let save = tokio::task::spawn_blocking(move || save_jpeg(&image, &path)).await;
+                    match save {
+                        Ok(Ok(())) => {
+                            index.push(ScreenFrame {
+                                file: file.clone(),
+                                t: first_seen,
+                                excluded: false,
+                                change,
+                                monitor: several.then_some(screen_number),
+                            });
+                            if let Err(e) = write_index(&dir, &index) {
+                                warn!("Could not write screens index: {}", e);
+                            }
+                            let count = frames.fetch_add(1, Ordering::SeqCst) + 1;
+                            let _ = app.emit("screen-capture-frame", serde_json::json!({ "file": file, "t": first_seen, "count": count }));
                         }
-                        let count = frames.fetch_add(1, Ordering::SeqCst) + 1;
-                        let _ = app.emit("screen-capture-frame", serde_json::json!({ "file": file, "t": first_seen, "count": count }));
+                        Ok(Err(e)) => warn!("Could not save screenshot: {}", e),
+                        Err(e) => warn!("Screenshot save task failed: {}", e),
                     }
-                    Ok(Err(e)) => warn!("Could not save screenshot: {}", e),
-                    Err(e) => warn!("Screenshot save task failed: {}", e),
                 }
             }
         }
@@ -304,20 +321,35 @@ fn signature(image: &image::RgbaImage) -> change_detect::Signature {
 }
 
 #[cfg(windows)]
-fn capture(monitor_choice: &str) -> Result<image::RgbaImage, String> {
+/// Capture the chosen screen ("primary", "monitor:<id>") or every screen ("all").
+/// Returns (screen number starting at 1, image) pairs.
+fn capture(monitor_choice: &str) -> Result<Vec<(u32, image::RgbaImage)>, String> {
     let monitors = xcap::Monitor::all().map_err(|e| e.to_string())?;
+    if monitors.is_empty() {
+        return Err("Aucun écran détecté".to_string());
+    }
+    if monitor_choice == "all" {
+        let mut images = Vec::new();
+        for (i, monitor) in monitors.iter().enumerate() {
+            match monitor.capture_image() {
+                Ok(img) => images.push((i as u32 + 1, img)),
+                Err(e) => warn!("Capture of screen {} failed: {}", i + 1, e),
+            }
+        }
+        return if images.is_empty() { Err("Aucune capture d'écran réussie".to_string()) } else { Ok(images) };
+    }
     let wanted: Option<u32> = monitor_choice.strip_prefix("monitor:").and_then(|id| id.parse().ok());
-    let monitor = monitors
+    let (index, monitor) = monitors
         .iter()
-        .find(|m| wanted.is_some() && m.id().ok() == wanted)
-        .or_else(|| monitors.iter().find(|m| m.is_primary().unwrap_or(false)))
-        .or_else(|| monitors.first())
-        .ok_or("Aucun écran détecté")?;
-    monitor.capture_image().map_err(|e| e.to_string())
+        .enumerate()
+        .find(|(_, m)| wanted.is_some() && m.id().ok() == wanted)
+        .or_else(|| monitors.iter().enumerate().find(|(_, m)| m.is_primary().unwrap_or(false)))
+        .unwrap_or((0, &monitors[0]));
+    Ok(vec![(index as u32 + 1, monitor.capture_image().map_err(|e| e.to_string())?)])
 }
 
 #[cfg(not(windows))]
-fn capture(_monitor_choice: &str) -> Result<image::RgbaImage, String> {
+fn capture(_monitor_choice: &str) -> Result<Vec<(u32, image::RgbaImage)>, String> {
     Err("La capture d'écran n'est disponible que sous Windows dans cette version".to_string())
 }
 

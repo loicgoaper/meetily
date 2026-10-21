@@ -1,7 +1,7 @@
 "use client";
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { MeetingSummary, SummaryProcessResponse } from '@/types';
+import { MeetingSummary, SummaryProcessResponse, Transcript } from '@/types';
 import { useSidebar } from '@/components/Sidebar/SidebarProvider';
 import Analytics from '@/lib/analytics';
 import { invoke } from '@tauri-apps/api/core';
@@ -24,7 +24,7 @@ import { useMeetingSpeakers } from '@/hooks/fork/useMeetingSpeakers';
 import { usePostMeetingPipeline } from '@/hooks/fork/usePostMeetingPipeline';
 import { MeetingCloudBar } from '@/components/fork/MeetingCloudBar';
 import { MeetingContextPanel } from '@/components/fork/MeetingContextPanel';
-import { SpeakerChip } from '@/components/fork/SpeakerChip';
+import { SegmentPlayButton, SpeakerChip } from '@/components/fork/SpeakerChip';
 
 export default function PageContent({
   meeting,
@@ -72,7 +72,7 @@ export default function PageContent({
   const customPrompt = meetingContext.context.extraInstructions ?? '';
   const setCustomPrompt = (value: string) =>
     meetingContext.update({ ...meetingContext.context, extraInstructions: value });
-  const meetingSpeakers = useMeetingSpeakers(meeting.id);
+  const meetingSpeakers = useMeetingSpeakers(meeting.id, () => onRefetchTranscripts?.());
   const pipeline = usePostMeetingPipeline({
     meetingId: meeting.id,
     fromRecording,
@@ -99,6 +99,14 @@ export default function PageContent({
 
   // Custom hooks
   const meetingData = useMeetingData({ meeting, summaryData, onMeetingUpdated });
+  // Every speaker key of the meeting (targets of "same speaker as...")
+  const speakerKeys = useMemo(() => {
+    const keys = new Set<string>(Object.keys(meetingSpeakers.speakers));
+    (segments ?? []).forEach(s => s.speaker && keys.add(s.speaker));
+    (meetingData.transcripts as Transcript[]).forEach(tr => tr.speaker && keys.add(tr.speaker));
+    keys.delete('mixed');
+    return [...keys].sort();
+  }, [meetingSpeakers.speakers, segments, meetingData.transcripts]);
   const templates = useTemplates();
 
   // Callback to register the modal open function
@@ -254,11 +262,18 @@ export default function PageContent({
                 />
               }
               renderSpeaker={segment => (
+                <>
+                <SegmentPlayButton meetingId={meeting.id} segment={{ id: segment.id, start: segment.timestamp, end: segment.endTime }} />
                 <SpeakerChip
+                  segment={{ id: segment.id, start: segment.timestamp, end: segment.endTime }}
+                  speakerKeys={speakerKeys}
+                  onMerge={meetingSpeakers.mergeSpeaker}
+                  onReassign={meetingSpeakers.reassignSegment}
                   speakerKey={segment.speaker}
                   speakers={meetingSpeakers.speakers}
                   onRename={meetingSpeakers.renameSpeaker}
                 />
+                </>
               )}
             />
           }

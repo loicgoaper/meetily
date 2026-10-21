@@ -15,8 +15,18 @@ Version personnelle de [Meetily](https://github.com/Zackriya-Solutions/meetily) 
 | Compte rendu en français natif | Automatique | Un seul appel au modèle, directement dans la langue demandée, au lieu d'un passage par l'anglais puis d'une traduction. |
 | Interface FR/EN | Réglages → Général | Toute l'interface, le menu de la barre des tâches et les notifications. |
 | Coût cloud | Barre au-dessus de la transcription d'une réunion | Somme des appels OpenRouter de la réunion (hors compte rendu). |
+| Réécoute et correction des intervenants | Transcription d'une réunion : ▶ devant chaque ligne, clic sur le nom | Le bouton ▶ rejoue le passage (extrait mp3 produit par ffmpeg). Le menu du nom permet de renommer, ou d'indiquer que « Intervenant 4 » est en fait « Intervenant 1 », pour toutes ses lignes ou pour cette ligne seulement. |
+| Export | Bouton « Exporter » d'une réunion | Compte rendu, transcription, contexte en Markdown, audio d'origine, captures. Un seul élément est enregistré tel quel, plusieurs sont réunis dans un zip. |
+| Tags | Bouton « Ajouter un tag » d'une réunion, Réglages → Général → Tags | Tags personnalisés avec 10 couleurs (celles de Notion). Pastilles dans la barre latérale, filtre par tag sous la recherche (une réunion doit porter tous les tags choisis). |
+| Sauvegarde Notion | Réglages → Notion | Une base « Réunions Meetily » créée sous une page partagée avec l'intégration. Une page par réunion : propriétés (date, tags, participants, durée, coût), compte rendu, contexte, transcription dans un bloc dépliable. Envoi 15 s après chaque modification, et bouton « Tout synchroniser ». |
+| Recherche IA | Bouton « Recherche IA » sous la recherche de la barre latérale | Question en langage naturel (« la réunion où l'on a parlé de SIRIS avec Olivier et Maxime »). L'IA extrait personnes, sujets et période, Meetily cherche dans toutes les transcriptions, puis l'IA classe les réunions trouvées et explique pourquoi. |
+| Choix de l'écran capturé | Réglages → Cloud & IA → Écran capturé | Écran principal, un écran précis, ou tous les écrans (une capture par écran, numérotée). |
 
 Le code ajouté vit dans `frontend/src-tauri/src/fork/` (Rust) et dans `frontend/src/components/fork`, `frontend/src/hooks/fork`, `frontend/src/services/forkService.ts` et `frontend/src/i18n` (interface). Les fichiers officiels ne reçoivent que de petits points d'accroche, ce qui facilite les fusions avec les versions futures.
+
+## Clé Notion
+
+Réglages → Notion. La clé est celle d'une intégration interne (notion.so/my-integrations). Pour que Meetily puisse créer sa base, il faut partager une page avec l'intégration dans Notion : menu « … » de la page → Connexions → ajouter l'intégration. La page apparaît ensuite dans la liste des pages parentes. La clé et les identifiants de la base sont dans `app_preferences` (`notion.token`, `notion.parent_page_id`, `notion.database_id`, `notion.auto_sync`), l'état de chaque réunion dans `notion_pages`.
 
 ## Clé OpenRouter
 
@@ -59,7 +69,7 @@ Tests : `cmd /c "scripts\fork-dev-env.cmd cargo test --lib"` (dans `src-tauri`),
    ```sql
    DELETE FROM _sqlx_migrations WHERE version >= 20990000000000;
    ```
-   Les tables du fork (`app_preferences`, `meeting_context`, `meeting_participants`, `contacts`, `meeting_speakers`, `meeting_usage`) peuvent rester : la version officielle les ignore.
+   Les tables du fork (`app_preferences`, `meeting_context`, `meeting_participants`, `contacts`, `meeting_speakers`, `meeting_usage`, `tags`, `meeting_tags`, `notion_pages`) peuvent rester : la version officielle les ignore.
 3. Installer la version officielle.
 
 ## Fichiers ajoutés dans le dossier d'une réunion

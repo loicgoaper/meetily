@@ -3,10 +3,15 @@
 // Meetily perso: everything added by the fork lives here, so upstream files only
 // receive small hooks and future merges stay manageable.
 
+pub mod ai_search;
 pub mod cloud_chunker;
 pub mod diarization;
+pub mod export;
 pub mod i18n;
 pub mod meeting_context;
+pub mod meeting_doc;
+pub mod notion;
+pub mod notion_md;
 pub mod openrouter_chat;
 pub mod openrouter_stt;
 pub mod preferences;
@@ -15,6 +20,7 @@ pub mod source_timeline;
 pub mod speakers;
 pub mod stt_provider;
 pub mod summary_context;
+pub mod tags;
 pub mod templates_admin;
 pub mod usage;
 pub mod vision;

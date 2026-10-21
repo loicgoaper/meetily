@@ -117,6 +117,7 @@ export function CloudAiSettings() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="primary">{t('fork.cloud.primaryMonitor')}</SelectItem>
+              {monitors.length > 1 && <SelectItem value="all">{t('fork.cloud.allMonitors', { count: monitors.length })}</SelectItem>}
               {monitors.map(m => (
                 <SelectItem key={m.id} value={m.id}>
                   {m.name || m.id} ({m.width}×{m.height}){m.primary ? ` — ${t('fork.cloud.primary')}` : ''}

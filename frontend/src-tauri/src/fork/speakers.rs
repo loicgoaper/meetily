@@ -78,6 +78,25 @@ impl SpeakersRepository {
         .await?;
         Ok(())
     }
+
+    /// Every segment of `from_key` now belongs to `into_key` ("speaker 4 is speaker 1").
+    pub async fn merge(pool: &SqlitePool, meeting_id: &str, from_key: &str, into_key: &str) -> Result<u64, sqlx::Error> {
+        let mut tx = pool.begin().await?;
+        let moved = sqlx::query("UPDATE transcripts SET speaker = ? WHERE meeting_id = ? AND speaker = ?")
+            .bind(into_key)
+            .bind(meeting_id)
+            .bind(from_key)
+            .execute(&mut *tx)
+            .await?
+            .rows_affected();
+        sqlx::query("DELETE FROM meeting_speakers WHERE meeting_id = ? AND speaker_key = ?")
+            .bind(meeting_id)
+            .bind(from_key)
+            .execute(&mut *tx)
+            .await?;
+        tx.commit().await?;
+        Ok(moved)
+    }
 }
 
 #[tauri::command]
@@ -100,7 +119,28 @@ pub async fn api_rename_speaker(
 ) -> Result<(), String> {
     SpeakersRepository::rename(state.db_manager.pool(), &meeting_id, &speaker_key, display_name.as_deref())
         .await
-        .map_err(|e| e.to_string())
+        .map_err(|e| e.to_string())?;
+    super::notion::mark_dirty(&meeting_id);
+    Ok(())
+}
+
+/// Merge two speakers of a meeting: all segments of `from_key` move to `into_key`.
+/// Returns how many segments moved.
+#[tauri::command]
+pub async fn api_merge_speakers(
+    state: tauri::State<'_, AppState>,
+    meeting_id: String,
+    from_key: String,
+    into_key: String,
+) -> Result<u64, String> {
+    if from_key == into_key {
+        return Ok(0);
+    }
+    let moved = SpeakersRepository::merge(state.db_manager.pool(), &meeting_id, &from_key, &into_key)
+        .await
+        .map_err(|e| e.to_string())?;
+    super::notion::mark_dirty(&meeting_id);
+    Ok(moved)
 }
 
 /// Reassign one transcript segment to another speaker key.
@@ -110,11 +150,19 @@ pub async fn api_set_segment_speaker(
     transcript_id: String,
     speaker_key: Option<String>,
 ) -> Result<(), String> {
+    let pool = state.db_manager.pool();
     sqlx::query("UPDATE transcripts SET speaker = ? WHERE id = ?")
         .bind(speaker_key)
-        .bind(transcript_id)
-        .execute(state.db_manager.pool())
+        .bind(&transcript_id)
+        .execute(pool)
         .await
-        .map(|_| ())
-        .map_err(|e| e.to_string())
+        .map_err(|e| e.to_string())?;
+    if let Ok(Some((meeting_id,))) = sqlx::query_as::<_, (String,)>("SELECT meeting_id FROM transcripts WHERE id = ?")
+        .bind(&transcript_id)
+        .fetch_optional(pool)
+        .await
+    {
+        super::notion::mark_dirty(&meeting_id);
+    }
+    Ok(())
 }

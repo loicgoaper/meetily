@@ -40,7 +40,10 @@ function Thumbnail({ meetingId, frame, onOpen, onToggle }: {
         {src && <img src={src} alt={formatTimestamp(frame.t)} className="h-full w-full object-cover" />}
       </button>
       <div className="flex items-center justify-between px-1.5 py-1 text-[11px] text-gray-600">
-        <span>[{formatTimestamp(frame.t)}]</span>
+        <span>
+          [{formatTimestamp(frame.t)}]
+          {frame.monitor != null && <span className="ml-1 rounded bg-gray-100 px-1 text-gray-500">{t('fork.screens.monitor', { n: frame.monitor })}</span>}
+        </span>
         <button
           type="button"
           onClick={onToggle}

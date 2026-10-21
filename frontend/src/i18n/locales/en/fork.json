@@ -74,7 +74,9 @@
     "privacyTitle": "Privacy",
     "privacyDescription": "Providers that keep or reuse data are always excluded from requests.",
     "zdr": "Zero data retention (ZDR)",
-    "zdrHint": "Only use providers that keep nothing. Some models may then become unavailable."
+    "zdrHint": "Only use providers that keep nothing. Some models may then become unavailable.",
+    "allMonitors_one": "All screens ({{count}})",
+    "allMonitors_other": "All screens ({{count}})"
   },
   "templates": {
     "title": "Summary templates",
@@ -173,7 +175,17 @@
     "rename": "Rename speaker",
     "renameHint": "Name shown for “{{label}}” throughout the meeting",
     "namePlaceholder": "Person's name",
-    "resetName": "Default name"
+    "resetName": "Default name",
+    "play": "Play this line",
+    "stop": "Stop playback",
+    "sameAs": "\"{{label}}\" is actually…",
+    "chooseSpeaker": "Choose a speaker",
+    "scopeAll": "Every line of \"{{label}}\"",
+    "scopeLine": "This line only",
+    "apply": "Apply",
+    "merged_one": "{{count}} line reassigned",
+    "merged_other": "{{count}} lines reassigned",
+    "reassigned": "Line reassigned"
   },
   "pipeline": {
     "diarizing": "Identifying speakers…",
@@ -201,6 +213,94 @@
     "none": "No screenshots for this meeting.",
     "hint": "Click a screenshot to enlarge it. The eye excludes a screenshot from the analysis, useful if it shows something private.",
     "include": "Include in the analysis",
-    "exclude": "Exclude from the analysis"
+    "exclude": "Exclude from the analysis",
+    "monitor": "screen {{n}}"
+  },
+  "tags": {
+    "title": "Tags",
+    "description": "Group your meetings by client, project or topic, then filter them in the sidebar.",
+    "edit": "Edit tags",
+    "add": "Add a tag",
+    "none": "No tags yet. Create one below.",
+    "newPlaceholder": "New tag (client, project…)",
+    "create": "Create",
+    "delete": "Delete tag",
+    "deleteConfirm": "Delete the tag \"{{name}}\"? It will be removed from every meeting.",
+    "usage_one": "{{count}} meeting",
+    "usage_other": "{{count}} meetings",
+    "clearFilter": "Clear filter",
+    "colors": {
+      "default": "Default",
+      "gray": "Gray",
+      "brown": "Brown",
+      "orange": "Orange",
+      "yellow": "Yellow",
+      "green": "Green",
+      "blue": "Blue",
+      "purple": "Purple",
+      "pink": "Pink",
+      "red": "Red"
+    }
+  },
+  "export": {
+    "button": "Export",
+    "hint": "Export the audio, transcript or summary",
+    "title": "Export meeting",
+    "description": "A single item is saved as is; several items are bundled into a zip file.",
+    "parts": {
+      "summary": "Summary",
+      "transcript": "Transcript",
+      "audio": "Audio",
+      "context": "Context and participants",
+      "screenshots": "Screenshots"
+    },
+    "partsHint": {
+      "summary": "compte-rendu.md",
+      "transcript": "transcription.md, with speaker names and timestamps",
+      "audio": "Original recording",
+      "context": "contexte.md",
+      "screenshots": "captures/ folder (excluded screenshots left out)"
+    },
+    "asZip": "Export as zip",
+    "asFile": "Export file",
+    "done": "Export saved"
+  },
+  "notion": {
+    "title": "Notion",
+    "description": "Automatic backup of your meetings to a Notion database: summary, transcript and details (date, tags, participants, duration).",
+    "key": "Notion integration key",
+    "noKey": "No key saved",
+    "keyHint": "Create an internal integration at notion.so/my-integrations and paste its \"Internal Integration Secret\".",
+    "keySaved": "Notion key saved",
+    "database": "\"Réunions Meetily\" database",
+    "databaseReady": "The database is ready: meetings are sent to it.",
+    "shareHint": "In Notion, open the page that will hold the database, \"…\" menu → Connections → add \"{{integration}}\". Then refresh the list and pick that page.",
+    "choosePage": "Parent page",
+    "noPage": "No page shared with the integration",
+    "refreshPages": "Refresh the page list",
+    "create": "Create database",
+    "recreate": "Recreate database",
+    "databaseCreated": "Notion database created",
+    "open": "Open in Notion",
+    "syncTitle": "Sync",
+    "syncDescription": "Every change (summary, title, speakers, tags, context) is sent to Notion a few seconds later.",
+    "auto": "Automatic sync",
+    "autoHint": "When off, meetings are only sent on demand.",
+    "syncAll": "Sync everything",
+    "syncAllHint": "Sends or updates every meeting.",
+    "progress": "{{done}} / {{total}} meetings sent ({{failed}} failed)",
+    "synced": "Meeting sent to Notion",
+    "openPage": "Open the Notion page",
+    "pending": "Waiting to be sent to Notion",
+    "syncNow": "Send to Notion now"
+  },
+  "search": {
+    "button": "AI search",
+    "title": "AI search",
+    "description": "Describe what you are looking for in plain words: a topic, people, a time period.",
+    "placeholder": "e.g. the meeting where we discussed SIRIS with Olivier and Maxime",
+    "run": "Search",
+    "searching": "Searching the transcripts…",
+    "noResult": "No meeting matches."
   }
 }

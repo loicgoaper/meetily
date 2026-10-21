@@ -111,6 +111,7 @@ pub async fn api_save_meeting_summary<R: Runtime>(
 
     match SummaryProcessesRepository::update_meeting_summary(pool, &meeting_id, &summary).await {
         Ok(true) => {
+            crate::fork::notion::mark_dirty(&meeting_id);
             log_info!("Summary saved successfully for meeting_id: {}", meeting_id);
             Ok(serde_json::json!({
                 "message": "Meeting summary saved successfully"

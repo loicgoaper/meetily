@@ -157,3 +157,52 @@ async fn live_summary_native_french_with_context() {
     assert!(md.contains("15 novembre"), "date from transcript/screen missing");
     assert!(md.contains("avancement") || md.contains("décisions"), "French template sections missing");
 }
+
+#[tokio::test]
+#[ignore]
+async fn live_ai_search_finds_meeting_by_intent() {
+    use super::speakers::{MeetingSpeaker, SpeakersRepository};
+    let pool = sqlx::SqlitePool::connect("sqlite::memory:").await.unwrap();
+    let mut migrator = sqlx::migrate!("./migrations");
+    migrator.set_ignore_missing(true);
+    migrator.run(&pool).await.unwrap();
+
+    let meetings = [
+        ("m_target", "Point projet", "2026-10-14T14:00:00+00:00", [("Olivier", "On a avancé sur le module de facturation de SIRIS."), ("Maxime", "Côté SIRIS, la recette est prévue jeudi.")]),
+        ("m_siris_other", "Démo client", "2026-10-02T15:00:00+00:00", [("Julie", "Je vous montre SIRIS en conditions réelles."), ("Paul", "SIRIS couvre bien nos besoins.")]),
+        ("m_budget", "Budget 2027", "2026-10-08T09:00:00+00:00", [("Olivier", "Le budget formation est réduit."), ("Maxime", "Il faudra arbitrer les licences Microsoft.")]),
+    ];
+    for (id, title, at, lines) in meetings {
+        sqlx::query("INSERT INTO meetings (id, title, created_at, updated_at) VALUES (?, ?, ?, ?)")
+            .bind(id).bind(title).bind(at).bind(at)
+            .execute(&pool).await.unwrap();
+        let mut speakers = Vec::new();
+        for (i, (name, text)) in lines.iter().enumerate() {
+            let key = format!("speaker_{}", i);
+            sqlx::query(
+                "INSERT INTO transcripts (id, meeting_id, transcript, timestamp, audio_start_time, audio_end_time, duration, speaker)
+                 VALUES (?, ?, ?, 'now', ?, ?, 5.0, ?)",
+            )
+            .bind(format!("{}_{}", id, i)).bind(id).bind(*text).bind(i as f64 * 30.0).bind(i as f64 * 30.0 + 5.0).bind(&key)
+            .execute(&pool).await.unwrap();
+            speakers.push(MeetingSpeaker { speaker_key: key, display_name: Some(name.to_string()), participant_id: None, source: "auto".into(), confidence: None });
+        }
+        SpeakersRepository::replace_all(&pool, id, &speakers).await.unwrap();
+    }
+
+    let started = Instant::now();
+    let results = super::ai_search::search(
+        &pool,
+        &key(),
+        "google/gemini-3.1-flash-lite",
+        false,
+        "trouve moi la reunion où l'on a discuter de SIRIS avec Olivier et Maxime",
+    )
+    .await
+    .unwrap();
+    println!("{:.1}s", started.elapsed().as_secs_f64());
+    for r in &results {
+        println!("{} {:.2} {} — {}", r.meeting_id, r.score, r.title, r.reason);
+    }
+    assert_eq!(results.first().map(|r| r.meeting_id.as_str()), Some("m_target"));
+}

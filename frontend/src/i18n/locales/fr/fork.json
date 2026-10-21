@@ -74,7 +74,9 @@
     "privacyTitle": "Confidentialité",
     "privacyDescription": "Les fournisseurs qui conservent ou réutilisent les données sont toujours exclus des requêtes.",
     "zdr": "Zéro rétention de données (ZDR)",
-    "zdrHint": "N'utiliser que des fournisseurs qui ne conservent rien. Certains modèles peuvent alors devenir indisponibles."
+    "zdrHint": "N'utiliser que des fournisseurs qui ne conservent rien. Certains modèles peuvent alors devenir indisponibles.",
+    "allMonitors_one": "Tous les écrans ({{count}})",
+    "allMonitors_other": "Tous les écrans ({{count}})"
   },
   "templates": {
     "title": "Modèles de compte rendu",
@@ -173,7 +175,17 @@
     "rename": "Renommer l'intervenant",
     "renameHint": "Nom affiché pour « {{label}} » dans toute la réunion",
     "namePlaceholder": "Nom de la personne",
-    "resetName": "Nom par défaut"
+    "resetName": "Nom par défaut",
+    "play": "Réécouter cette ligne",
+    "stop": "Arrêter la lecture",
+    "sameAs": "« {{label}} » est en fait…",
+    "chooseSpeaker": "Choisir l'intervenant",
+    "scopeAll": "Toutes les lignes de « {{label}} »",
+    "scopeLine": "Cette ligne seulement",
+    "apply": "Appliquer",
+    "merged_one": "{{count}} ligne réattribuée",
+    "merged_other": "{{count}} lignes réattribuées",
+    "reassigned": "Ligne réattribuée"
   },
   "pipeline": {
     "diarizing": "Identification des intervenants…",
@@ -201,6 +213,94 @@
     "none": "Aucune capture d'écran pour cette réunion.",
     "hint": "Cliquez sur une capture pour l'agrandir. L'œil exclut une capture de l'analyse, utile si elle montre quelque chose de privé.",
     "include": "Inclure dans l'analyse",
-    "exclude": "Exclure de l'analyse"
+    "exclude": "Exclure de l'analyse",
+    "monitor": "écran {{n}}"
+  },
+  "tags": {
+    "title": "Tags",
+    "description": "Classez vos réunions par client, projet ou sujet, puis filtrez-les dans la barre latérale.",
+    "edit": "Modifier les tags",
+    "add": "Ajouter un tag",
+    "none": "Aucun tag pour l'instant. Créez-en un ci-dessous.",
+    "newPlaceholder": "Nouveau tag (client, projet…)",
+    "create": "Créer",
+    "delete": "Supprimer le tag",
+    "deleteConfirm": "Supprimer le tag « {{name}} » ? Il sera retiré de toutes les réunions.",
+    "usage_one": "{{count}} réunion",
+    "usage_other": "{{count}} réunions",
+    "clearFilter": "Retirer le filtre",
+    "colors": {
+      "default": "Par défaut",
+      "gray": "Gris",
+      "brown": "Marron",
+      "orange": "Orange",
+      "yellow": "Jaune",
+      "green": "Vert",
+      "blue": "Bleu",
+      "purple": "Violet",
+      "pink": "Rose",
+      "red": "Rouge"
+    }
+  },
+  "export": {
+    "button": "Exporter",
+    "hint": "Exporter l'audio, la transcription ou le compte rendu",
+    "title": "Exporter la réunion",
+    "description": "Un seul élément est enregistré tel quel ; plusieurs éléments sont réunis dans un fichier zip.",
+    "parts": {
+      "summary": "Compte rendu",
+      "transcript": "Transcription",
+      "audio": "Audio",
+      "context": "Contexte et participants",
+      "screenshots": "Captures d'écran"
+    },
+    "partsHint": {
+      "summary": "compte-rendu.md",
+      "transcript": "transcription.md, avec les noms des intervenants et les horodatages",
+      "audio": "Enregistrement d'origine",
+      "context": "contexte.md",
+      "screenshots": "Dossier captures/ (sans les captures exclues)"
+    },
+    "asZip": "Exporter en zip",
+    "asFile": "Exporter le fichier",
+    "done": "Export enregistré"
+  },
+  "notion": {
+    "title": "Notion",
+    "description": "Sauvegarde automatique de vos réunions dans une base Notion : compte rendu, transcription et informations (date, tags, participants, durée).",
+    "key": "Clé d'intégration Notion",
+    "noKey": "Aucune clé enregistrée",
+    "keyHint": "Créez une intégration interne sur notion.so/my-integrations et collez son « Internal Integration Secret ».",
+    "keySaved": "Clé Notion enregistrée",
+    "database": "Base « Réunions Meetily »",
+    "databaseReady": "La base est prête : les réunions y sont envoyées.",
+    "shareHint": "Dans Notion, ouvrez la page qui accueillera la base, menu « … » → Connexions → ajoutez « {{integration}} ». Rafraîchissez ensuite la liste et choisissez cette page.",
+    "choosePage": "Page parente",
+    "noPage": "Aucune page partagée avec l'intégration",
+    "refreshPages": "Rafraîchir la liste des pages",
+    "create": "Créer la base",
+    "recreate": "Recréer la base",
+    "databaseCreated": "Base Notion créée",
+    "open": "Ouvrir dans Notion",
+    "syncTitle": "Synchronisation",
+    "syncDescription": "Chaque modification (compte rendu, titre, intervenants, tags, contexte) est envoyée à Notion quelques secondes après.",
+    "auto": "Synchronisation automatique",
+    "autoHint": "Désactivée, les réunions ne sont envoyées qu'à la demande.",
+    "syncAll": "Tout synchroniser",
+    "syncAllHint": "Envoie ou met à jour toutes les réunions.",
+    "progress": "{{done}} / {{total}} réunions envoyées ({{failed}} en échec)",
+    "synced": "Réunion envoyée dans Notion",
+    "openPage": "Ouvrir la page Notion",
+    "pending": "Envoi à Notion en attente",
+    "syncNow": "Envoyer dans Notion maintenant"
+  },
+  "search": {
+    "button": "Recherche IA",
+    "title": "Recherche IA",
+    "description": "Décrivez ce que vous cherchez en langage naturel : un sujet, des personnes, une période.",
+    "placeholder": "Ex. : la réunion où l'on a parlé de SIRIS avec Olivier et Maxime",
+    "run": "Chercher",
+    "searching": "Recherche dans les transcriptions…",
+    "noResult": "Aucune réunion ne correspond."
   }
 }

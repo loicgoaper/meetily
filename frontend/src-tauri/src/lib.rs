@@ -596,6 +596,9 @@ pub fn run() {
                 log::warn!("Failed to resolve resource directory for templates");
             }
 
+            // Fork: background Notion sync of changed meetings
+            fork::notion::start_worker(_app.handle().clone());
+
             // Fork: apply the saved UI language to Rust-side strings (tray menu)
             let app_for_lang = _app.handle().clone();
             tauri::async_runtime::spawn(async move {
@@ -878,6 +881,24 @@ pub fn run() {
             fork::templates_admin::api_import_template,
             fork::templates_admin::api_export_template,
             fork::templates_admin::api_preview_template,
+            fork::speakers::api_merge_speakers,
+            fork::export::api_get_audio_clip,
+            fork::export::api_export_meeting,
+            fork::tags::api_list_tags,
+            fork::tags::api_create_tag,
+            fork::tags::api_update_tag,
+            fork::tags::api_delete_tag,
+            fork::tags::api_get_meeting_tags,
+            fork::tags::api_set_meeting_tags,
+            fork::tags::api_get_all_meeting_tags,
+            fork::notion::api_notion_status,
+            fork::notion::api_notion_set_token,
+            fork::notion::api_notion_list_pages,
+            fork::notion::api_notion_create_database,
+            fork::notion::api_notion_sync_meeting,
+            fork::notion::api_notion_sync_all,
+            fork::notion::api_notion_meeting_state,
+            fork::ai_search::api_ai_search,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

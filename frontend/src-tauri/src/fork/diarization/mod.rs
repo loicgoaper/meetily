@@ -456,6 +456,7 @@ pub async fn diarize_meeting<R: Runtime>(app: &AppHandle<R>, meeting_id: &str) -
         cost_usd: cost,
     };
     emit_progress(app, meeting_id, "complete", 100, "Intervenants identifiés");
+    super::notion::mark_dirty(meeting_id);
     info!("🗣️ Diarization done: {:?}", result);
     Ok(result)
 }

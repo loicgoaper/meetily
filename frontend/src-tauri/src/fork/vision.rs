@@ -175,7 +175,8 @@ pub async fn analyze<R: Runtime>(app: &AppHandle<R>, meeting_id: &str, force: bo
                 let bytes = tokio::task::spawn_blocking(move || jpeg_for_vision(&path))
                     .await
                     .map_err(|e| e.to_string())??;
-                content.push(ContentPart::text(format!("id {} — shown at [{}]", i + 1, mm_ss(frame.t))));
+                let screen = frame.monitor.map(|m| format!(", screen {}", m)).unwrap_or_default();
+                content.push(ContentPart::text(format!("id {} — shown at [{}]{}", i + 1, mm_ss(frame.t), screen)));
                 content.push(ContentPart::jpeg(&bytes));
             }
             let messages = [ChatMessage::system(SYSTEM_PROMPT), ChatMessage::user(content)];
@@ -230,7 +231,7 @@ mod tests {
     use super::*;
 
     fn frame(i: usize, change: f32) -> ScreenFrame {
-        ScreenFrame { file: format!("{:04}.jpg", i), t: i as f64 * 20.0, excluded: false, change }
+        ScreenFrame { file: format!("{:04}.jpg", i), t: i as f64 * 20.0, excluded: false, change, monitor: None }
     }
 
     #[test]

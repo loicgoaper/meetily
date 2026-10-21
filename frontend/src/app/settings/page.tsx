@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
-import { ArrowLeft, Settings2, Mic, Database as DatabaseIcon, SparkleIcon, FlaskConical, Cloud, LayoutTemplate } from 'lucide-react';
+import { ArrowLeft, Settings2, Mic, Database as DatabaseIcon, SparkleIcon, FlaskConical, Cloud, LayoutTemplate, NotebookPen } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import { invoke } from '@tauri-apps/api/core';
@@ -16,6 +16,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { CloudAiSettings } from '@/components/fork/CloudAiSettings';
 import { TemplateManager } from '@/components/fork/TemplateManager';
 import { LanguageSettings } from '@/components/fork/LanguageSettings';
+import { NotionSettings } from '@/components/fork/NotionSettings';
+import { TagManager } from '@/components/fork/TagManager';
 
 // Tabs configuration (constant)
 const TABS = [
@@ -25,6 +27,7 @@ const TABS = [
   { value: 'summaryModels', labelKey: 'settings.tabs.summary', icon: SparkleIcon },
   { value: 'templates', labelKey: 'settings.tabs.templates', icon: LayoutTemplate },
   { value: 'cloud', labelKey: 'settings.tabs.cloud', icon: Cloud },
+  { value: 'notion', labelKey: 'settings.tabs.notion', icon: NotebookPen },
   { value: 'beta', labelKey: 'settings.tabs.beta', icon: FlaskConical }
 ] as const;
 
@@ -119,6 +122,7 @@ export default function SettingsPage() {
             <TabsContent value="general">
               <div className="space-y-6">
                 <LanguageSettings />
+                <TagManager />
                 <PreferenceSettings />
               </div>
             </TabsContent>
@@ -139,6 +143,9 @@ export default function SettingsPage() {
             </TabsContent>
             <TabsContent value="cloud" className="mt-6">
               <CloudAiSettings />
+            </TabsContent>
+            <TabsContent value="notion" className="mt-6">
+              <NotionSettings />
             </TabsContent>
             <TabsContent value="beta" className="mt-6">
               <BetaSettings />
