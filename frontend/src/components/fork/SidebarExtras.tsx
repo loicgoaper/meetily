@@ -1,21 +1,29 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Loader2, Settings2, Sparkles, X } from 'lucide-react';
+import { Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { aiSearch, formatTimestamp, TAG_COLOR_CLASSES, type AiSearchResult, type Tag } from '@/services/forkService';
-import { TagManagerDialog } from './TagManager';
+import { aiSearch, formatTimestamp, type AiSearchResult, type Tag } from '@/services/forkService';
+import { useTags } from '@/hooks/fork/useTags';
+
+export { SidebarTagFilter } from './SidebarTagFilter';
 
 const FILTER_KEY = 'fork.tagFilter';
 
 /** Selected tag filter, remembered on this device. */
 export function useTagFilter() {
-  const [selected, setSelected] = useState<string[]>([]);
+  const [stored, setSelected] = useState<string[]>([]);
+  const { tags } = useTags();
+  // A deleted tag left in the filter would hide every meeting: ignore it
+  const selected = useMemo(
+    () => (tags.length ? stored.filter(id => tags.some(tag => tag.id === id)) : stored),
+    [stored, tags],
+  );
 
   useEffect(() => {
     try {
@@ -60,53 +68,6 @@ export function applyTagFilter<T extends TreeItem>(items: T[], selected: string[
         : item,
     )
     .filter(item => item.type === 'folder' || keep(item.id));
-}
-
-/** Tag chips under the search box (click to filter meetings), and the tag manager. */
-export function SidebarTagFilter({ tags, selected, onToggle, onClear }: {
-  tags: Tag[];
-  selected: string[];
-  onToggle: (id: string) => void;
-  onClear: () => void;
-}) {
-  const { t } = useTranslation();
-  return (
-    <div className="mt-2 flex flex-wrap items-center gap-1">
-      {tags.map(tag => {
-        const active = selected.includes(tag.id);
-        const classes = TAG_COLOR_CLASSES[tag.color] ?? TAG_COLOR_CLASSES.default;
-        return (
-          <button
-            key={tag.id}
-            type="button"
-            onClick={() => onToggle(tag.id)}
-            className={`rounded border px-1.5 py-0.5 text-[11px] font-medium transition-opacity ${classes.chip} ${
-              selected.length > 0 && !active ? 'opacity-40' : ''
-            } ${active ? 'ring-1 ring-gray-500' : ''}`}
-          >
-            {tag.name}
-          </button>
-        );
-      })}
-      {selected.length > 0 && (
-        <button type="button" onClick={onClear} className="text-gray-400 hover:text-gray-700" title={t('fork.tags.clearFilter')}>
-          <X className="h-3.5 w-3.5" />
-        </button>
-      )}
-      <TagManagerDialog
-        trigger={
-          <button
-            type="button"
-            title={t('fork.tags.manage')}
-            className="inline-flex items-center gap-1 rounded px-1 py-0.5 text-[11px] text-gray-500 hover:bg-gray-100 hover:text-gray-800"
-          >
-            <Settings2 className="h-3.5 w-3.5" />
-            {tags.length === 0 && t('fork.tags.manage')}
-          </button>
-        }
-      />
-    </div>
-  );
 }
 
 /** "✨ Recherche IA" button and dialog. */

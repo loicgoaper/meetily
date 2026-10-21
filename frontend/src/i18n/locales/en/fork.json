@@ -253,7 +253,17 @@
     "suggestAgain": "Suggest tags with AI",
     "suggestionsTitle": "Automatic suggestions",
     "autoSuggest": "Suggest tags automatically",
-    "autoSuggestHint": "After each summary, the AI suggests up to 5 tags (client, project, kind of meeting, topic), reusing your existing tags. Nothing is added until you click."
+    "autoSuggestHint": "After each summary, the AI suggests up to 5 tags (client, project, kind of meeting, topic), reusing your existing tags. Nothing is added until you click.",
+    "filter": "Filter by tags",
+    "all": "All",
+    "allHint": "Every meeting is shown. Click to filter by tags.",
+    "searchPlaceholder": "Search tags…",
+    "noMatch": "No tag matches",
+    "showAll": "Show all",
+    "resetFilter": "Reset the filter (show all)",
+    "removeFromFilter": "Remove from filter",
+    "hiddenCount_one": "{{count}} more selected tag",
+    "hiddenCount_other": "{{count}} more selected tags"
   },
   "export": {
     "button": "Export",
