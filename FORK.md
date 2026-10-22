@@ -10,7 +10,9 @@ Version personnelle de [Meetily](https://github.com/Zackriya-Solutions/meetily) 
 | « Moi » / « Interlocuteurs » en direct | Pendant l'enregistrement | Énergie du micro et du son système mesurée avant le mixage (fenêtres de 600 ms). |
 | Identification des intervenants | Automatique à l'arrêt (désactivable) | L'audio complet est retranscrit avec diarisation (`elevenlabs/scribe-v2`, seul modèle qui l'accepte via OpenRouter), puis l'IA attribue les noms des participants. La transcription du direct est gardée dans `transcripts.live.json` et restaurable. |
 | Contexte et participants | Fenêtre « Nouvelle réunion », bouton Contexte pendant l'enregistrement, panneau dans la réunion | Enregistrés en base. Injectés dans le compte rendu, l'attribution des noms et la transcription (vocabulaire pour les modèles `openai/*`). |
-| Captures d'écran intelligentes | Case « Capturer l'écran » au démarrage | Une capture toutes les 5 s, gardée seulement si l'écran a changé et s'est stabilisé. Meetily est exclu des captures. Un modèle de vision les lit avant le compte rendu. |
+| Captures d'écran intelligentes | Case « Capturer l'écran » au démarrage | Une capture toutes les 5 s, gardée seulement si l'écran a changé et s'est stabilisé, en WebP (environ 60 Ko, un tiers du JPEG d'avant). Meetily est exclu des captures. Un modèle de vision lit **toutes** les captures, notes en français, avant le compte rendu. |
+| Captures dans le compte rendu | Automatique après chaque compte rendu, bouton « Illustrer avec les captures » au-dessus du compte rendu | L'IA choisit jusqu'à 5 captures (réglable) qui appuient un point précis (diapositive, document, page produit, formulaire…) et Meetily les insère après ce point, avec une légende : `![légende](meetily-screen://FICHIER)`. Affichées dans l'éditeur, hébergées par Notion (API File Upload, chaque image envoyée une seule fois), jointes à l'export (dossier `captures/`), remplacées par leur légende dans la copie. |
+| Conservation des captures | Réglages → Cloud & IA → Captures dans le compte rendu | Les captures absentes du compte rendu sont supprimées après 6 mois (3, 6, 12 mois ou jamais), seulement pour les réunions déjà illustrées. Les captures du compte rendu et les notes de vision sont gardées. Aperçu et nettoyage immédiat dans les réglages. |
 | Modèles de compte rendu | Réglages → Modèles | Créer, modifier, dupliquer, importer, exporter, supprimer, choisir le modèle par défaut. 8 modèles en français, dont « Suivi de projet client » et « Réunion interne / équipe ». |
 | Compte rendu en français natif | Automatique | Un seul appel au modèle, directement dans la langue demandée, au lieu d'un passage par l'anglais puis d'une traduction. |
 | Interface FR/EN | Réglages → Général | Toute l'interface, le menu de la barre des tâches et les notifications. |
@@ -72,7 +74,7 @@ Tests : `cmd /c "scripts\fork-dev-env.cmd cargo test --lib"` (dans `src-tauri`),
    ```sql
    DELETE FROM _sqlx_migrations WHERE version >= 20990000000000;
    ```
-   Les tables du fork (`app_preferences`, `meeting_context`, `meeting_participants`, `contacts`, `meeting_speakers`, `meeting_usage`, `tags`, `meeting_tags`, `notion_pages`) peuvent rester : la version officielle les ignore.
+   Les tables du fork (`app_preferences`, `meeting_context`, `meeting_participants`, `contacts`, `meeting_speakers`, `meeting_usage`, `tags`, `meeting_tags`, `notion_pages`, `tag_suggestions`, `notion_uploads`) peuvent rester : la version officielle les ignore.
 3. Installer la version officielle.
 
 ## Fichiers ajoutés dans le dossier d'une réunion
@@ -83,7 +85,9 @@ Tests : `cmd /c "scripts\fork-dev-env.cmd cargo test --lib"` (dans `src-tauri`),
 | `transcripts.live.json` | Transcription du direct, avant le remplacement par la diarisation |
 | `context.json` | Contexte saisi pendant l'enregistrement (secours en cas de plantage) |
 | `screens/NNNN_mm-ss.jpg`, `screens/index.json` | Captures d'écran gardées et leur horodatage (temps d'enregistrement actif) |
-| `screens/vision_notes.json` | Ce que le modèle de vision a lu, mis en cache par modèle et par jeu de captures |
+| `screens/vision_notes.json` | Ce que le modèle de vision a lu (langue de la réunion), réutilisé par capture tant que le modèle et la langue ne changent pas |
+| `screens/illustration.json` | Date et nombre de captures de la dernière illustration du compte rendu (condition du nettoyage à 6 mois) |
+| `screens/retention.json` | Dernier nettoyage : captures supprimées et place libérée |
 
 ## Confidentialité
 

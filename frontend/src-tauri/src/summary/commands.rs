@@ -485,7 +485,14 @@ pub async fn api_process_transcript<R: Runtime>(
 
     let pool = state.db_manager.pool().clone();
     // Fork: meeting context, screen notes and user instructions as tagged blocks
-    let final_prompt = crate::fork::summary_context::build(&pool, &m_id, custom_prompt.as_deref()).await;
+    // (screen notes shortened for small local models)
+    let screen_budget = match crate::summary::llm_client::LLMProvider::from_str(&model) {
+        Ok(crate::summary::llm_client::LLMProvider::Ollama) | Ok(crate::summary::llm_client::LLMProvider::BuiltInAI) => {
+            crate::fork::vision::PROMPT_CHARS_LOCAL
+        }
+        _ => crate::fork::vision::PROMPT_CHARS_CLOUD,
+    };
+    let final_prompt = crate::fork::summary_context::build(&pool, &m_id, custom_prompt.as_deref(), screen_budget).await;
     let final_template_id = match template_id.filter(|t| !t.trim().is_empty()) {
         Some(id) => id,
         None => {

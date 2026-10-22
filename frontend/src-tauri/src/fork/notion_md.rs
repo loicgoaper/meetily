@@ -150,6 +150,18 @@ fn is_separator_row(line: &str) -> bool {
     !cells.is_empty() && cells.iter().all(|c| !c.is_empty() && c.chars().all(|ch| ch == '-' || ch == ':' || ch == ' '))
 }
 
+/// Placeholder for a meeting screenshot (`![caption](meetily-screen://FILE)`), replaced
+/// by an uploaded image when the page is sent. Keeps the content hash independent of
+/// upload ids.
+pub fn screen_image_marker(file: &str, caption: &str) -> Value {
+    json!({ "object": "block", "type": "image", "image": { "type": "meetily_screen", "meetily_screen": { "file": file }, "caption": rich_text(caption) } })
+}
+
+/// File of a screenshot placeholder block.
+pub fn screen_marker_file(block: &Value) -> Option<&str> {
+    (block["type"] == "image" && block["image"]["type"] == "meetily_screen").then(|| block["image"]["meetily_screen"]["file"].as_str()).flatten()
+}
+
 /// Markdown document to top-level Notion blocks.
 pub fn markdown_to_blocks(markdown: &str) -> Vec<Value> {
     let mut blocks = Vec::new();
@@ -169,6 +181,12 @@ pub fn markdown_to_blocks(markdown: &str) -> Vec<Value> {
         let t = line.trim();
         if t.is_empty() {
             flush_paragraph(&mut paragraph_buf, &mut blocks);
+            i += 1;
+            continue;
+        }
+        if let Some((caption, file)) = super::illustrate::parse_screen_image(line) {
+            flush_paragraph(&mut paragraph_buf, &mut blocks);
+            blocks.push(screen_image_marker(&file, &caption));
             i += 1;
             continue;
         }

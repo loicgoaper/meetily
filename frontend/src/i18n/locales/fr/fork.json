@@ -328,5 +328,39 @@
     "run": "Chercher",
     "searching": "Recherche dans les transcriptions…",
     "noResult": "Aucune réunion ne correspond."
+  },
+  "illustrate": {
+    "button": "Illustrer avec les captures",
+    "hint": "L'IA place les captures d'écran pertinentes à côté des points du compte rendu qu'elles illustrent",
+    "reading": "Lecture de l'écran… {{done}}/{{total}}",
+    "replaceConfirm": "Le compte rendu contient déjà des captures. Les remplacer par une nouvelle sélection ?",
+    "done_one": "{{count}} capture insérée dans le compte rendu",
+    "done_other": "{{count}} captures insérées dans le compte rendu",
+    "none": "Aucune capture ne montre un point précis du compte rendu",
+    "noCandidates": "Aucune capture exploitable pour cette réunion (écran non lu ou captures exclues)",
+    "noEditor": "Le compte rendu n'est pas encore prêt",
+    "copyLabel": "Capture d'écran",
+    "settingsTitle": "Captures dans le compte rendu",
+    "settingsDescription": "Les captures qui appuient un point du compte rendu (diapositive, document, page, formulaire…) y sont insérées, avec une légende. Elles apparaissent aussi dans Notion et dans l'export.",
+    "auto": "Illustrer automatiquement chaque compte rendu",
+    "autoHint": "Sinon, utilisez le bouton « Illustrer avec les captures » au-dessus du compte rendu.",
+    "max": "Nombre maximum d'images",
+    "images_one": "{{count}} image",
+    "images_other": "{{count}} images"
+  },
+  "retention": {
+    "label": "Conservation des captures non utilisées",
+    "hint": "Les captures absentes du compte rendu sont supprimées après ce délai ; celles du compte rendu sont gardées. Seules les réunions déjà illustrées sont concernées.",
+    "months_one": "{{count}} mois",
+    "months_other": "{{count}} mois",
+    "never": "Toujours conserver",
+    "nothing": "Aucune capture à supprimer pour l'instant.",
+    "pending_one": "{{count}} capture ({{size}} Mo) peut être supprimée, dans {{meetings}} réunion(s).",
+    "pending_other": "{{count}} captures ({{size}} Mo) peuvent être supprimées, dans {{meetings}} réunion(s).",
+    "cleanNow": "Nettoyer maintenant",
+    "confirm_one": "Supprimer définitivement {{count}} capture non utilisée ?",
+    "confirm_other": "Supprimer définitivement {{count}} captures non utilisées ?",
+    "done_one": "{{count}} capture supprimée ({{size}} Mo libérés)",
+    "done_other": "{{count}} captures supprimées ({{size}} Mo libérés)"
   }
 }

@@ -92,10 +92,25 @@ enum Entry {
 
 fn collect_entries(doc: &MeetingDoc, parts: &ExportParts) -> Result<Vec<Entry>, String> {
     let fr = super::i18n::is_french();
+    let captures = if fr { "captures" } else { "screenshots" };
+    let screens = doc.folder.as_ref().map(|f| f.join(super::screen_capture::SCREENS_DIR));
     let mut entries = Vec::new();
+    let mut added: std::collections::HashSet<String> = std::collections::HashSet::new();
     if parts.summary {
         if let Some(md) = doc.summary_document() {
+            // Screenshots of the summary travel with it (so a summary alone becomes a zip)
+            let (md, files) = super::illustrate::rewrite_screen_links(&md, &format!("{}/", captures), |file| {
+                screens.as_ref().is_some_and(|dir| dir.join(file).is_file())
+            });
             entries.push(Entry::Text(if fr { "compte-rendu.md" } else { "summary.md" }.into(), md));
+            if let Some(dir) = screens.as_ref() {
+                for file in files {
+                    let name = format!("{}/{}", captures, file);
+                    if added.insert(name.clone()) {
+                        entries.push(Entry::File(name, dir.join(&file)));
+                    }
+                }
+            }
         }
     }
     if parts.transcript && !doc.lines.is_empty() {
@@ -115,10 +130,11 @@ fn collect_entries(doc: &MeetingDoc, parts: &ExportParts) -> Result<Vec<Entry>, 
         }
         if parts.screenshots {
             let dir = folder.join(super::screen_capture::SCREENS_DIR);
-            for frame in super::screen_capture::read_index(&dir) {
+            for frame in super::screen_capture::read_index(&dir).into_iter().filter(|f| !f.excluded && !f.purged) {
                 let path = dir.join(&frame.file);
-                if path.exists() {
-                    entries.push(Entry::File(format!("{}/{}", if fr { "captures" } else { "screenshots" }, frame.file), path));
+                let name = format!("{}/{}", captures, frame.file);
+                if path.is_file() && added.insert(name.clone()) {
+                    entries.push(Entry::File(name, path));
                 }
             }
         }
@@ -205,6 +221,42 @@ mod tests {
         assert_eq!(safe_file_stem("Réunion « Acme » : bilan/T3"), "Reunion Acme _ bilan_T3");
         assert_eq!(safe_file_stem("   "), "reunion");
         assert_eq!(safe_file_stem("Point SIRIS – Olivier"), "Point SIRIS - Olivier");
+    }
+
+    #[test]
+    fn summary_screenshots_are_exported_with_it() {
+        let dir = tempfile::tempdir().unwrap();
+        let screens = dir.path().join(super::super::screen_capture::SCREENS_DIR);
+        std::fs::create_dir_all(&screens).unwrap();
+        std::fs::write(screens.join("0029_22-56.webp"), b"img").unwrap();
+        super::super::screen_capture::write_index(
+            &screens,
+            &[super::super::screen_capture::ScreenFrame { file: "0029_22-56.webp".into(), t: 1376.0, excluded: false, change: 0.5, monitor: None, purged: false }],
+        )
+        .unwrap();
+        let doc = MeetingDoc {
+            id: "m1".into(),
+            title: "Salon".into(),
+            created_at: "2026-10-21T19:56:29+00:00".into(),
+            folder: Some(dir.path().to_path_buf()),
+            duration_secs: None,
+            tags: Vec::new(),
+            context: Default::default(),
+            summary_markdown: Some("Stand réservé.\n\n![Formulaire du stand](meetily-screen://0029_22-56.webp)\n".into()),
+            lines: Vec::new(),
+            cloud_cost: 0.0,
+        };
+        // Summary alone, and summary + all screenshots: the image is added once
+        for screenshots in [false, true] {
+            let parts = ExportParts { summary: true, screenshots, ..Default::default() };
+            let entries = collect_entries(&doc, &parts).unwrap();
+            assert_eq!(entries.len(), 2);
+            match &entries[0] {
+                Entry::Text(_, md) => assert!(md.contains("![Formulaire du stand](") && md.contains("/0029_22-56.webp)")),
+                Entry::File(..) => panic!("summary first"),
+            }
+            assert!(matches!(&entries[1], Entry::File(name, _) if name.ends_with("/0029_22-56.webp")));
+        }
     }
 
     #[test]

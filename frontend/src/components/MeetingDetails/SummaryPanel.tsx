@@ -7,7 +7,7 @@ import { ModelConfig } from '@/components/ModelSettingsModal';
 import { SummaryGeneratorButtonGroup } from './SummaryGeneratorButtonGroup';
 import { SummaryUpdaterButtonGroup } from './SummaryUpdaterButtonGroup';
 import Analytics from '@/lib/analytics';
-import { useEffect, useRef, useState, RefObject } from 'react';
+import { useEffect, useRef, useState, RefObject, type ReactNode } from 'react';
 import { toast } from 'sonner';
 import { Languages, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -56,6 +56,8 @@ interface SummaryPanelProps {
   onTemplateSelect: (templateId: string, templateName: string) => void;
   isModelConfigLoading?: boolean;
   onOpenModelSettings?: (openFn: () => void) => void;
+  /** Fork: extra buttons next to save / copy (screenshots in the summary) */
+  extraActions?: ReactNode;
 }
 
 export function SummaryPanel({
@@ -86,6 +88,7 @@ export function SummaryPanel({
   onTemplateSelect,
   isModelConfigLoading = false,
   onOpenModelSettings,
+  extraActions,
 }: SummaryPanelProps) {
   const { t } = useTranslation();
   const [summaryLang, setSummaryLang] = useState<string | null>(null);
@@ -281,6 +284,8 @@ export function SummaryPanel({
               />
             </div>
           )}
+
+          {hasSummary && !isSummaryLoading && extraActions && <div className="flex-shrink-0">{extraActions}</div>}
         </div>
       </div>
 

@@ -22,6 +22,9 @@ export const PREF = {
   summaryDefaultTemplate: 'summary.default_template',
   uiLanguage: 'ui.language',
   tagsAutoSuggest: 'tags.auto_suggest',
+  summaryIllustrateAuto: 'summary.illustrate_auto',
+  summaryIllustrateMax: 'summary.illustrate_max',
+  screensRetentionDays: 'screens.retention_days',
 } as const;
 
 export type Preferences = Record<string, string>;
@@ -379,3 +382,36 @@ export interface AiSearchResult {
 }
 
 export const aiSearch = (query: string) => invoke<AiSearchResult[]>('api_ai_search', { query });
+
+// ---------------------------------------------------------------------------
+// Screenshots in the summary, screenshot retention
+// ---------------------------------------------------------------------------
+
+export interface SummaryIllustration {
+  /** Index in the blocks sent */
+  block: number;
+  file: string;
+  caption: string;
+  t: number;
+}
+
+export interface IllustrateResponse {
+  illustrations: SummaryIllustration[];
+  candidates: number;
+  visionRan: boolean;
+  costUsd: number;
+}
+
+export const illustrateSummary = (meetingId: string, blocks: { kind: string; text: string }[], max?: number) =>
+  invoke<IllustrateResponse>('api_illustrate_summary', { meetingId, blocks, max: max ?? null });
+
+export interface RetentionReport {
+  days: number;
+  dryRun: boolean;
+  meetings: { meetingId: string; title: string; createdAt: string; files: number; bytes: number; kept: number }[];
+  files: number;
+  bytes: number;
+}
+
+export const previewRetention = () => invoke<RetentionReport>('api_retention_preview');
+export const runRetentionNow = () => invoke<RetentionReport>('api_retention_run_now');

@@ -24,6 +24,7 @@ import { useMeetingSpeakers } from '@/hooks/fork/useMeetingSpeakers';
 import { usePostMeetingPipeline } from '@/hooks/fork/usePostMeetingPipeline';
 import { MeetingCloudBar } from '@/components/fork/MeetingCloudBar';
 import { MeetingContextPanel } from '@/components/fork/MeetingContextPanel';
+import { IllustrateSummaryButton } from '@/components/fork/IllustrateSummaryButton';
 import { SegmentPlayButton, SpeakerChip } from '@/components/fork/SpeakerChip';
 
 export default function PageContent({
@@ -311,6 +312,17 @@ export default function PageContent({
               selectedTemplate={templates.selectedTemplate}
               onTemplateSelect={templates.handleTemplateSelection}
               isModelConfigLoading={isModelConfigLoading}
+              extraActions={
+                <IllustrateSummaryButton
+                  meetingId={meeting.id}
+                  summaryRef={meetingData.blockNoteSummaryRef}
+                  disabled={
+                    ['processing', 'summarizing', 'regenerating'].includes(summaryGeneration.summaryStatus) ||
+                    pipeline.stage === 'diarizing' ||
+                    pipeline.stage === 'vision'
+                  }
+                />
+              }
               onOpenModelSettings={handleRegisterModalOpen}
             />
           }

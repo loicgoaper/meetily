@@ -102,7 +102,7 @@ async fn live_diarization_multi_part_and_naming() {
 async fn live_vision_reads_a_slide() {
     let bytes = std::fs::read(asset("slide.jpg")).unwrap();
     let messages = [
-        ChatMessage::system(super::vision::SYSTEM_PROMPT),
+        ChatMessage::system(super::vision::system_prompt("French")),
         ChatMessage::user(vec![
             ContentPart::text("1 screenshots, in chronological order. Answer for each id."),
             ContentPart::text("id 1 — shown at [12:30]"),
@@ -231,4 +231,67 @@ async fn live_tag_suggestions_for_a_meeting() {
     assert!(!s.items.is_empty() && s.items.len() <= 5);
     assert!(s.items.iter().any(|i| i.tag_id.as_deref() == Some("t-acme")), "existing tag Acme should be reused");
     assert!(!s.items.iter().any(|i| i.name == "Perso"));
+}
+
+#[tokio::test]
+#[ignore]
+async fn live_vision_reads_a_webp_capture_in_french() {
+    // Same path as a new capture: WebP on disk, converted to JPEG for the model
+    let rgb = image::open(asset("slide.jpg")).unwrap().to_rgb8();
+    let (webp, ext) = super::screen_capture::encode_frame(&rgb).unwrap();
+    assert_eq!(ext, "webp");
+    let decoded = image::load_from_memory(&webp).unwrap();
+    let mut jpeg = std::io::Cursor::new(Vec::new());
+    image::codecs::jpeg::JpegEncoder::new_with_quality(&mut jpeg, 75).encode_image(&decoded.to_rgb8()).unwrap();
+    println!("slide: {} KB as WebP", webp.len() / 1024);
+    let messages = [
+        ChatMessage::system(super::vision::system_prompt("French")),
+        ChatMessage::user(vec![
+            ContentPart::text("1 screenshots, in chronological order. Answer for each id."),
+            ContentPart::text("id 1 — shown at [12:30]"),
+            ContentPart::jpeg(jpeg.get_ref()),
+        ]),
+    ];
+    let outcome = openrouter_chat::chat(&key(), "google/gemini-3.1-flash-lite", &messages, true, 1000, false).await.unwrap();
+    println!("{}", outcome.text);
+    let json = openrouter_chat::extract_json(&outcome.text).expect("vision answer is JSON");
+    let content = json["frames"][0]["content"].as_str().unwrap_or_default().to_lowercase();
+    assert!(content.contains("siris") || content.contains("budget"), "slide text not read: {}", content);
+}
+
+#[tokio::test]
+#[ignore]
+async fn live_illustration_picks_relevant_screens() {
+    use super::illustrate::{self, Candidate};
+    let summary = "**Résumé**\n\nL'équipe retient le concept graphique 1 pour SIRIS.\n\n**Points abordés**\n\n\
+- **Choix de l'identité visuelle SIRIS** : trois concepts examinés, le concept 1 est retenu [12:21].\n\
+- **Aménagement du stand** : stand de 10 × 10 pieds avec comptoir et deux tabourets [22:56].\n\
+- **Supports imprimés** : bannière rétractable, dépliant et cartes avec QR code.\n\
+- **Planification** : commande des supports au plus tard mercredi.\n";
+    let blocks: Vec<_> = illustrate::split_markdown(summary).into_iter().map(|b| b.block).collect();
+    let c = |file: &str, t: f64, title: &str, content: &str| Candidate { file: file.into(), t, title: title.into(), content: content.into() };
+    let candidates = vec![
+        c("0001_00-01.jpg", 1.0, "VS Code et réunion Teams", "Liste des bloquants C17-C19, conversation Teams avec Olivier"),
+        c("0010_12-21.jpg", 741.0, "Présentation RISS Canada", "Diapositive « CONCEPT 1 - EXPERTISE FONDAMENTALE », logo SIRIS BY RISS CANADA"),
+        c("0011_13-06.jpg", 786.0, "Présentation RISS Canada", "Diapositive « CONCEPT 1 - EXPERTISE FONDAMENTALE », logo SIRIS BY RISS CANADA (suite)"),
+        c("0029_22-56.jpg", 1376.0, "Stratégies PME - Espace-conseil", "Panneaux rigides blancs, internet sans fil, 2 tabourets, tapis noir, 10'x10'"),
+        c("0084_49-51.jpg", 2991.0, "Imprimeur.coop - Bannière rétractable", "Bannière rétractable avec support haut de gamme, en stock"),
+        c("0127_94-41.jpg", 5681.0, "Calendrier Outlook", "Semaine du 19 au 23 octobre : Scrum, ORION, Sport"),
+        c("0130_122-26.jpg", 7346.0, "Réunion Teams", "Vignettes vidéo des participants"),
+    ];
+    let started = Instant::now();
+    let choice = illustrate::choose(&key(), "google/gemini-3.1-flash-lite", false, &blocks, &candidates, 5, "French").await.unwrap();
+    println!("{:.1}s, cost {:?}", started.elapsed().as_secs_f64(), choice.cost_usd);
+    for p in &choice.illustrations {
+        println!("block {} ({}) -> {} : {}", p.block, blocks[p.block].text.chars().take(40).collect::<String>(), p.file, p.caption);
+    }
+    let files: Vec<&str> = choice.illustrations.iter().map(|p| p.file.as_str()).collect();
+    assert!(!files.is_empty() && files.len() <= 5);
+    for noise in ["0001_00-01.jpg", "0127_94-41.jpg", "0130_122-26.jpg"] {
+        assert!(!files.contains(&noise), "{noise} should not illustrate the summary");
+    }
+    assert!(!(files.contains(&"0010_12-21.jpg") && files.contains(&"0011_13-06.jpg")), "no near-duplicates");
+    assert!(files.contains(&"0029_22-56.jpg"), "the booth form illustrates the booth");
+    let illustrated = illustrate::insert_illustrations(summary, &illustrate::split_markdown(summary), &choice.illustrations);
+    println!("{illustrated}");
 }

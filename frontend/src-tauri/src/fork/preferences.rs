@@ -24,6 +24,10 @@ pub const SCREEN_DEFAULT_ENABLED: &str = "screen.default_enabled";
 pub const SUMMARY_DEFAULT_TEMPLATE: &str = "summary.default_template";
 pub const UI_LANGUAGE: &str = "ui.language";
 pub const TAGS_AUTO_SUGGEST: &str = "tags.auto_suggest";
+pub const SUMMARY_ILLUSTRATE_AUTO: &str = "summary.illustrate_auto";
+pub const SUMMARY_ILLUSTRATE_MAX: &str = "summary.illustrate_max";
+/// Days after which captures not used in the summary are deleted ("0" = never)
+pub const SCREENS_RETENTION_DAYS: &str = "screens.retention_days";
 
 /// Defaults applied when a key was never saved.
 /// STT/diarization defaults come from the 2026-10-20 spike: elevenlabs/scribe-v2 is
@@ -45,6 +49,9 @@ pub fn defaults() -> HashMap<&'static str, &'static str> {
         (SUMMARY_DEFAULT_TEMPLATE, "fr_reunion_standard"),
         (UI_LANGUAGE, "fr"),
         (TAGS_AUTO_SUGGEST, "true"),
+        (SUMMARY_ILLUSTRATE_AUTO, "true"),
+        (SUMMARY_ILLUSTRATE_MAX, "5"),
+        (SCREENS_RETENTION_DAYS, "180"),
     ])
 }
 

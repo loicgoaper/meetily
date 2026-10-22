@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { usePreferences } from '@/hooks/fork/usePreferences';
 import { listMonitors, PREF, type MonitorInfo } from '@/services/forkService';
 import { OpenRouterKeyField } from './OpenRouterKeyField';
+import { ScreenshotRetention } from './ScreenshotRetention';
 import { SettingRow, SettingsCard } from './SettingsCard';
 
 const VISION_SUGGESTIONS = [
@@ -134,6 +135,41 @@ export function CloudAiSettings() {
             onSave={v => update({ [PREF.visionModel]: v })}
           />
         </SettingRow>
+      </SettingsCard>
+
+      <SettingsCard title={t('fork.illustrate.settingsTitle')} description={t('fork.illustrate.settingsDescription')}>
+        <SettingRow label={t('fork.illustrate.auto')} hint={t('fork.illustrate.autoHint')}>
+          <Switch
+            checked={get(PREF.summaryIllustrateAuto, 'true') !== 'false'}
+            onCheckedChange={checked => update({ [PREF.summaryIllustrateAuto]: String(checked) })}
+          />
+        </SettingRow>
+        <SettingRow label={t('fork.illustrate.max')}>
+          <Select value={get(PREF.summaryIllustrateMax, '5') || '5'} onValueChange={v => update({ [PREF.summaryIllustrateMax]: v })}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {['3', '5', '8'].map(n => (
+                <SelectItem key={n} value={n}>{t('fork.illustrate.images', { count: Number(n) })}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </SettingRow>
+        <SettingRow label={t('fork.retention.label')} hint={t('fork.retention.hint')}>
+          <Select value={get(PREF.screensRetentionDays, '180') || '180'} onValueChange={v => update({ [PREF.screensRetentionDays]: v })}>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="90">{t('fork.retention.months', { count: 3 })}</SelectItem>
+              <SelectItem value="180">{t('fork.retention.months', { count: 6 })}</SelectItem>
+              <SelectItem value="365">{t('fork.retention.months', { count: 12 })}</SelectItem>
+              <SelectItem value="0">{t('fork.retention.never')}</SelectItem>
+            </SelectContent>
+          </Select>
+        </SettingRow>
+        <ScreenshotRetention days={get(PREF.screensRetentionDays, '180') || '180'} />
       </SettingsCard>
 
       <SettingsCard title={t('fork.cloud.privacyTitle')} description={t('fork.cloud.privacyDescription')}>

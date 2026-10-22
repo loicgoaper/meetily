@@ -140,7 +140,10 @@ async fn load_candidates(pool: &SqlitePool, terms: &SearchTerms) -> Result<Vec<C
         speakers.sort();
         speakers.dedup();
         let tags: Vec<&str> = doc.tags.iter().map(|t| t.name.as_str()).collect();
-        let summary: String = doc.summary_markdown.as_deref().unwrap_or("").chars().take(SUMMARY_EXCERPT).collect();
+        let summary: String = super::illustrate::strip_screen_images(doc.summary_markdown.as_deref().unwrap_or(""))
+            .chars()
+            .take(SUMMARY_EXCERPT)
+            .collect();
         let meta = normalize(&format!("{} {} {} {} {}", title, tags.join(" "), doc.participants_label(), speakers.join(" "), summary));
         let (mut matched, snippets) = hits.remove(&id).unwrap_or_default();
         for term in &wanted {

@@ -128,7 +128,8 @@ pub async fn current(pool: &SqlitePool, meeting_id: &str) -> Result<TagSuggestio
 /// of the transcript when there is no summary yet). None when there is nothing to read.
 async fn meeting_digest(pool: &SqlitePool, meeting_id: &str) -> Result<Option<String>, String> {
     let doc = meeting_doc::load(pool, meeting_id).await?;
-    let body = match doc.summary_markdown.as_deref().filter(|s| !s.trim().is_empty()) {
+    let summary = doc.summary_markdown.as_deref().map(super::illustrate::strip_screen_images);
+    let body = match summary.as_deref().filter(|s| !s.trim().is_empty()) {
         Some(summary) => format!("Summary:\n{}", summary.chars().take(SUMMARY_CHARS).collect::<String>()),
         None if !doc.lines.is_empty() => {
             let transcript: String = doc.lines.iter().map(|l| l.text.as_str()).collect::<Vec<_>>().join(" ");

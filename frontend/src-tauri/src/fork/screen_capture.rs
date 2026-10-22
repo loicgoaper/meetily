@@ -21,6 +21,45 @@ pub const INDEX_FILE: &str = "index.json";
 const MAX_FRAMES: u32 = 300;
 const MAX_WIDTH: u32 = 1600;
 const MIN_GAP_SECS: f64 = 10.0;
+/// WebP quality of new captures: about a third of the former JPEG size, small text stays
+/// readable (sharp YUV keeps coloured text crisp)
+const WEBP_QUALITY: f32 = 75.0;
+const JPEG_QUALITY: u8 = 80;
+
+/// Serialises read-modify-write of screens/index.json outside the capture loop
+/// (exclusion toggle, retention).
+pub static INDEX_LOCK: Mutex<()> = Mutex::new(());
+
+/// Capture files written by Meetily: NNNN_mm-ss.jpg|webp, plus _eN with several screens.
+/// Only such files may ever be deleted by the retention.
+pub fn is_capture_name(name: &str) -> bool {
+    static PATTERN: once_cell::sync::Lazy<regex::Regex> =
+        once_cell::sync::Lazy::new(|| regex::Regex::new(r"^\d{4,}_\d{2,}-\d{2}(?:_e\d+)?\.(?:jpg|webp)$").expect("valid regex"));
+    PATTERN.is_match(name)
+}
+
+/// MIME type of a capture, from its extension.
+pub fn mime_for(file: &str) -> &'static str {
+    match file.rsplit('.').next().map(|e| e.to_ascii_lowercase()).as_deref() {
+        Some("webp") => "image/webp",
+        Some("png") => "image/png",
+        _ => "image/jpeg",
+    }
+}
+
+/// JPEG bytes of a capture (original bytes for a .jpg, converted otherwise), for
+/// services that only take JPEG (Notion uploads).
+pub fn jpeg_bytes(path: &Path) -> Result<Vec<u8>, String> {
+    if mime_for(&path.to_string_lossy()) == "image/jpeg" {
+        return std::fs::read(path).map_err(|e| e.to_string());
+    }
+    let img = image::open(path).map_err(|e| e.to_string())?;
+    let mut out = std::io::Cursor::new(Vec::new());
+    image::codecs::jpeg::JpegEncoder::new_with_quality(&mut out, 85)
+        .encode_image(&img.to_rgb8())
+        .map_err(|e| e.to_string())?;
+    Ok(out.into_inner())
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -35,6 +74,9 @@ pub struct ScreenFrame {
     /// Screen number (1-based) when several screens are captured
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub monitor: Option<u32>,
+    /// File deleted by the retention (not used in the summary after the delay)
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub purged: bool,
 }
 
 // ---------------------------------------------------------------------------
@@ -270,21 +312,22 @@ async fn capture_loop<R: Runtime>(
                     // Keep the settled (latest) image, timestamped when the change appeared
                     let first_seen = change_started.take().unwrap_or(t);
                     let n = index.len() + 1;
-                    let file = if several {
-                        format!("{:04}_{}_e{}.jpg", n, mm_ss(first_seen).replace(':', "-"), screen_number)
+                    let stem = if several {
+                        format!("{:04}_{}_e{}", n, mm_ss(first_seen).replace(':', "-"), screen_number)
                     } else {
-                        format!("{:04}_{}.jpg", n, mm_ss(first_seen).replace(':', "-"))
+                        format!("{:04}_{}", n, mm_ss(first_seen).replace(':', "-"))
                     };
-                    let path = dir.join(&file);
-                    let save = tokio::task::spawn_blocking(move || save_jpeg(&image, &path)).await;
+                    let target = dir.clone();
+                    let save = tokio::task::spawn_blocking(move || save_frame(&image, &target, &stem)).await;
                     match save {
-                        Ok(Ok(())) => {
+                        Ok(Ok(file)) => {
                             index.push(ScreenFrame {
                                 file: file.clone(),
                                 t: first_seen,
                                 excluded: false,
                                 change,
                                 monitor: several.then_some(screen_number),
+                                purged: false,
                             });
                             if let Err(e) = write_index(&dir, &index) {
                                 warn!("Could not write screens index: {}", e);
@@ -353,7 +396,30 @@ fn capture(_monitor_choice: &str) -> Result<Vec<(u32, image::RgbaImage)>, String
     Err("La capture d'écran n'est disponible que sous Windows dans cette version".to_string())
 }
 
-fn save_jpeg(image: &image::RgbaImage, path: &Path) -> Result<(), String> {
+/// Encode a frame: lossy WebP, or JPEG if WebP fails. Returns the bytes and extension.
+pub fn encode_frame(rgb: &image::RgbImage) -> Result<(Vec<u8>, &'static str), String> {
+    let webp = webp::WebPConfig::new().ok().and_then(|mut config| {
+        config.quality = WEBP_QUALITY;
+        config.method = 4;
+        config.use_sharp_yuv = 1;
+        webp::Encoder::from_rgb(rgb.as_raw(), rgb.width(), rgb.height())
+            .encode_advanced(&config)
+            .map(|memory| memory.to_vec())
+            .ok()
+    });
+    if let Some(bytes) = webp.filter(|b| !b.is_empty()) {
+        return Ok((bytes, "webp"));
+    }
+    warn!("WebP encoding failed, saving the capture as JPEG");
+    let mut out = std::io::Cursor::new(Vec::new());
+    image::codecs::jpeg::JpegEncoder::new_with_quality(&mut out, JPEG_QUALITY)
+        .encode_image(rgb)
+        .map_err(|e| e.to_string())?;
+    Ok((out.into_inner(), "jpg"))
+}
+
+/// Resize (max 1600 px wide), encode and write a frame; returns its file name.
+fn save_frame(image: &image::RgbaImage, dir: &Path, stem: &str) -> Result<String, String> {
     let rgb = image::DynamicImage::ImageRgba8(image.clone()).to_rgb8();
     let rgb = if rgb.width() > MAX_WIDTH {
         let height = (rgb.height() as f64 * MAX_WIDTH as f64 / rgb.width() as f64) as u32;
@@ -361,11 +427,10 @@ fn save_jpeg(image: &image::RgbaImage, path: &Path) -> Result<(), String> {
     } else {
         rgb
     };
-    let file = std::fs::File::create(path).map_err(|e| e.to_string())?;
-    let mut writer = std::io::BufWriter::new(file);
-    image::codecs::jpeg::JpegEncoder::new_with_quality(&mut writer, 80)
-        .encode_image(&rgb)
-        .map_err(|e| e.to_string())
+    let (bytes, extension) = encode_frame(&rgb)?;
+    let file = format!("{}.{}", stem, extension);
+    std::fs::write(dir.join(&file), bytes).map_err(|e| e.to_string())?;
+    Ok(file)
 }
 
 pub fn read_index(dir: &Path) -> Vec<ScreenFrame> {
@@ -452,7 +517,7 @@ pub async fn api_list_meeting_screenshots(
     meeting_id: String,
 ) -> Result<Vec<ScreenFrame>, String> {
     match screens_dir(&state, &meeting_id).await {
-        Ok(dir) => Ok(read_index(&dir)),
+        Ok(dir) => Ok(read_index(&dir).into_iter().filter(|f| !f.purged).collect()),
         Err(_) => Ok(Vec::new()),
     }
 }
@@ -472,18 +537,18 @@ pub async fn api_get_screenshot(
     let path = screens_dir(&state, &meeting_id).await?.join(&file);
     tokio::task::spawn_blocking(move || -> Result<String, String> {
         use base64::Engine as _;
-        let bytes = if thumbnail {
+        let (bytes, mime) = if thumbnail {
             let img = image::open(&path).map_err(|e| e.to_string())?;
             let small = img.thumbnail(360, 240).to_rgb8();
             let mut out = std::io::Cursor::new(Vec::new());
             image::codecs::jpeg::JpegEncoder::new_with_quality(&mut out, 70)
                 .encode_image(&small)
                 .map_err(|e| e.to_string())?;
-            out.into_inner()
+            (out.into_inner(), "image/jpeg")
         } else {
-            std::fs::read(&path).map_err(|e| e.to_string())?
+            (std::fs::read(&path).map_err(|e| e.to_string())?, mime_for(&file))
         };
-        Ok(format!("data:image/jpeg;base64,{}", base64::engine::general_purpose::STANDARD.encode(bytes)))
+        Ok(format!("data:{};base64,{}", mime, base64::engine::general_purpose::STANDARD.encode(bytes)))
     })
     .await
     .map_err(|e| e.to_string())?
@@ -499,6 +564,7 @@ pub async fn api_set_screenshot_excluded(
     excluded: bool,
 ) -> Result<(), String> {
     let dir = screens_dir(&state, &meeting_id).await?;
+    let _guard = INDEX_LOCK.lock().unwrap_or_else(|e| e.into_inner());
     let mut index = read_index(&dir);
     let frame = index.iter_mut().find(|f| f.file == file).ok_or("Capture introuvable")?;
     frame.excluded = excluded;
@@ -508,6 +574,33 @@ pub async fn api_set_screenshot_excluded(
 #[cfg(test)]
 mod tests {
     use super::change_detect::{Decision, Detector};
+
+    #[test]
+    fn only_meetily_capture_names_are_accepted() {
+        for ok in ["0001_00-01.jpg", "0029_22-56.jpg", "0135_131-01.webp", "0002_00-26_e2.webp"] {
+            assert!(super::is_capture_name(ok), "{ok}");
+        }
+        for bad in ["index.json", "vision_notes.json", "../0001_00-01.jpg", "notes.jpg", "0001_00-01.png", "0001_00-01.jpg.bak", "a0001_00-01.jpg"] {
+            assert!(!super::is_capture_name(bad), "{bad}");
+        }
+    }
+
+    #[test]
+    fn webp_frames_round_trip_smaller_than_jpeg() {
+        // A synthetic "slide": white background, dark text-like stripes
+        let rgb = image::RgbImage::from_fn(1600, 900, |x, y| {
+            if (y / 12) % 4 == 0 && (x / 7) % 3 != 0 { image::Rgb([20, 30, 90]) } else { image::Rgb([250, 250, 250]) }
+        });
+        let (bytes, ext) = super::encode_frame(&rgb).unwrap();
+        assert_eq!(ext, "webp");
+        let decoded = image::load_from_memory(&bytes).unwrap();
+        assert_eq!((decoded.width(), decoded.height()), (1600, 900));
+        let mut jpeg = std::io::Cursor::new(Vec::new());
+        image::codecs::jpeg::JpegEncoder::new_with_quality(&mut jpeg, 80).encode_image(&rgb).unwrap();
+        assert!(bytes.len() < jpeg.get_ref().len(), "webp {} >= jpeg {}", bytes.len(), jpeg.get_ref().len());
+        assert_eq!(super::mime_for("0001_00-01.webp"), "image/webp");
+        assert_eq!(super::mime_for("0001_00-01.jpg"), "image/jpeg");
+    }
 
     fn sig(value: u8) -> Vec<u8> {
         vec![value; 32 * 18]

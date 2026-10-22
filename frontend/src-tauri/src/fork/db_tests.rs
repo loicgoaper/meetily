@@ -191,3 +191,107 @@ async fn tag_suggestions_accept_and_dismiss() {
     let s = tag_suggest::current(&pool, "m1").await.unwrap();
     assert!(s.generated && s.items.is_empty());
 }
+
+/// Old meeting folder with 5 captures (2 used in the summary), notes and the marker.
+fn old_meeting_folder(dir: &std::path::Path, marker: bool) -> std::path::PathBuf {
+    use super::screen_capture::{write_index, ScreenFrame, SCREENS_DIR};
+    let screens = dir.join(SCREENS_DIR);
+    std::fs::create_dir_all(&screens).unwrap();
+    let files = ["0001_00-01.jpg", "0002_00-26.webp", "0003_00-51.jpg", "0004_02-06.webp", "0005_02-41.jpg"];
+    let frames: Vec<ScreenFrame> = files
+        .iter()
+        .enumerate()
+        .map(|(i, f)| ScreenFrame { file: f.to_string(), t: i as f64 * 25.0, excluded: false, change: 0.5, monitor: None, purged: false })
+        .chain(std::iter::once(ScreenFrame { file: "notes.jpg".into(), t: 200.0, excluded: false, change: 0.5, monitor: None, purged: false }))
+        .collect();
+    for f in files.iter().chain(std::iter::once(&"notes.jpg")) {
+        std::fs::write(screens.join(f), b"image").unwrap();
+    }
+    write_index(&screens, &frames).unwrap();
+    std::fs::write(screens.join("vision_notes.json"), "{}").unwrap();
+    if marker {
+        std::fs::write(screens.join(super::illustrate::MARKER_FILE), "{}").unwrap();
+    }
+    screens
+}
+
+async fn add_meeting(pool: &SqlitePool, id: &str, created_at: &str, folder: &std::path::Path) {
+    sqlx::query("INSERT INTO meetings (id, title, created_at, updated_at, folder_path) VALUES (?, ?, ?, ?, ?)")
+        .bind(id)
+        .bind(format!("Réunion {id}"))
+        .bind(created_at)
+        .bind(created_at)
+        .bind(folder.to_string_lossy().to_string())
+        .execute(pool)
+        .await
+        .unwrap();
+    let result = serde_json::json!({
+        "markdown": "Texte\n\n![Stand](meetily-screen://0002_00-26.webp)\n",
+        "summary_json": [{ "type": "image", "props": { "url": "meetily-screen://0004_02-06.webp" } }]
+    });
+    sqlx::query("INSERT INTO summary_processes (meeting_id, status, created_at, updated_at, result) VALUES (?, 'completed', ?, ?, ?)")
+        .bind(id)
+        .bind(created_at)
+        .bind(created_at)
+        .bind(result.to_string())
+        .execute(pool)
+        .await
+        .unwrap();
+}
+
+#[tokio::test]
+async fn retention_deletes_only_unused_captures_of_old_illustrated_meetings() {
+    use super::retention;
+    use super::screen_capture::read_index;
+    let pool = migrated_pool().await;
+    let old = tempfile::tempdir().unwrap();
+    let recent = tempfile::tempdir().unwrap();
+    let never_illustrated = tempfile::tempdir().unwrap();
+    let screens = old_meeting_folder(old.path(), true);
+    old_meeting_folder(recent.path(), true);
+    old_meeting_folder(never_illustrated.path(), false);
+    let long_ago = (chrono::Utc::now() - chrono::Duration::days(200)).to_rfc3339();
+    add_meeting(&pool, "old", &long_ago, old.path()).await;
+    add_meeting(&pool, "recent", &chrono::Utc::now().to_rfc3339(), recent.path()).await;
+    add_meeting(&pool, "never", &long_ago, never_illustrated.path()).await;
+
+    // Disabled: nothing
+    assert_eq!(retention::run(&pool, 0, false).await.unwrap().files, 0);
+
+    // Preview: 3 unused captures of the old meeting only, nothing deleted
+    let preview = retention::run(&pool, 180, true).await.unwrap();
+    assert_eq!((preview.files, preview.meetings.len()), (3, 1));
+    assert_eq!(preview.meetings[0].meeting_id, "old");
+    assert_eq!(preview.meetings[0].kept, 2);
+    assert!(screens.join("0001_00-01.jpg").exists());
+
+    let done = retention::run(&pool, 180, false).await.unwrap();
+    assert_eq!(done.files, 3);
+    for gone in ["0001_00-01.jpg", "0003_00-51.jpg", "0005_02-41.jpg"] {
+        assert!(!screens.join(gone).exists(), "{gone} deleted");
+    }
+    for kept in ["0002_00-26.webp", "0004_02-06.webp", "notes.jpg", "vision_notes.json", "index.json"] {
+        assert!(screens.join(kept).exists(), "{kept} kept");
+    }
+    let index = read_index(&screens);
+    assert_eq!(index.iter().filter(|f| f.purged).count(), 3);
+    assert!(index.iter().find(|f| f.file == "0002_00-26.webp").is_some_and(|f| !f.purged));
+    assert!(screens.join(retention::REPORT_FILE).exists());
+    assert!(recent.path().join("screens/0001_00-01.jpg").exists(), "recent meeting untouched");
+    assert!(never_illustrated.path().join("screens/0001_00-01.jpg").exists(), "never illustrated meeting untouched");
+
+    // Second run: nothing left to delete
+    assert_eq!(retention::run(&pool, 180, false).await.unwrap().files, 0);
+}
+
+#[tokio::test]
+async fn notion_uploads_follow_their_meeting() {
+    let pool = migrated_pool().await;
+    sqlx::query("INSERT INTO notion_uploads (meeting_id, file, upload_id, created_at) VALUES ('m1', 'a.webp', 'up-1', 'now')")
+        .execute(&pool)
+        .await
+        .unwrap();
+    sqlx::query("DELETE FROM meetings WHERE id = 'm1'").execute(&pool).await.unwrap();
+    let left: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM notion_uploads").fetch_one(&pool).await.unwrap();
+    assert_eq!(left.0, 0);
+}

@@ -1,15 +1,17 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, forwardRef, useImperativeHandle } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, forwardRef, useImperativeHandle } from 'react';
 import dynamic from 'next/dynamic';
 import { Summary, SummaryDataResponse, SummaryFormat, BlockNoteBlock } from '@/types';
 import { AISummary } from './index';
-import { Block } from '@blocknote/core';
+import { Block, BlockNoteEditor } from '@blocknote/core';
 import { useCreateBlockNote } from '@blocknote/react';
 import { BlockNoteView } from '@blocknote/shadcn';
 import { blocksToMarkdownSafely } from '@/lib/blocknote-markdown';
 import { en as blockNoteEn, fr as blockNoteFr } from '@blocknote/core/locales';
 import { useTranslation } from 'react-i18next';
+import { getScreenshot } from '@/services/forkService';
+import { createScreenResolver, withScreenCaptions } from '@/lib/summary-illustrations';
 import "@blocknote/shadcn/style.css";
 
 // Dynamically import BlockNote Editor to avoid SSR issues
@@ -34,6 +36,10 @@ export interface BlockNoteSummaryViewRef {
   saveSummary: () => Promise<void>;
   getMarkdown: () => Promise<string>;
   isDirty: boolean;
+  /** Fork: the editor currently shown (screenshot insertion) */
+  getEditor: () => BlockNoteEditor<any, any, any> | null;
+  /** Fork: save the shown document now (after a programmatic change) */
+  persist: () => Promise<void>;
 }
 
 // Format detection helper
@@ -83,12 +89,24 @@ export const BlockNoteSummaryView = forwardRef<BlockNoteSummaryViewRef, BlockNot
   const [currentBlocks, setCurrentBlocks] = useState<Block[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const isContentLoaded = useRef(false);
+  // Fork: meeting screenshots (meetily-screen:// images) shown as data URLs
+  const meetingIdRef = useRef(meeting?.id);
+  meetingIdRef.current = meeting?.id;
+  const blockEditorRef = useRef<BlockNoteEditor<any, any, any> | null>(null);
+  const resolveFileUrl = useMemo(
+    () => createScreenResolver(() => meetingIdRef.current, (id, file) => getScreenshot(id, file, false)),
+    [],
+  );
+  const handleEditorReady = useCallback((ready: BlockNoteEditor<any, any, any>) => {
+    blockEditorRef.current = ready;
+  }, []);
 
   // Create BlockNote editor for markdown parsing
   const editor = useCreateBlockNote({
     initialContent: undefined,
     // Editor menus and placeholders follow the interface language
     dictionary: i18n.language === 'en' ? blockNoteEn : blockNoteFr,
+    resolveFileUrl,
   });
 
   // Parse markdown to blocks when format is markdown
@@ -97,7 +115,7 @@ export const BlockNoteSummaryView = forwardRef<BlockNoteSummaryViewRef, BlockNot
       const loadMarkdown = async () => {
         try {
           console.log('📝 Parsing markdown to BlockNote blocks...');
-          const blocks = await editor.tryParseMarkdownToBlocks(data.markdown);
+          const blocks = withScreenCaptions(await editor.tryParseMarkdownToBlocks(data.markdown));
           editor.replaceBlocks(editor.document, blocks);
           console.log('✅ Markdown parsed successfully');
 
@@ -169,9 +187,38 @@ export const BlockNoteSummaryView = forwardRef<BlockNoteSummaryViewRef, BlockNot
     }
   }, [onSave, isDirty, currentBlocks, editor]);
 
+  const getActiveEditor = useCallback(
+    () => (format === 'markdown' ? editor : format === 'blocknote' ? blockEditorRef.current : null),
+    [format, editor],
+  );
+
+  // Fork: save the editor's document right away (React state may lag behind)
+  const persist = useCallback(async () => {
+    const active = getActiveEditor();
+    if (!onSave || !active) return;
+    const blocks = active.document as Block[];
+    setIsSaving(true);
+    try {
+      const markdownResult = await blocksToMarkdownSafely(editor, blocks, { source: 'BlockNoteSummaryView.persist' });
+      const saveData: { markdown?: string; summary_json?: BlockNoteBlock[] } = {
+        summary_json: blocks as unknown as BlockNoteBlock[],
+      };
+      if (markdownResult.markdown !== undefined) {
+        saveData.markdown = markdownResult.markdown;
+      }
+      await onSave(saveData);
+      setCurrentBlocks(blocks);
+      setIsDirty(false);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [getActiveEditor, onSave, editor]);
+
   // Expose methods to parent via ref
   useImperativeHandle(ref, () => ({
     saveSummary: handleSave,
+    getEditor: getActiveEditor,
+    persist,
     getMarkdown: async () => {
       try {
         console.log('🔍 getMarkdown called, format:', format);
@@ -220,7 +267,7 @@ export const BlockNoteSummaryView = forwardRef<BlockNoteSummaryViewRef, BlockNot
       }
     },
     isDirty
-  }), [handleSave, isDirty, editor, format, currentBlocks, data]);
+  }), [handleSave, isDirty, editor, format, currentBlocks, data, getActiveEditor, persist]);
 
   // Render legacy format
   if (format === 'legacy') {
@@ -244,6 +291,8 @@ export const BlockNoteSummaryView = forwardRef<BlockNoteSummaryViewRef, BlockNot
       <div className="flex flex-col w-full">
         <div className="w-full">
           <Editor
+            meetingId={meeting?.id}
+            onEditorReady={handleEditorReady}
             initialContent={data.summary_json}
             onChange={(blocks) => {
               console.log('📝 Editor blocks changed:', blocks.length);

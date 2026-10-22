@@ -9,6 +9,7 @@
 use super::meeting_doc::{self, MeetingDoc};
 use super::notion_md;
 use super::preferences::PreferencesRepository;
+use super::screen_capture::{jpeg_bytes, SCREENS_DIR};
 use crate::state::AppState;
 use chrono::Utc;
 use log::{info, warn};
@@ -17,6 +18,7 @@ use serde::Serialize;
 use serde_json::{json, Value};
 use sqlx::SqlitePool;
 use std::collections::HashMap;
+use std::path::Path;
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter, Manager, Runtime};
@@ -113,16 +115,19 @@ impl Notion {
         Self { client, token }
     }
 
+    /// Shared rate limit of every Notion call
+    async fn throttle() {
+        let mut last = LAST_REQUEST.lock().await;
+        let wait = MIN_INTERVAL.saturating_sub(last.elapsed());
+        if !wait.is_zero() {
+            tokio::time::sleep(wait).await;
+        }
+        *last = Instant::now();
+    }
+
     async fn request(&self, method: reqwest::Method, path: &str, body: Option<&Value>) -> Result<Value, String> {
         for attempt in 0..4 {
-            {
-                let mut last = LAST_REQUEST.lock().await;
-                let wait = MIN_INTERVAL.saturating_sub(last.elapsed());
-                if !wait.is_zero() {
-                    tokio::time::sleep(wait).await;
-                }
-                *last = Instant::now();
-            }
+            Self::throttle().await;
             let mut req = self
                 .client
                 .request(method.clone(), format!("{}/{}", API, path))
@@ -175,6 +180,102 @@ impl Notion {
     }
     async fn delete(&self, path: &str) -> Result<Value, String> {
         self.request(reqwest::Method::DELETE, path, None).await
+    }
+
+    /// Upload a JPEG through the File Upload API; returns the file upload id (valid one
+    /// hour until attached, then permanent and reusable).
+    async fn upload_image(&self, bytes: Vec<u8>, filename: &str) -> Result<String, String> {
+        let created = self.post("file_uploads", &json!({ "filename": filename, "content_type": "image/jpeg" })).await?;
+        let id = created["id"].as_str().ok_or("Réponse Notion sans identifiant d'envoi")?.to_string();
+        for attempt in 0..3u64 {
+            Self::throttle().await;
+            let part = reqwest::multipart::Part::bytes(bytes.clone())
+                .file_name(filename.to_string())
+                .mime_str("image/jpeg")
+                .map_err(|e| e.to_string())?;
+            let response = self
+                .client
+                .post(format!("{}/file_uploads/{}/send", API, id))
+                .bearer_auth(&self.token)
+                .header("Notion-Version", NOTION_VERSION)
+                .multipart(reqwest::multipart::Form::new().part("file", part))
+                .send()
+                .await;
+            match response {
+                Ok(r) if r.status().is_success() => return Ok(id),
+                Ok(r) if (r.status().as_u16() == 429 || r.status().is_server_error()) && attempt < 2 => {
+                    tokio::time::sleep(Duration::from_secs(1 + attempt)).await;
+                }
+                Ok(r) => {
+                    let status = r.status().as_u16();
+                    let text = r.text().await.unwrap_or_default();
+                    return Err(format!("Notion {} : {}", status, text.chars().take(300).collect::<String>()));
+                }
+                Err(e) if attempt < 2 => {
+                    warn!("Notion upload error ({}), retrying", e);
+                    tokio::time::sleep(Duration::from_secs(1 + attempt)).await;
+                }
+                Err(e) => return Err(e.to_string()),
+            }
+        }
+        Err("Envoi de l'image vers Notion impossible".to_string())
+    }
+
+    /// Upload one capture of the meeting as JPEG and remember its upload id.
+    async fn upload_screen(&self, pool: &SqlitePool, meeting_id: &str, folder: Option<&Path>, file: &str) -> Result<String, String> {
+        let path = folder
+            .map(|f| f.join(SCREENS_DIR).join(file))
+            .filter(|p| p.is_file())
+            .ok_or_else(|| "capture introuvable".to_string())?;
+        let bytes = tokio::task::spawn_blocking(move || jpeg_bytes(&path)).await.map_err(|e| e.to_string())??;
+        let stem = file.rsplit_once('.').map(|(s, _)| s).unwrap_or(file);
+        let id = self.upload_image(bytes, &format!("{}.jpg", stem)).await?;
+        sqlx::query("INSERT OR REPLACE INTO notion_uploads (meeting_id, file, upload_id, created_at) VALUES (?, ?, ?, ?)")
+            .bind(meeting_id)
+            .bind(file)
+            .bind(&id)
+            .bind(Utc::now().to_rfc3339())
+            .execute(pool)
+            .await
+            .map_err(|e| e.to_string())?;
+        Ok(id)
+    }
+
+    /// Replace screenshot placeholders by uploaded images (each file is uploaded once per
+    /// meeting, then its upload id is reused). A missing or failed image becomes its
+    /// caption. Returns true when some image could not be sent.
+    async fn resolve_screen_images(&self, pool: &SqlitePool, meeting_id: &str, folder: Option<&Path>, blocks: &mut [Value]) -> bool {
+        let mut degraded = false;
+        for block in blocks.iter_mut() {
+            let Some(file) = notion_md::screen_marker_file(block).map(str::to_string) else {
+                continue;
+            };
+            let caption = block["image"]["caption"].clone();
+            let cached: Option<(String,)> = sqlx::query_as("SELECT upload_id FROM notion_uploads WHERE meeting_id = ? AND file = ?")
+                .bind(meeting_id)
+                .bind(&file)
+                .fetch_optional(pool)
+                .await
+                .ok()
+                .flatten();
+            let upload = match cached {
+                Some((id,)) => Ok(id),
+                None => self.upload_screen(pool, meeting_id, folder, &file).await,
+            };
+            *block = match upload {
+                Ok(id) => json!({ "object": "block", "type": "image", "image": { "type": "file_upload", "file_upload": { "id": id }, "caption": caption } }),
+                Err(e) => {
+                    warn!("Notion: screenshot {} not sent ({})", file, e);
+                    degraded = true;
+                    if caption.as_array().map_or(true, |a| a.is_empty()) {
+                        notion_md::plain_paragraph(Vec::new())
+                    } else {
+                        json!({ "object": "block", "type": "paragraph", "paragraph": { "rich_text": caption } })
+                    }
+                }
+            };
+        }
+        degraded
     }
 
     /// Append blocks in batches; returns the created blocks.
@@ -381,8 +482,9 @@ async fn sync_meeting_inner(pool: &SqlitePool, meeting_id: &str, force: bool) ->
     }
     let doc = meeting_doc::load(pool, meeting_id).await?;
     let props = page_properties(&doc);
-    let (blocks, lines) = page_blocks(&doc);
-    let hash = content_hash(&props, &blocks, &lines);
+    let (marker_blocks, lines) = page_blocks(&doc);
+    // Hash of the placeholders (file + caption), not of upload ids
+    let hash = content_hash(&props, &marker_blocks, &lines);
 
     let known: Option<(Option<String>, Option<String>, Option<String>)> =
         sqlx::query_as("SELECT page_id, page_url, content_hash FROM notion_pages WHERE meeting_id = ?")
@@ -396,6 +498,10 @@ async fn sync_meeting_inner(pool: &SqlitePool, meeting_id: &str, force: bool) ->
     }
 
     ensure_tag_options(&notion, &database_id, &doc).await?;
+
+    // Images are uploaded before the page is emptied: a failure leaves the old page
+    let mut blocks = marker_blocks.clone();
+    let mut degraded = notion.resolve_screen_images(pool, meeting_id, doc.folder.as_deref(), &mut blocks).await;
 
     // Update in place when the page still exists (and is not archived), else create it
     let mut page: Option<(String, String)> = None;
@@ -421,7 +527,19 @@ async fn sync_meeting_inner(pool: &SqlitePool, meeting_id: &str, force: bool) ->
         }
     };
 
-    let created_blocks = notion.append(&page_id, blocks).await?;
+    let created_blocks = match notion.append(&page_id, blocks).await {
+        Ok(created) => created,
+        // A cached upload id that Notion no longer accepts: upload the images again
+        Err(e) if e.contains("file_upload") || e.contains("file upload") => {
+            warn!("Notion refused cached images ({}), uploading them again", e);
+            let _ = sqlx::query("DELETE FROM notion_uploads WHERE meeting_id = ?").bind(meeting_id).execute(pool).await;
+            notion.clear_children(&page_id).await?;
+            let mut blocks = marker_blocks.clone();
+            degraded = notion.resolve_screen_images(pool, meeting_id, doc.folder.as_deref(), &mut blocks).await;
+            notion.append(&page_id, blocks).await?
+        }
+        Err(e) => return Err(e),
+    };
     let toggle_id = created_blocks
         .last()
         .and_then(|b| b["id"].as_str())
@@ -431,7 +549,8 @@ async fn sync_meeting_inner(pool: &SqlitePool, meeting_id: &str, force: bool) ->
         notion.append(&toggle_id, lines).await?;
     }
 
-    record_state(pool, meeting_id, Some(&page_id), Some(&page_url), Some(&hash), None).await;
+    // An image sent as caption only: keep the previous hash so the next sync retries
+    record_state(pool, meeting_id, Some(&page_id), Some(&page_url), (!degraded).then_some(hash.as_str()), None).await;
     info!("Notion: synced {} -> {}", meeting_id, page_url);
     Ok(page_url)
 }
@@ -491,6 +610,8 @@ pub async fn api_notion_status(state: tauri::State<'_, AppState>) -> Result<Noti
 pub async fn api_notion_set_token(state: tauri::State<'_, AppState>, token: String) -> Result<(), String> {
     let token = token.trim().to_string();
     Notion::new(token.clone()).get("users/me").await.map_err(|e| format!("Clé Notion refusée : {}", e))?;
+    // Uploaded images belong to the previous integration's workspace
+    let _ = sqlx::query("DELETE FROM notion_uploads").execute(state.db_manager.pool()).await;
     set_prefs(state.db_manager.pool(), &[(PREF_TOKEN, &token)]).await
 }
 

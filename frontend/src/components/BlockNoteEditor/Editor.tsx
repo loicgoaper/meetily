@@ -1,22 +1,34 @@
 "use client";
 
-import { useEffect } from "react";
-import type { PartialBlock, Block } from "@blocknote/core";
+import { useEffect, useMemo, useRef } from "react";
+import type { PartialBlock, Block, BlockNoteEditor } from "@blocknote/core";
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/shadcn";
 import "@blocknote/shadcn/style.css";
 import "@blocknote/core/fonts/inter.css";
 import { en as blockNoteEn, fr as blockNoteFr } from "@blocknote/core/locales";
 import { useTranslation } from "react-i18next";
+import { getScreenshot } from "@/services/forkService";
+import { createScreenResolver } from "@/lib/summary-illustrations";
 
 interface EditorProps {
   initialContent?: Block[];
   onChange?: (blocks: Block[]) => void;
   editable?: boolean;
+  /** Fork: meeting whose screenshots (meetily-screen:// images) are shown */
+  meetingId?: string;
+  /** Fork: gives the live editor to the parent (screenshot insertion) */
+  onEditorReady?: (editor: BlockNoteEditor<any, any, any>) => void;
 }
 
-export default function Editor({ initialContent, onChange, editable = true }: EditorProps) {
+export default function Editor({ initialContent, onChange, editable = true, meetingId, onEditorReady }: EditorProps) {
   const { i18n } = useTranslation();
+  const meetingIdRef = useRef(meetingId);
+  meetingIdRef.current = meetingId;
+  const resolveFileUrl = useMemo(
+    () => createScreenResolver(() => meetingIdRef.current, (id, file) => getScreenshot(id, file, false)),
+    [],
+  );
   console.log('📝 EDITOR: Initializing BlockNote editor with blocks:', {
     hasContent: !!initialContent,
     blocksCount: initialContent?.length || 0,
@@ -27,9 +39,14 @@ export default function Editor({ initialContent, onChange, editable = true }: Ed
     initialContent: initialContent as PartialBlock[] | undefined,
     // Editor menus and placeholders follow the interface language
     dictionary: i18n.language === 'en' ? blockNoteEn : blockNoteFr,
+    resolveFileUrl,
   });
 
   console.log('📝 EDITOR: BlockNote editor created successfully');
+
+  useEffect(() => {
+    onEditorReady?.(editor);
+  }, [editor, onEditorReady]);
 
   // Handle content changes
   useEffect(() => {

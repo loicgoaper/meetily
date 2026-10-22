@@ -8,7 +8,8 @@ use super::meeting_context::{non_empty, MeetingContextRepository};
 use log::warn;
 use sqlx::SqlitePool;
 
-pub async fn build(pool: &SqlitePool, meeting_id: &str, user_instructions: Option<&str>) -> String {
+/// `screen_budget`: characters of screen notes the model can take (see vision::PROMPT_CHARS_*).
+pub async fn build(pool: &SqlitePool, meeting_id: &str, user_instructions: Option<&str>, screen_budget: usize) -> String {
     let context = match MeetingContextRepository::get(pool, meeting_id).await {
         Ok(ctx) => ctx,
         Err(e) => {
@@ -24,7 +25,7 @@ pub async fn build(pool: &SqlitePool, meeting_id: &str, user_instructions: Optio
     }
 
     if let Ok(folder) = super::diarization::meeting_folder(pool, meeting_id).await {
-        if let Some(notes) = super::vision::notes_for_prompt(&folder) {
+        if let Some(notes) = super::vision::notes_for_prompt(&folder, screen_budget) {
             blocks.push(format!("<screen_content>\n{}\n</screen_content>", notes));
         }
     }

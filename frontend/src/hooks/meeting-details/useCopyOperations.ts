@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { currentLocale } from '@/i18n';
 import { getMeetingSpeakers } from '@/services/forkService';
 import { formatTranscriptForSummary, toSpeakerMap, type SpeakerMap } from '@/lib/speakers';
+import { screenImagesToText } from '@/lib/summary-illustrations';
 
 interface UseCopyOperationsProps {
   meeting: any;
@@ -179,7 +180,8 @@ export function useCopyOperations({
         minute: '2-digit'
       })}\n\n---\n\n`;
 
-      const fullMarkdown = header + metadata + summaryMarkdown;
+      // Screenshots only exist inside Meetily: their caption is copied instead
+      const fullMarkdown = header + metadata + screenImagesToText(summaryMarkdown, t('fork.illustrate.copyLabel'));
       await navigator.clipboard.writeText(fullMarkdown);
 
       console.log('✅ Successfully copied to clipboard!');

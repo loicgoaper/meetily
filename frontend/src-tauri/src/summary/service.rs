@@ -575,7 +575,7 @@ impl SummaryService {
                     "✓ Successfully processed {} chunks for meeting_id: {}. Duration: {:.2}s",
                     generated.successful_chunk_count, meeting_id, duration
                 );
-                let result_json = match build_summary_result_json(
+                let mut result_json = match build_summary_result_json(
                     &generated.final_markdown,
                     &generated.english_markdown,
                     cache_source,
@@ -590,6 +590,18 @@ impl SummaryService {
                         return;
                     }
                 };
+
+                // Fork: relevant screenshots inserted next to the points they support,
+                // before the summary is stored (one Notion sync, no UI reload)
+                crate::fork::illustrate::illustrate_result_json(
+                    &_app,
+                    &pool,
+                    &meeting_id,
+                    &mut result_json,
+                    summary_language.as_deref().or(detected_summary_language.as_deref()),
+                    &cancellation_token,
+                )
+                .await;
 
                 match SummaryProcessesRepository::update_process_completed(
                     &pool,

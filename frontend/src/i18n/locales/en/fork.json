@@ -328,5 +328,39 @@
     "run": "Search",
     "searching": "Searching the transcripts…",
     "noResult": "No meeting matches."
+  },
+  "illustrate": {
+    "button": "Illustrate with screenshots",
+    "hint": "The AI places the relevant screenshots next to the points of the summary they illustrate",
+    "reading": "Reading the screen… {{done}}/{{total}}",
+    "replaceConfirm": "The summary already contains screenshots. Replace them with a new selection?",
+    "done_one": "{{count}} screenshot inserted in the summary",
+    "done_other": "{{count}} screenshots inserted in the summary",
+    "none": "No screenshot shows a specific point of the summary",
+    "noCandidates": "No usable screenshot for this meeting (screen not read or screenshots excluded)",
+    "noEditor": "The summary is not ready yet",
+    "copyLabel": "Screenshot",
+    "settingsTitle": "Screenshots in the summary",
+    "settingsDescription": "Screenshots that support a point of the summary (slide, document, page, form…) are inserted in it with a caption. They also appear in Notion and in the export.",
+    "auto": "Illustrate every summary automatically",
+    "autoHint": "Otherwise, use the \"Illustrate with screenshots\" button above the summary.",
+    "max": "Maximum number of images",
+    "images_one": "{{count}} image",
+    "images_other": "{{count}} images"
+  },
+  "retention": {
+    "label": "Keep unused screenshots",
+    "hint": "Screenshots not used in the summary are deleted after this delay; those in the summary are kept. Only meetings already illustrated are concerned.",
+    "months_one": "{{count}} month",
+    "months_other": "{{count}} months",
+    "never": "Keep forever",
+    "nothing": "No screenshot to delete for now.",
+    "pending_one": "{{count}} screenshot ({{size}} MB) can be deleted, in {{meetings}} meeting(s).",
+    "pending_other": "{{count}} screenshots ({{size}} MB) can be deleted, in {{meetings}} meeting(s).",
+    "cleanNow": "Clean up now",
+    "confirm_one": "Permanently delete {{count}} unused screenshot?",
+    "confirm_other": "Permanently delete {{count}} unused screenshots?",
+    "done_one": "{{count}} screenshot deleted ({{size}} MB freed)",
+    "done_other": "{{count}} screenshots deleted ({{size}} MB freed)"
   }
 }

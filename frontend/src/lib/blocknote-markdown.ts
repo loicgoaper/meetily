@@ -1,4 +1,5 @@
 import type { Block } from "@blocknote/core";
+import { blocksForMarkdown } from "./summary-illustrations";
 
 interface MarkdownCapableEditor {
   blocksToMarkdownLossy: (blocks: Block[]) => Promise<string>;
@@ -21,7 +22,8 @@ export async function blocksToMarkdownSafely(
 ): Promise<MarkdownConversionResult> {
   try {
     return {
-      markdown: await editor.blocksToMarkdownLossy(blocks),
+      // Meeting screenshots are exported as ![caption](meetily-screen://file)
+      markdown: await editor.blocksToMarkdownLossy(blocksForMarkdown(blocks)),
       ok: true,
     };
   } catch (error) {
