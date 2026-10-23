@@ -28,6 +28,7 @@ import { isAudioExtension, getAudioFormatsDisplayList } from '@/constants/audioF
 import { I18nProvider } from '@/i18n/I18nProvider'
 import i18n from '@/i18n'
 import { MeetingSetupProvider } from '@/contexts/MeetingSetupContext'
+import { SystemAudioWatcher } from '@/components/fork/SystemAudioWatcher'
 
 
 const sourceSans3 = Source_Sans_3({
@@ -251,6 +252,8 @@ export default function RootLayout({
                             <ImportDialogProvider onOpen={handleOpenImportDialog}>
                               {/* Download progress toast provider - listens for background downloads */}
                               <DownloadProgressToastProvider />
+                              {/* Fork: alert when the recorded system output stays silent */}
+                              <SystemAudioWatcher />
 
                               {/* Show onboarding or main app */}
                               {showOnboarding ? (

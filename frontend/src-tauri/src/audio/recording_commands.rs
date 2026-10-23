@@ -254,6 +254,18 @@ fn resolve_system_or_default(requested_name: Option<&str>) -> Option<Arc<super::
         }
     }
 
+    // Fork: when Windows sends calls (communications) and other sounds (multimedia) to
+    // different outputs, record the one the meeting is heard on
+    if let Some(name) = crate::fork::audio_route::meeting_output() {
+        match parse_audio_device(&format!("{} (output)", name)) {
+            Ok(device) => {
+                info!("✅ Using meeting output for system audio: '{}'", device.name);
+                return Some(Arc::new(device));
+            }
+            Err(e) => warn!("⚠️ Meeting output '{}' not usable: {} — using the default output", name, e),
+        }
+    }
+
     match default_output_device() {
         Ok(device) => {
             info!("✅ Using default system audio: '{}'", device.name);
@@ -370,6 +382,8 @@ pub async fn start_recording_with_meeting_name<R: Runtime>(
     let microphone_device = resolve_mic_or_default(&app, preferred_mic_name.as_deref());
 
     let system_device = resolve_system_or_default(preferred_system_name.as_deref());
+    // Fork: alert if the recorded output stays silent during a video call
+    crate::fork::audio_route::watch_recording(app.clone(), system_device.as_ref().map(|d| d.name.clone()));
 
     #[cfg(target_os = "macos")]
     prepare_audio_for_recording(system_device.as_deref()).await?;
@@ -550,6 +564,8 @@ pub async fn start_recording_with_devices_and_meeting<R: Runtime>(
     let mic_device = resolve_mic_or_default(&app, mic_device_name.as_deref());
 
     let system_device = resolve_system_or_default(system_device_name.as_deref());
+    // Fork: alert if the recorded output stays silent during a video call
+    crate::fork::audio_route::watch_recording(app.clone(), system_device.as_ref().map(|d| d.name.clone()));
 
     #[cfg(target_os = "macos")]
     prepare_audio_for_recording(system_device.as_deref()).await?;

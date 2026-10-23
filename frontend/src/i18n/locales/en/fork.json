@@ -362,5 +362,11 @@
     "confirm_other": "Permanently delete {{count}} unused screenshots?",
     "done_one": "{{count}} screenshot deleted ({{size}} MB freed)",
     "done_other": "{{count}} screenshots deleted ({{size}} MB freed)"
+  },
+  "systemAudio": {
+    "silentTitle": "No system audio recorded",
+    "silent": "For 30 seconds Meetily has heard nothing on \"{{device}}\". If the meeting plays on another device (headset, screen), pick it in Settings → Recordings → System audio, then restart the recording.",
+    "silentWithAlternative": "For 30 seconds Meetily has heard nothing on \"{{device}}\". The meeting is probably playing on \"{{alternative}}\": pick it in Settings → Recordings → System audio (or make it the Windows default output), then restart the recording.",
+    "openSettings": "Settings"
   }
 }

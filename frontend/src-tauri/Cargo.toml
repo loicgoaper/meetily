@@ -197,6 +197,16 @@ ort = { version = "2.0.0-rc.10", features = ["load-dynamic"] }
 futures-channel = "0.3.31"
 # Meetily perso (fork): smart screenshots during recording
 xcap = "0.9.8"
+# Meetily perso (fork): default multimedia / communications outputs and their level
+windows = { version = "0.61", features = [
+    "Win32_Devices_FunctionDiscovery",
+    "Win32_Media_Audio",
+    "Win32_Media_Audio_Endpoints",
+    "Win32_System_Com",
+    "Win32_System_Com_StructuredStorage",
+    "Win32_System_Variant",
+    "Win32_UI_Shell_PropertiesSystem",
+] }
 
 # Linux-specific dependencies
 # Default: CPU-only build (no BLAS)

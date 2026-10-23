@@ -4,6 +4,7 @@
 // receive small hooks and future merges stay manageable.
 
 pub mod ai_search;
+pub mod audio_route;
 pub mod cloud_chunker;
 pub mod diarization;
 pub mod export;

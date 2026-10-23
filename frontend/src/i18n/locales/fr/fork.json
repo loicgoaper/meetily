@@ -362,5 +362,11 @@
     "confirm_other": "Supprimer définitivement {{count}} captures non utilisées ?",
     "done_one": "{{count}} capture supprimée ({{size}} Mo libérés)",
     "done_other": "{{count}} captures supprimées ({{size}} Mo libérés)"
+  },
+  "systemAudio": {
+    "silentTitle": "Aucun son système enregistré",
+    "silent": "Depuis 30 secondes, Meetily n'entend rien sur « {{device}} ». Si la réunion passe par un autre appareil (casque, écran), choisis-le dans Réglages → Enregistrements → Audio système, puis relance l'enregistrement.",
+    "silentWithAlternative": "Depuis 30 secondes, Meetily n'entend rien sur « {{device}} ». Le son de la réunion passe sans doute par « {{alternative}} » : choisis-le dans Réglages → Enregistrements → Audio système (ou fais-en la sortie par défaut de Windows), puis relance l'enregistrement.",
+    "openSettings": "Réglages"
   }
 }
