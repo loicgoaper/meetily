@@ -5,7 +5,7 @@ Version cible : **0.4.1-perso.8**. Conception validée par Loïc le 2026-10-30.
 ## Problèmes
 
 1. **Une réunion arrêtée ne peut pas reprendre.** Si on arrête trop tôt, ou si la réunion repart après une pause, il faut créer une nouvelle réunion : deux transcriptions, deux comptes rendus, deux pages Notion.
-2. **Le compte rendu ignore la date et l'heure.** Le modèle ne reçoit que des temps relatifs `[mm:ss]`. Il ne peut pas remplir les cases « Date, heure de début et de fin » des modèles (« Synchro projet », « Réunion client »…) ni écrire « vendredi 7 novembre » quand quelqu'un dit « vendredi prochain ».
+2. **Le compte rendu ignore la date et l'heure.** Le modèle ne reçoit que des temps relatifs `[mm:ss]`. Il ne peut pas remplir les cases « Date, heure de début et de fin » des modèles (« Synchro projet », « Réunion client »…) ni écrire « vendredi 6 novembre » quand quelqu'un dit « vendredi prochain ».
 3. **La date d'une réunion est son heure de fin.** `meetings.created_at` est l'heure de la sauvegarde, à l'arrêt. La liste, Notion et les exports affichent donc la fin, pas le début. Le vrai début est dans `metadata.json` (`created_at`, heure de lancement de l'enregistrement).
 
 ## Choix de Loïc
@@ -88,11 +88,11 @@ Le verrou en mémoire de la chaîne (`processedMeetings`) est levé pour la réu
 ### En-tête fixe
 
 - Une ligne en italique, placée **en tête du compte rendu** juste avant son stockage, après l'insertion des captures :
-  - `*Jeudi 30 octobre 2026 · 14 h 05 – 15 h 12 · 1 h 07*`
-  - avec une reprise : `*Jeudi 30 octobre 2026 · 14 h 05 – 14 h 40, reprise 16 h 02 – 16 h 30 · 1 h 03*`
-  - une reprise un autre jour : `… reprise le vendredi 31 octobre 09 h 00 – 09 h 30 …`
+  - `*Vendredi 30 octobre 2026 · 14 h 05 – 15 h 12 · 1 h 07*`
+  - avec une reprise : `*Vendredi 30 octobre 2026 · 14 h 05 – 14 h 40, reprise 16 h 02 – 16 h 30 · 1 h 03*`
+  - une reprise un autre jour : `… reprise le samedi 31 octobre 9 h 00 – 9 h 30 …`
 - La durée est le temps d'enregistrement actif total.
-- La ligne est en français si le compte rendu est en français, sinon en anglais, au format 24 h (`Thursday 30 October 2026 · 14:05 – 15:12 · 1 h 07`).
+- La ligne est en français si le compte rendu est en français, sinon en anglais, au format 24 h (`Friday 30 October 2026 · 14:05 – 15:12 · 1 h 07`).
 - Le cache anglais (`english_cache`) ne la contient pas. L'export Markdown n'ajoute pas sa propre ligne de date quand le compte rendu commence déjà par cet en-tête.
 
 ### Ce que reçoit le modèle
@@ -100,7 +100,7 @@ Le verrou en mémoire de la chaîne (`processedMeetings`) est levé pour la réu
 En tête du bloc `<meeting_context>`, qui est désormais toujours présent :
 
 ```
-Meeting date: jeudi 30 octobre 2026 (2026-10-30), local time UTC+01:00
+Meeting date: vendredi 30 octobre 2026 (2026-10-30), local time UTC+01:00
 Session 1: 14:05–14:40, transcript [00:00]–[35:12]
 Session 2 (resumed): 16:02–16:30, transcript [35:12]–[63:40]
 Transcript times [mm:ss] are elapsed recording time, not clock time.
