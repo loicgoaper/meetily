@@ -438,8 +438,8 @@ export interface ResumeTarget {
   sessionNumber: number;
 }
 
-/** Throws the reason when the meeting cannot be resumed now. */
-export const checkResume = (meetingId: string) => invoke<void>('api_check_resume', { meetingId });
+/** Current title of the meeting; throws the reason when it cannot be resumed now. */
+export const checkResume = (meetingId: string) => invoke<string>('api_check_resume', { meetingId });
 export const prepareResume = (meetingId: string) => invoke<ResumeTarget>('api_prepare_resume', { meetingId });
 /** Drop an armed resume that did not start (no effect while recording). */
 export const cancelResume = () => invoke<void>('api_cancel_resume');

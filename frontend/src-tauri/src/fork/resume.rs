@@ -161,7 +161,13 @@ pub fn add_session(meta: &mut Value, session: Session) {
     if !meta.is_object() {
         *meta = Value::Object(Default::default());
     }
+    let rebuilt = meta.get("sessions").is_none();
     let mut sessions = sessions_from_metadata(meta);
+    // A first session rebuilt from the original recording lasts until the new one starts
+    // on the timeline (its saved duration_seconds is not always the audio length)
+    if rebuilt && sessions.len() == 1 && session.offset_seconds > 0.0 {
+        sessions[0].duration_seconds = Some(session.offset_seconds);
+    }
     if let Some(end) = &session.ended_at {
         meta["completed_at"] = Value::String(end.clone());
     }
@@ -239,6 +245,12 @@ fn glue_session(target: &ResumeTarget, ended_at: chrono::DateTime<Utc>) -> Resul
     let session_energy = source_timeline::load_from_folder(&target.session_dir);
     let main_audio = target.folder.join("audio.mp4");
     let part_audio = target.session_dir.join("audio.mp4");
+    // The saver's duration_seconds can come from the last transcript segment, whose
+    // times include the resume offset: the session's own audio is the reliable length
+    let part_length = part_audio
+        .exists()
+        .then(|| super::diarization::audio_duration(&part_audio).ok())
+        .flatten();
     let audio = if part_audio.exists() && main_audio.exists() {
         glue_audio(&main_audio, &target.session_dir)
     } else if part_audio.exists() {
@@ -255,14 +267,13 @@ fn glue_session(target: &ResumeTarget, ended_at: chrono::DateTime<Utc>) -> Resul
         }
     }
 
-    let duration = session_meta.get("duration_seconds").and_then(Value::as_f64);
     let started_at = session_meta
         .get("created_at")
         .and_then(Value::as_str)
         .map(str::to_string)
-        .unwrap_or_else(|| (ended_at - chrono::Duration::seconds(duration.unwrap_or(0.0) as i64)).to_rfc3339());
-    // Without a measured duration, the wall-clock span still counts in the total
-    let duration = duration.or_else(|| {
+        .unwrap_or_else(|| (ended_at - chrono::Duration::seconds(part_length.unwrap_or(0.0) as i64)).to_rfc3339());
+    // Without audio (recording without saving), the wall-clock span still counts
+    let duration = part_length.or_else(|| {
         chrono::DateTime::parse_from_rfc3339(&started_at)
             .ok()
             .map(|start| (ended_at - start.with_timezone(&Utc)).num_seconds().max(0) as f64)
@@ -437,9 +448,17 @@ async fn check(pool: &SqlitePool, meeting_id: &str) -> Result<PathBuf, String> {
     Ok(folder)
 }
 
+/// Ok(current title of the meeting) when it can be resumed now.
 #[tauri::command]
-pub async fn api_check_resume(state: tauri::State<'_, AppState>, meeting_id: String) -> Result<(), String> {
-    check(state.db_manager.pool(), &meeting_id).await.map(|_| ())
+pub async fn api_check_resume(state: tauri::State<'_, AppState>, meeting_id: String) -> Result<String, String> {
+    let pool = state.db_manager.pool();
+    check(pool, &meeting_id).await?;
+    let (title,): (String,) = sqlx::query_as("SELECT title FROM meetings WHERE id = ?")
+        .bind(&meeting_id)
+        .fetch_one(pool)
+        .await
+        .map_err(|e| e.to_string())?;
+    Ok(title)
 }
 
 /// Arm a resume; the next recording start records into the meeting.
@@ -588,7 +607,7 @@ mod tests {
             return;
         };
         std::fs::write(folder.join("metadata.json"), json!({ "created_at": "2026-10-30T13:05:00+00:00", "duration_seconds": 3.0 }).to_string()).unwrap();
-        std::fs::write(session_dir.join("metadata.json"), json!({ "created_at": "2026-10-30T15:02:00+00:00", "duration_seconds": 2.0 }).to_string()).unwrap();
+        std::fs::write(session_dir.join("metadata.json"), json!({ "created_at": "2026-10-30T15:02:00+00:00", "duration_seconds": 5.0 }).to_string()).unwrap();
         source_timeline::write(&folder, &SourceTimeline { window_secs: 0.5, windows: vec![(1.0, 0.0); 6] }).unwrap();
         source_timeline::write(&session_dir, &SourceTimeline { window_secs: 0.5, windows: vec![(0.0, 1.0); 4] }).unwrap();
         let target = ResumeTarget {
@@ -608,7 +627,12 @@ mod tests {
         assert!(unmerged_session(&folder).is_none());
         assert_eq!(source_timeline::load_from_folder(&folder).unwrap().windows.len(), 10);
         let meta = read_metadata(&folder).unwrap();
-        assert_eq!(sessions_from_metadata(&meta).len(), 2);
+        let sessions = sessions_from_metadata(&meta);
+        assert_eq!(sessions.len(), 2);
+        // The saver wrote 5 s (last segment end, offset included): the audio says 2 s
+        assert_eq!(sessions[0].duration_seconds, Some(3.0));
+        let second = sessions[1].duration_seconds.unwrap();
+        assert!((second - 2.0).abs() < 0.3, "second session lasts {second} s");
     }
 
     #[test]

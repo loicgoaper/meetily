@@ -26,13 +26,15 @@ export function ResumeMeetingButton({
   const reason = isRecording ? t('fork.resume.recordingInProgress') : busyReason;
 
   const resume = async () => {
+    let title = meetingTitle;
     try {
-      await checkResume(meetingId);
+      // The summary may have renamed the meeting since this page was loaded
+      title = (await checkResume(meetingId)) || meetingTitle;
     } catch (error) {
       toast.error(String(error));
       return;
     }
-    requestResume({ meetingId, title: meetingTitle });
+    requestResume({ meetingId, title });
     router.push('/');
   };
 
