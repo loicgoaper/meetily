@@ -44,6 +44,10 @@ pub struct MeetingContext {
     /// Live-only flag (screen capture requested for this recording); not persisted.
     #[serde(default)]
     pub capture_screen: Option<bool>,
+    /// Live-only: screen(s) captured for this recording ("primary", "all",
+    /// "monitor:<id>"); falls back to the "screen.monitor" setting. Not persisted.
+    #[serde(default)]
+    pub screen_monitor: Option<String>,
 }
 
 impl MeetingContext {
@@ -166,6 +170,7 @@ impl MeetingContextRepository {
             extra_instructions,
             participants,
             capture_screen: None,
+            screen_monitor: None,
         })
     }
 
@@ -340,6 +345,7 @@ mod tests {
                 Participant { name: "Marie Tremblay".into(), role: Some("DSI".into()), company: Some("Acme".into()), ..Default::default() },
             ],
             capture_screen: None,
+            screen_monitor: None,
         }
     }
 

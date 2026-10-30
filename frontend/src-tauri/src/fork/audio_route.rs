@@ -8,6 +8,7 @@
 // alert is sent when the recorded output stays silent.
 
 use log::{info, warn};
+use serde::Serialize;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 use tauri::{AppHandle, Emitter, Runtime};
@@ -44,12 +45,34 @@ pub fn pick(multimedia: &Output, communications: &Output) -> Option<String> {
     }
 }
 
+/// Live level of an audio endpoint, for the start dialog.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EndpointLevel {
+    /// Friendly name, as cpal names the device
+    pub name: String,
+    pub peak: f32,
+    /// Default multimedia output / default microphone
+    pub is_default: bool,
+    /// Default communications output (where calls play)
+    pub is_communications: bool,
+}
+
+#[derive(Debug, Clone, Default, Serialize)]
+pub struct AudioLevels {
+    pub outputs: Vec<EndpointLevel>,
+    pub inputs: Vec<EndpointLevel>,
+}
+
 #[cfg(target_os = "windows")]
 mod platform {
-    use super::Output;
+    use super::{AudioLevels, EndpointLevel, Output};
     use windows::Win32::Devices::FunctionDiscovery::PKEY_Device_FriendlyName;
     use windows::Win32::Media::Audio::Endpoints::IAudioMeterInformation;
-    use windows::Win32::Media::Audio::{eCommunications, eMultimedia, eRender, ERole, IMMDevice, IMMDeviceEnumerator, MMDeviceEnumerator};
+    use windows::Win32::Media::Audio::{
+        eCapture, eCommunications, eConsole, eMultimedia, eRender, EDataFlow, ERole, IMMDevice, IMMDeviceEnumerator, MMDeviceEnumerator,
+        DEVICE_STATE_ACTIVE,
+    };
     use windows::Win32::System::Com::{CoCreateInstance, CoInitializeEx, CoUninitialize, CLSCTX_ALL, COINIT_MULTITHREADED, STGM_READ};
 
     unsafe fn describe(device: &IMMDevice) -> windows::core::Result<(String, String, Option<IAudioMeterInformation>)> {
@@ -58,6 +81,44 @@ mod platform {
         let name = store.GetValue(&PKEY_Device_FriendlyName)?.to_string();
         let meter = device.Activate::<IAudioMeterInformation>(CLSCTX_ALL, None).ok();
         Ok((id, name, meter))
+    }
+
+    /// Every active output and microphone with its current peak level (one reading).
+    pub fn levels() -> Option<AudioLevels> {
+        std::thread::spawn(|| unsafe {
+            let initialized = CoInitializeEx(None, COINIT_MULTITHREADED).is_ok();
+            let result = (|| -> windows::core::Result<AudioLevels> {
+                let enumerator: IMMDeviceEnumerator = CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL)?;
+                let default_id = |flow: EDataFlow, role: ERole| {
+                    enumerator
+                        .GetDefaultAudioEndpoint(flow, role)
+                        .and_then(|d| d.GetId())
+                        .map(|id| id.to_string().unwrap_or_default())
+                        .unwrap_or_default()
+                };
+                let collect = |flow: EDataFlow, default: String, communications: String| -> windows::core::Result<Vec<EndpointLevel>> {
+                    let devices = enumerator.EnumAudioEndpoints(flow, DEVICE_STATE_ACTIVE)?;
+                    let mut out = Vec::new();
+                    for i in 0..devices.GetCount()? {
+                        let Ok((id, name, meter)) = devices.Item(i).and_then(|d| describe(&d)) else { continue };
+                        let peak = meter.and_then(|m| m.GetPeakValue().ok()).unwrap_or(0.0);
+                        out.push(EndpointLevel { name, peak, is_default: id == default, is_communications: id == communications });
+                    }
+                    Ok(out)
+                };
+                Ok(AudioLevels {
+                    outputs: collect(eRender, default_id(eRender, eMultimedia), default_id(eRender, eCommunications))?,
+                    inputs: collect(eCapture, default_id(eCapture, eConsole), default_id(eCapture, eCommunications))?,
+                })
+            })();
+            if initialized {
+                CoUninitialize();
+            }
+            result.ok()
+        })
+        .join()
+        .ok()
+        .flatten()
     }
 
     /// Default multimedia and communications outputs with their peak level, sampled
@@ -97,6 +158,30 @@ mod platform {
     pub fn default_outputs() -> Option<(super::Output, super::Output)> {
         None
     }
+    pub fn levels() -> Option<super::AudioLevels> {
+        None
+    }
+}
+
+/// Is an output with exactly this name plugged in? (true when it cannot be checked)
+pub fn output_exists(name: &str) -> bool {
+    #[cfg(target_os = "windows")]
+    {
+        use cpal::traits::{DeviceTrait, HostTrait};
+        if let Ok(host) = cpal::host_from_id(cpal::HostId::Wasapi) {
+            if let Ok(devices) = host.output_devices() {
+                return devices.filter_map(|d| d.name().ok()).any(|n| n == name);
+            }
+        }
+    }
+    let _ = name;
+    true
+}
+
+/// Live levels of every output and microphone (start dialog gauges).
+#[tauri::command]
+pub async fn api_audio_levels() -> Result<AudioLevels, String> {
+    tokio::task::spawn_blocking(platform::levels).await.map_err(|e| e.to_string()).map(Option::unwrap_or_default)
 }
 
 /// Name of the output the meeting is heard on, when it is not the multimedia default.

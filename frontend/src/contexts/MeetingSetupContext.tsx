@@ -7,10 +7,15 @@ import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { invoke } from '@tauri-apps/api/core';
 import { MeetingContextForm } from '@/components/fork/MeetingContextForm';
+import { RecordingSourcesPicker, type RecordingSources } from '@/components/fork/RecordingSourcesPicker';
+import { useConfig } from '@/contexts/ConfigContext';
+import { configService } from '@/services/configService';
 import {
   getPreferences,
   PREF,
+  setPreferences,
   setLiveMeetingContext,
   startScreenCapture,
   stopScreenCapture,
@@ -21,6 +26,8 @@ export interface MeetingSetupResult {
   /** Title typed by the user, or null to keep the generated one */
   title: string | null;
   context: MeetingContext;
+  /** Microphone and meeting audio chosen for this recording (null = default / automatic) */
+  devices: { micDevice: string | null; systemDevice: string | null };
 }
 
 interface MeetingSetupContextValue {
@@ -64,6 +71,25 @@ function cleanContext(context: MeetingContext): MeetingContext {
   return { ...context, participants: context.participants.filter(p => p.name.trim()) };
 }
 
+/**
+ * The microphone and screen chosen at start become the defaults for the next meeting.
+ * The meeting audio output is never remembered (Conseil 28/10): a fixed output silently
+ * records nothing once the call plays elsewhere (23/10 incident).
+ */
+async function rememberSources(sources: RecordingSources, previousScreen: string) {
+  try {
+    const prefs = await configService.getRecordingPreferences();
+    if (prefs.preferred_mic_device !== sources.micDevice) {
+      await invoke('set_recording_preferences', { preferences: { ...prefs, preferred_mic_device: sources.micDevice } });
+    }
+    if (sources.screenMonitor !== previousScreen) {
+      await setPreferences({ [PREF.screenMonitor]: sources.screenMonitor });
+    }
+  } catch (error) {
+    console.warn('Could not remember the recording sources:', error);
+  }
+}
+
 export function MeetingSetupProvider({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
   const [mode, setMode] = useState<'setup' | 'live' | null>(null);
@@ -71,6 +97,10 @@ export function MeetingSetupProvider({ children }: { children: ReactNode }) {
   const [draft, setDraft] = useState<MeetingContext>({ participants: [] });
   const [liveContext, setLiveContext] = useState<MeetingContext | null>(null);
   const resolverRef = useRef<((result: MeetingSetupResult | null) => void) | null>(null);
+  // Fork: microphone, meeting audio and screen for the recording being started
+  const { selectedDevices, setSelectedDevices } = useConfig();
+  const [sources, setSources] = useState<RecordingSources>({ micDevice: null, systemDevice: null, screenMonitor: 'primary' });
+  const savedScreenRef = useRef('primary');
 
   // Forget the live context once the recording is over (the backend saved it with the meeting)
   useEffect(() => {
@@ -85,12 +115,17 @@ export function MeetingSetupProvider({ children }: { children: ReactNode }) {
     resolverRef.current?.(null);
     resolverRef.current = null;
     let captureDefault = false;
+    let screenMonitor = 'primary';
     try {
       const prefs = await getPreferences();
       captureDefault = prefs[PREF.screenDefaultEnabled] === 'true';
+      screenMonitor = prefs[PREF.screenMonitor] || 'primary';
     } catch {
       // defaults below
     }
+    savedScreenRef.current = screenMonitor;
+    // Meeting audio always starts on Automatique (never remembered)
+    setSources({ micDevice: selectedDevices?.micDevice ?? null, systemDevice: null, screenMonitor });
     const selfName = readSelfName();
     setTitle('');
     setDraft({
@@ -102,7 +137,7 @@ export function MeetingSetupProvider({ children }: { children: ReactNode }) {
     return new Promise<MeetingSetupResult | null>(resolve => {
       resolverRef.current = resolve;
     });
-  }, []);
+  }, [selectedDevices]);
 
   const finishSetup = (result: MeetingSetupResult | null) => {
     resolverRef.current?.(result);
@@ -111,8 +146,17 @@ export function MeetingSetupProvider({ children }: { children: ReactNode }) {
     if (result) {
       rememberSelfName(result.context);
       setLiveContext(result.context);
+      setSelectedDevices({ micDevice: result.devices.micDevice, systemDevice: selectedDevices?.systemDevice ?? null });
+      void rememberSources(sources, savedScreenRef.current);
     }
   };
+
+  const startWith = (context: MeetingContext) =>
+    finishSetup({
+      title: title.trim() || null,
+      context: { ...context, screenMonitor: context.captureScreen ? sources.screenMonitor : null },
+      devices: { micDevice: sources.micDevice, systemDevice: sources.systemDevice },
+    });
 
   const openLiveEditor = useCallback(() => {
     setDraft(liveContext ?? { meetingType: 'visio', participants: [] });
@@ -168,19 +212,23 @@ export function MeetingSetupProvider({ children }: { children: ReactNode }) {
 
           <MeetingContextForm value={draft} onChange={setDraft} showInstructions={false} showScreenCapture />
 
+          {mode === 'setup' && (
+            <RecordingSourcesPicker
+              value={sources}
+              onChange={setSources}
+              captureScreen={!!draft.captureScreen}
+              meetingType={draft.meetingType}
+            />
+          )}
+
           <DialogFooter className="gap-2">
             {mode === 'setup' ? (
               <>
                 <Button variant="ghost" onClick={() => finishSetup(null)}>{t('fork.common.cancel')}</Button>
-                <Button
-                  variant="outline"
-                  onClick={() => finishSetup({ title: title.trim() || null, context: { participants: [], captureScreen: draft.captureScreen } })}
-                >
+                <Button variant="outline" onClick={() => startWith({ participants: [], captureScreen: draft.captureScreen })}>
                   {t('fork.setup.startWithoutContext')}
                 </Button>
-                <Button onClick={() => finishSetup({ title: title.trim() || null, context: cleanContext(draft) })}>
-                  {t('fork.setup.start')}
-                </Button>
+                <Button onClick={() => startWith(cleanContext(draft))}>{t('fork.setup.start')}</Button>
               </>
             ) : (
               <>

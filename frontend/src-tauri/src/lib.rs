@@ -899,6 +899,8 @@ pub fn run() {
             fork::illustrate::api_illustrate_summary,
             fork::retention::api_retention_preview,
             fork::retention::api_retention_run_now,
+            fork::audio_route::api_audio_levels,
+            fork::screen_capture::api_monitor_thumbnails,
             fork::notion::api_notion_status,
             fork::notion::api_notion_set_token,
             fork::notion::api_notion_list_pages,

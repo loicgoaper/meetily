@@ -365,8 +365,27 @@
   },
   "systemAudio": {
     "silentTitle": "Aucun son système enregistré",
-    "silent": "Depuis 30 secondes, Meetily n'entend rien sur « {{device}} ». Si la réunion passe par un autre appareil (casque, écran), choisis-le dans Réglages → Enregistrements → Audio système, puis relance l'enregistrement.",
-    "silentWithAlternative": "Depuis 30 secondes, Meetily n'entend rien sur « {{device}} ». Le son de la réunion passe sans doute par « {{alternative}} » : choisis-le dans Réglages → Enregistrements → Audio système (ou fais-en la sortie par défaut de Windows), puis relance l'enregistrement.",
+    "silent": "Depuis 30 secondes, Meetily n'entend rien sur « {{device}} ». Si la réunion passe par un autre appareil (casque, écran), arrête puis relance la réunion en le choisissant dans « Son de la réunion ».",
+    "silentWithAlternative": "Depuis 30 secondes, Meetily n'entend rien sur « {{device}} ». Le son de la réunion passe sans doute par « {{alternative}} » : arrête puis relance la réunion en choisissant « {{alternative}} » dans « Son de la réunion ».",
     "openSettings": "Réglages"
+  },
+  "sources": {
+    "title": "Sources de l’enregistrement",
+    "mic": "Micro",
+    "micDefault": "Micro par défaut de Windows",
+    "system": "Son de la réunion",
+    "systemAuto": "Automatique (la sortie où joue la réunion)",
+    "screen": "Écran capturé",
+    "screenNumber": "Écran {{n}}",
+    "hint": "Le micro et l’écran sont repris à la prochaine réunion. Le son de la réunion repart toujours en Automatique.",
+    "micDefaultNamed": "Micro par défaut · {{device}}",
+    "systemAutoNamed": "Automatique · {{device}}",
+    "systemThisMeeting": "Sortie choisie pour cette réunion seulement : la prochaine repartira en Automatique.",
+    "silentHint": "Aucun son pour l'instant : lance l'appel, la jauge doit bouger.",
+    "inPerson": "Automatique (peu utile en présentiel)",
+    "edit": "Modifier",
+    "missingMic": "« {{device}} » n’est pas branché : le micro par défaut sera utilisé.",
+    "missingSystem": "« {{device}} » n’est pas branché : le son de la réunion repasse en Automatique.",
+    "missingScreen": "L’écran mémorisé n’est plus branché : l’écran principal sera capturé."
   }
 }

@@ -76,9 +76,13 @@ export function useRecordingStart(
   // Fork: ask for title + context (participants, background, screen capture) before
   // recording. The context must reach the backend before the recording starts: it
   // decides whether screenshots are captured. Returns null if the user cancelled.
+  // Fork: microphone and meeting audio chosen in the start dialog (used by the start calls below)
+  const chosenDevicesRef = useRef<{ micDevice: string | null; systemDevice: string | null } | null>(null);
+
   const prepareMeeting = useCallback(async (): Promise<string | null> => {
     const setup = await requestSetup();
     if (!setup) return null;
+    chosenDevicesRef.current = setup.devices;
     try {
       await setLiveMeetingContext(setup.context);
     } catch (error) {
@@ -181,8 +185,8 @@ export function useRecordingStart(
       // Start the actual backend recording
       console.log('Starting backend recording with meeting:', randomTitle);
       await recordingService.startRecordingWithDevices(
-        selectedDevices?.micDevice || null,
-        selectedDevices?.systemDevice || null,
+        (chosenDevicesRef.current ?? selectedDevices)?.micDevice || null,
+        (chosenDevicesRef.current ?? selectedDevices)?.systemDevice || null,
         randomTitle
       );
       console.log('Backend recording started successfully');
@@ -277,8 +281,8 @@ export function useRecordingStart(
 
             console.log('Auto-starting backend recording with meeting:', generatedMeetingTitle);
             const result = await recordingService.startRecordingWithDevices(
-              selectedDevices?.micDevice || null,
-              selectedDevices?.systemDevice || null,
+              (chosenDevicesRef.current ?? selectedDevices)?.micDevice || null,
+              (chosenDevicesRef.current ?? selectedDevices)?.systemDevice || null,
               generatedMeetingTitle
             );
             console.log('Auto-start backend recording result:', result);
@@ -379,8 +383,8 @@ export function useRecordingStart(
 
         console.log('Starting backend recording with meeting:', generatedMeetingTitle);
         const result = await recordingService.startRecordingWithDevices(
-          selectedDevices?.micDevice || null,
-          selectedDevices?.systemDevice || null,
+          (chosenDevicesRef.current ?? selectedDevices)?.micDevice || null,
+          (chosenDevicesRef.current ?? selectedDevices)?.systemDevice || null,
           generatedMeetingTitle
         );
         console.log('Backend recording result:', result);

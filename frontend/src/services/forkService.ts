@@ -54,6 +54,8 @@ export interface MeetingContext {
   participants: Participant[];
   /** Live only: capture the screen during this recording */
   captureScreen?: boolean | null;
+  /** Live-only: screen(s) captured for this recording ("primary", "all", "monitor:<id>") */
+  screenMonitor?: string | null;
 }
 
 export interface Contact {
@@ -147,11 +149,18 @@ export const hasLiveTranscriptBackup = (meetingId: string) =>
 // ---------------------------------------------------------------------------
 
 export interface MonitorInfo {
+  /** Former identifier ("monitor:<handle>"), still accepted */
   id: string;
+  /** Durable key ("pos:x,y") */
+  key: string;
+  /** "Écran n", from left to right */
+  number: number;
   name: string;
   primary: boolean;
   width: number;
   height: number;
+  x: number;
+  y: number;
 }
 
 export interface ScreenFrame {
@@ -178,6 +187,8 @@ export interface VisionResult {
 }
 
 export const listMonitors = () => invoke<MonitorInfo[]>('api_list_monitors');
+export const monitorThumbnails = () => invoke<{ key: string; dataUrl: string }[]>('api_monitor_thumbnails');
+export const audioLevels = () => invoke<import('@/lib/audio-sources').AudioLevels>('api_audio_levels');
 export const startScreenCapture = () => invoke<void>('api_start_screen_capture');
 export const stopScreenCapture = () => invoke<void>('api_stop_screen_capture');
 export const getScreenCaptureStatus = () => invoke<{ active: boolean; frames: number }>('api_screen_capture_status');

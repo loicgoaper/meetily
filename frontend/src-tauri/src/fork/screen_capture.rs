@@ -216,7 +216,11 @@ async fn start<R: Runtime>(app: &AppHandle<R>) -> Result<(), String> {
         .parse::<f64>()
         .unwrap_or(5.0)
         .clamp(2.0, 60.0);
-    let monitor = super::preferences::get_pref(app, "screen.monitor").await;
+    // Screen chosen when starting this meeting, else the setting
+    let monitor = match super::meeting_context::live_context().and_then(|c| c.screen_monitor).filter(|m| !m.trim().is_empty()) {
+        Some(choice) => choice,
+        None => super::preferences::get_pref(app, "screen.monitor").await,
+    };
     let dir = folder.join(SCREENS_DIR);
     std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
     let existing = read_index(&dir);
@@ -363,32 +367,102 @@ fn signature(image: &image::RgbaImage) -> change_detect::Signature {
     change_detect::signature_from_luma(&luma)
 }
 
+// ---------------------------------------------------------------------------
+// Screen identity (pure, tested): xcap ids are Windows handles that change after a
+// reconnection or a restart, so screens are numbered and remembered by position.
+// ---------------------------------------------------------------------------
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct ScreenSlot {
+    pub x: i32,
+    pub y: i32,
+    pub id: u32,
+    pub primary: bool,
+}
+
+/// Durable key of a screen: its position on the desktop.
+pub fn screen_key(x: i32, y: i32) -> String {
+    format!("pos:{},{}", x, y)
+}
+
+/// Indexes of `slots` from left to right, then top to bottom ("Écran 1" is the first).
+pub fn position_order(slots: &[ScreenSlot]) -> Vec<usize> {
+    let mut order: Vec<usize> = (0..slots.len()).collect();
+    order.sort_by_key(|&i| (slots[i].x, slots[i].y));
+    order
+}
+
+/// Screens designated by a choice ("all", "primary", "pos:x,y" or the former
+/// "monitor:<id>"), as indexes in position order. The bool is true when the chosen
+/// screen is gone and the primary screen is used instead.
+pub fn resolve_choice(choice: &str, slots: &[ScreenSlot]) -> (Vec<usize>, bool) {
+    let order = position_order(slots);
+    if slots.is_empty() {
+        return (Vec::new(), false);
+    }
+    if choice == "all" {
+        return (order, false);
+    }
+    let found = if let Some(pos) = choice.strip_prefix("pos:") {
+        let mut parts = pos.split(',').map(|v| v.trim().parse::<i32>().ok());
+        match (parts.next().flatten(), parts.next().flatten()) {
+            (Some(x), Some(y)) => order.iter().copied().find(|&i| slots[i].x == x && slots[i].y == y),
+            _ => None,
+        }
+    } else if let Some(id) = choice.strip_prefix("monitor:").and_then(|id| id.parse::<u32>().ok()) {
+        order.iter().copied().find(|&i| slots[i].id == id)
+    } else {
+        None
+    };
+    match found {
+        Some(i) => (vec![i], false),
+        None => {
+            let primary = order.iter().copied().find(|&i| slots[i].primary).unwrap_or(order[0]);
+            let fell_back = choice != "primary" && !choice.is_empty();
+            (vec![primary], fell_back)
+        }
+    }
+}
+
 #[cfg(windows)]
-/// Capture the chosen screen ("primary", "monitor:<id>") or every screen ("all").
-/// Returns (screen number starting at 1, image) pairs.
+fn slots_of(monitors: &[xcap::Monitor]) -> Vec<ScreenSlot> {
+    monitors
+        .iter()
+        .map(|m| ScreenSlot {
+            x: m.x().unwrap_or_default(),
+            y: m.y().unwrap_or_default(),
+            id: m.id().unwrap_or_default(),
+            primary: m.is_primary().unwrap_or(false),
+        })
+        .collect()
+}
+
+#[cfg(windows)]
+/// Capture the chosen screen(s). Returns (screen number from left to right, image).
 fn capture(monitor_choice: &str) -> Result<Vec<(u32, image::RgbaImage)>, String> {
     let monitors = xcap::Monitor::all().map_err(|e| e.to_string())?;
     if monitors.is_empty() {
         return Err("Aucun écran détecté".to_string());
     }
-    if monitor_choice == "all" {
-        let mut images = Vec::new();
-        for (i, monitor) in monitors.iter().enumerate() {
-            match monitor.capture_image() {
-                Ok(img) => images.push((i as u32 + 1, img)),
-                Err(e) => warn!("Capture of screen {} failed: {}", i + 1, e),
-            }
-        }
-        return if images.is_empty() { Err("Aucune capture d'écran réussie".to_string()) } else { Ok(images) };
+    let slots = slots_of(&monitors);
+    let order = position_order(&slots);
+    let number = |i: usize| order.iter().position(|&o| o == i).map_or(1, |p| p as u32 + 1);
+    let (chosen, fell_back) = resolve_choice(monitor_choice, &slots);
+    if fell_back {
+        warn!("Screen '{}' not found, capturing the primary screen", monitor_choice);
     }
-    let wanted: Option<u32> = monitor_choice.strip_prefix("monitor:").and_then(|id| id.parse().ok());
-    let (index, monitor) = monitors
-        .iter()
-        .enumerate()
-        .find(|(_, m)| wanted.is_some() && m.id().ok() == wanted)
-        .or_else(|| monitors.iter().enumerate().find(|(_, m)| m.is_primary().unwrap_or(false)))
-        .unwrap_or((0, &monitors[0]));
-    Ok(vec![(index as u32 + 1, monitor.capture_image().map_err(|e| e.to_string())?)])
+    let mut images = Vec::new();
+    for i in chosen {
+        match monitors[i].capture_image() {
+            Ok(img) => images.push((number(i), img)),
+            Err(e) => warn!("Capture of screen {} failed: {}", number(i), e),
+        }
+    }
+    if images.is_empty() {
+        Err("Aucune capture d'écran réussie".to_string())
+    } else {
+        Ok(images)
+    }
 }
 
 #[cfg(not(windows))]
@@ -453,11 +527,26 @@ pub fn write_index(dir: &Path, index: &[ScreenFrame]) -> std::io::Result<()> {
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MonitorInfo {
+    /// Former identifier ("monitor:<handle>"), still accepted
     pub id: String,
+    /// Durable key ("pos:x,y")
+    pub key: String,
+    /// "Écran n", from left to right
+    pub number: u32,
     pub name: String,
     pub primary: bool,
     pub width: u32,
     pub height: u32,
+    pub x: i32,
+    pub y: i32,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MonitorThumbnail {
+    pub key: String,
+    /// Small JPEG as a data URL (never written to disk)
+    pub data_url: String,
 }
 
 #[tauri::command]
@@ -467,16 +556,63 @@ pub async fn api_list_monitors() -> Result<Vec<MonitorInfo>, String> {
         // xcap monitors hold raw handles (not Send): read them on the blocking thread
         tokio::task::spawn_blocking(|| -> Result<Vec<MonitorInfo>, String> {
             let monitors = xcap::Monitor::all().map_err(|e| e.to_string())?;
-            Ok(monitors
-                .iter()
-                .map(|m| MonitorInfo {
-                    id: format!("monitor:{}", m.id().unwrap_or_default()),
-                    name: m.friendly_name().or_else(|_| m.name()).unwrap_or_default(),
-                    primary: m.is_primary().unwrap_or(false),
-                    width: m.width().unwrap_or_default(),
-                    height: m.height().unwrap_or_default(),
+            let slots = slots_of(&monitors);
+            Ok(position_order(&slots)
+                .into_iter()
+                .enumerate()
+                .map(|(rank, i)| {
+                    let m = &monitors[i];
+                    MonitorInfo {
+                        id: format!("monitor:{}", slots[i].id),
+                        key: screen_key(slots[i].x, slots[i].y),
+                        number: rank as u32 + 1,
+                        // xcap names unnamed screens "Unknown Monitor <handle>": no name is clearer
+                        name: m
+                            .friendly_name()
+                            .or_else(|_| m.name())
+                            .ok()
+                            .filter(|n| !n.starts_with("Unknown Monitor"))
+                            .unwrap_or_default(),
+                        primary: slots[i].primary,
+                        width: m.width().unwrap_or_default(),
+                        height: m.height().unwrap_or_default(),
+                        x: slots[i].x,
+                        y: slots[i].y,
+                    }
                 })
                 .collect())
+        })
+        .await
+        .map_err(|e| e.to_string())?
+    }
+    #[cfg(not(windows))]
+    {
+        Ok(Vec::new())
+    }
+}
+
+/// A small picture of each screen, to recognise them when starting a meeting.
+#[tauri::command]
+pub async fn api_monitor_thumbnails() -> Result<Vec<MonitorThumbnail>, String> {
+    #[cfg(windows)]
+    {
+        tokio::task::spawn_blocking(|| -> Result<Vec<MonitorThumbnail>, String> {
+            use base64::Engine as _;
+            let monitors = xcap::Monitor::all().map_err(|e| e.to_string())?;
+            let slots = slots_of(&monitors);
+            let mut out = Vec::new();
+            for i in position_order(&slots) {
+                let Ok(img) = monitors[i].capture_image() else { continue };
+                let small = image::DynamicImage::ImageRgba8(img).thumbnail(240, 160).to_rgb8();
+                let mut jpeg = std::io::Cursor::new(Vec::new());
+                if image::codecs::jpeg::JpegEncoder::new_with_quality(&mut jpeg, 70).encode_image(&small).is_ok() {
+                    out.push(MonitorThumbnail {
+                        key: screen_key(slots[i].x, slots[i].y),
+                        data_url: format!("data:image/jpeg;base64,{}", base64::engine::general_purpose::STANDARD.encode(jpeg.into_inner())),
+                    });
+                }
+            }
+            Ok(out)
         })
         .await
         .map_err(|e| e.to_string())?
@@ -574,6 +710,26 @@ pub async fn api_set_screenshot_excluded(
 #[cfg(test)]
 mod tests {
     use super::change_detect::{Decision, Detector};
+
+    #[test]
+    fn screens_are_numbered_and_chosen_by_position() {
+        use super::{position_order, resolve_choice, ScreenSlot};
+        // Laptop in the middle (primary), two identical screens on each side
+        let slots = vec![
+            ScreenSlot { x: 0, y: 0, id: 111, primary: true },
+            ScreenSlot { x: 1920, y: 0, id: 222, primary: false },
+            ScreenSlot { x: -1920, y: 0, id: 333, primary: false },
+        ];
+        assert_eq!(position_order(&slots), vec![2, 0, 1]);
+        assert_eq!(resolve_choice("all", &slots), (vec![2, 0, 1], false));
+        assert_eq!(resolve_choice("pos:1920,0", &slots), (vec![1], false));
+        assert_eq!(resolve_choice("monitor:333", &slots), (vec![2], false), "former handle ids still work");
+        assert_eq!(resolve_choice("primary", &slots), (vec![0], false));
+        // Screen unplugged since: primary, and the caller is told
+        assert_eq!(resolve_choice("pos:3840,0", &slots), (vec![0], true));
+        assert_eq!(resolve_choice("pos:abc", &slots), (vec![0], true));
+        assert_eq!(resolve_choice("all", &[]), (vec![], false));
+    }
 
     #[test]
     fn only_meetily_capture_names_are_accepted() {

@@ -109,13 +109,24 @@ pub fn get_windows_device(audio_device: &AudioDevice) -> Result<(cpal::Device, c
 
     info!("Looking for Windows device with base name: {}", base_name);
 
+    // Fork: a device with exactly this name wins over a partial match (two HDMI outputs
+    // of the same screen model share most of their name)
+    let exact_input = wasapi_host
+        .input_devices()
+        .map(|devices| devices.filter_map(|d| d.name().ok()).any(|n| n == base_name))
+        .unwrap_or(false);
+    let exact_output = wasapi_host
+        .output_devices()
+        .map(|devices| devices.filter_map(|d| d.name().ok()).any(|n| n == base_name))
+        .unwrap_or(false);
+
     match audio_device.device_type {
         DeviceType::Input => {
             for device in wasapi_host.input_devices()? {
                 if let Ok(name) = device.name() {
                     info!("Checking input device: {}", name);
                     // Check if the device name contains our base name
-                    if name == base_name || name.contains(base_name) {
+                    if name == base_name || (!exact_input && name.contains(base_name)) {
                         // info!("Found matching input device: {}", name);
 
                         // Try to get default input config with better error logging
@@ -189,7 +200,7 @@ pub fn get_windows_device(audio_device: &AudioDevice) -> Result<(cpal::Device, c
                 if let Ok(name) = device.name() {
                     info!("Checking output device: {}", name);
                     // Check if the device name contains our base name
-                    if name == base_name || name.contains(base_name) {
+                    if name == base_name || (!exact_output && name.contains(base_name)) {
                         // info!("Found matching output device: {}", name);
 
                         // For output devices, we want to use them in loopback mode

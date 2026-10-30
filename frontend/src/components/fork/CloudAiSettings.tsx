@@ -7,6 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { usePreferences } from '@/hooks/fork/usePreferences';
 import { listMonitors, PREF, type MonitorInfo } from '@/services/forkService';
+import { screenChoiceKey } from '@/lib/audio-sources';
 import { OpenRouterKeyField } from './OpenRouterKeyField';
 import { ScreenshotRetention } from './ScreenshotRetention';
 import { SettingRow, SettingsCard } from './SettingsCard';
@@ -112,7 +113,10 @@ export function CloudAiSettings() {
           </Select>
         </SettingRow>
         <SettingRow label={t('fork.cloud.screenMonitor')}>
-          <Select value={get(PREF.screenMonitor, 'primary') || 'primary'} onValueChange={v => update({ [PREF.screenMonitor]: v })}>
+          <Select
+            value={screenChoiceKey(get(PREF.screenMonitor, 'primary') || 'primary', monitors.length ? monitors : null).key}
+            onValueChange={v => update({ [PREF.screenMonitor]: v })}
+          >
             <SelectTrigger className="w-72">
               <SelectValue />
             </SelectTrigger>
@@ -120,8 +124,9 @@ export function CloudAiSettings() {
               <SelectItem value="primary">{t('fork.cloud.primaryMonitor')}</SelectItem>
               {monitors.length > 1 && <SelectItem value="all">{t('fork.cloud.allMonitors', { count: monitors.length })}</SelectItem>}
               {monitors.map(m => (
-                <SelectItem key={m.id} value={m.id}>
-                  {m.name || m.id} ({m.width}×{m.height}){m.primary ? ` — ${t('fork.cloud.primary')}` : ''}
+                <SelectItem key={m.key} value={m.key}>
+                  {t('fork.sources.screenNumber', { n: m.number })}{m.name ? ` — ${m.name}` : ''} ({m.width}×{m.height})
+                  {m.primary ? ` · ${t('fork.cloud.primary')}` : ''}
                 </SelectItem>
               ))}
             </SelectContent>

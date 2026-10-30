@@ -365,8 +365,27 @@
   },
   "systemAudio": {
     "silentTitle": "No system audio recorded",
-    "silent": "For 30 seconds Meetily has heard nothing on \"{{device}}\". If the meeting plays on another device (headset, screen), pick it in Settings → Recordings → System audio, then restart the recording.",
-    "silentWithAlternative": "For 30 seconds Meetily has heard nothing on \"{{device}}\". The meeting is probably playing on \"{{alternative}}\": pick it in Settings → Recordings → System audio (or make it the Windows default output), then restart the recording.",
+    "silent": "For 30 seconds Meetily has heard nothing on \"{{device}}\". If the meeting plays on another device (headset, screen), stop and restart the meeting choosing it in \"Meeting audio\".",
+    "silentWithAlternative": "For 30 seconds Meetily has heard nothing on \"{{device}}\". The meeting is probably playing on \"{{alternative}}\": stop and restart the meeting choosing \"{{alternative}}\" in \"Meeting audio\".",
     "openSettings": "Settings"
+  },
+  "sources": {
+    "title": "Recording sources",
+    "mic": "Microphone",
+    "micDefault": "Windows default microphone",
+    "system": "Meeting audio",
+    "systemAuto": "Automatic (the output the meeting plays on)",
+    "screen": "Captured screen",
+    "screenNumber": "Screen {{n}}",
+    "hint": "The microphone and screen are kept for the next meeting. Meeting audio always starts on Automatic.",
+    "micDefaultNamed": "Default microphone · {{device}}",
+    "systemAutoNamed": "Automatic · {{device}}",
+    "systemThisMeeting": "Output chosen for this meeting only: the next one starts on Automatic again.",
+    "silentHint": "No sound yet: start the call, the gauge should move.",
+    "inPerson": "Automatic (rarely useful in person)",
+    "edit": "Change",
+    "missingMic": "\"{{device}}\" is not plugged in: the default microphone will be used.",
+    "missingSystem": "\"{{device}}\" is not plugged in: meeting audio goes back to Automatic.",
+    "missingScreen": "The remembered screen is no longer plugged in: the primary screen will be captured."
   }
 }

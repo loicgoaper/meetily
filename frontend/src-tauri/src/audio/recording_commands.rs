@@ -243,6 +243,12 @@ fn resolve_mic_or_default<R: Runtime>(
 fn resolve_system_or_default(requested_name: Option<&str>) -> Option<Arc<super::AudioDevice>> {
     if let Some(name) = requested_name {
         match parse_audio_device(name) {
+            // Fork: an output that is no longer plugged in must not silently become the
+            // multimedia default (23/10 incident): use the meeting output rule instead
+            Ok(device) if !crate::fork::audio_route::output_exists(&device.name) => warn!(
+                "⚠️ Requested system audio '{}' is not plugged in — using the meeting output",
+                device.name
+            ),
             Ok(device) => {
                 info!("✅ Using requested system audio: '{}'", device.name);
                 return Some(Arc::new(device));
