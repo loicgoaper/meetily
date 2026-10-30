@@ -92,7 +92,7 @@ pub async fn meeting_folder(pool: &SqlitePool, meeting_id: &str) -> Result<PathB
         .ok_or_else(|| "Dossier d'enregistrement introuvable pour cette réunion".to_string())
 }
 
-fn ffmpeg_command() -> Result<std::process::Command, String> {
+pub(crate) fn ffmpeg_command() -> Result<std::process::Command, String> {
     let path = crate::audio::ffmpeg::find_ffmpeg_path().ok_or("ffmpeg introuvable")?;
     #[allow(unused_mut)]
     let mut command = std::process::Command::new(path);
@@ -275,6 +275,14 @@ pub async fn diarize_meeting<R: Runtime>(app: &AppHandle<R>, meeting_id: &str) -
 
     emit_progress(app, meeting_id, "preparing", 5, "Préparation de l'audio...");
     let folder = meeting_folder(&pool, meeting_id).await?;
+    // Fork: never re-transcribe audio.mp4 while a resumed session is not glued onto it
+    // (its part of the meeting would vanish from the transcript)
+    if let Some(dir) = super::resume::unmerged_session(&folder) {
+        return Err(format!(
+            "L'audio de la reprise ({}) n'est pas recollé à la réunion : identification annulée pour ne pas la perdre",
+            dir.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default()
+        ));
+    }
     let audio = crate::audio::retranscription::find_audio_file(&folder).map_err(|e| e.to_string())?;
     let api_key = super::openrouter_chat::api_key(app).await?;
     let model = PreferencesRepository::get(&pool, prefs::DIARIZATION_MODEL).await;
@@ -491,6 +499,11 @@ pub async fn api_diarize_meeting<R: Runtime>(app: AppHandle<R>, meeting_id: Stri
 pub async fn api_cancel_diarization() -> Result<(), String> {
     CANCELLED.store(true, Ordering::SeqCst);
     Ok(())
+}
+
+/// True while a speaker identification runs (a resume must wait for it).
+pub fn is_running() -> bool {
+    IN_PROGRESS.load(Ordering::SeqCst)
 }
 
 #[tauri::command]

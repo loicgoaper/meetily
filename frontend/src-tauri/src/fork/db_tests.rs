@@ -368,3 +368,32 @@ async fn summary_context_always_gives_the_meeting_date() {
     assert!(block.starts_with("<meeting_context>\nMeeting date: vendredi 30 octobre 2026"), "{block}");
     assert!(block.contains("transcript [00:00]–[67:00]"));
 }
+
+#[tokio::test]
+async fn resumed_session_is_appended_to_its_meeting() {
+    let pool = migrated_pool().await;
+    let folder = tempfile::tempdir().unwrap();
+    let target = super::resume::ResumeTarget {
+        meeting_id: "m1".into(),
+        title: "Réunion".into(),
+        folder: folder.path().to_path_buf(),
+        session_dir: folder.path().join(".reprise-2"),
+        offset_seconds: 60.0,
+        session_number: 2,
+    };
+    let segment = crate::api::TranscriptSegment {
+        id: "s".into(),
+        text: "suite".into(),
+        timestamp: "16:02:00".into(),
+        audio_start_time: Some(61.0),
+        audio_end_time: Some(63.0),
+        duration: Some(2.0),
+        speaker: Some("mic".into()),
+    };
+    super::resume::append_to_meeting(&pool, &target, &[segment], None).await.unwrap();
+    let (count, start): (i64, f64) = sqlx::query_as("SELECT COUNT(*), MAX(audio_start_time) FROM transcripts WHERE meeting_id = 'm1'")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!((count, start), (1, 61.0));
+}

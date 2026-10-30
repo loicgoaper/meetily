@@ -58,11 +58,15 @@ pub fn snapshot() -> SourceTimeline {
 /// Persist the timeline next to the recording, for the end-of-meeting diarization
 /// pass (it identifies which diarized speaker is the user).
 pub fn save_to_folder(folder: &Path) -> std::io::Result<()> {
-    let timeline = snapshot();
+    write(folder, &snapshot())
+}
+
+/// Write a timeline next to a recording (empty timelines are not written).
+pub fn write(folder: &Path, timeline: &SourceTimeline) -> std::io::Result<()> {
     if timeline.windows.is_empty() {
         return Ok(());
     }
-    let json = serde_json::to_string(&timeline)?;
+    let json = serde_json::to_string(timeline)?;
     std::fs::write(folder.join("source_energy.json"), json)
 }
 

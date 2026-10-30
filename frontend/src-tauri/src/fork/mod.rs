@@ -18,6 +18,7 @@ pub mod notion_md;
 pub mod openrouter_chat;
 pub mod openrouter_stt;
 pub mod preferences;
+pub mod resume;
 pub mod retention;
 pub mod screen_capture;
 pub mod source_timeline;
