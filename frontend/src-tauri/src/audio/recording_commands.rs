@@ -1086,6 +1086,9 @@ pub async fn stop_recording<R: Runtime>(
         (None, None)
     };
 
+    // Fork: a resumed session is glued onto its meeting, whose folder is reported
+    let meeting_folder = crate::fork::resume::finish_after_stop(&app).or(meeting_folder);
+
     // Set recording flag to false
     info!("🔍 Setting IS_RECORDING to false");
     IS_RECORDING.store(false, Ordering::SeqCst);

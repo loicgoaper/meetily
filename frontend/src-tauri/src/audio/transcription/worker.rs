@@ -200,6 +200,10 @@ pub fn start_transcription_task<R: Runtime>(
                                         let audio_start_time = chunk_timestamp; // Already in seconds from recording start
                                         let audio_end_time = chunk_timestamp + chunk_duration;
                                         let speaker = crate::fork::source_timeline::label(audio_start_time, audio_end_time);
+                                        // Fork: a resumed meeting continues the timeline of its earlier sessions
+                                        let resume_offset = crate::fork::resume::offset();
+                                        let audio_start_time = audio_start_time + resume_offset;
+                                        let audio_end_time = audio_end_time + resume_offset;
 
                                         // Save structured transcript segment to recording manager (only final results)
                                         // Save ALL segments (partial and final) to ensure complete JSON

@@ -175,6 +175,8 @@ static RECORDING: Lazy<Mutex<Option<RecordingContext>>> = Lazy::new(|| Mutex::ne
 
 /// Hook from audio/recording_commands.rs when a recording starts.
 pub fn on_recording_started<R: Runtime>(app: &AppHandle<R>, state: Arc<RecordingState>, folder: Option<PathBuf>) {
+    // Fork: screenshots of a resumed session go to the meeting's own screens/
+    let folder = super::resume::capture_folder().or(folder);
     let Some(folder) = folder else {
         info!("Screen capture unavailable: recording is not saved to a folder");
         return;
@@ -231,7 +233,9 @@ async fn start<R: Runtime>(app: &AppHandle<R>) -> Result<(), String> {
     }
 
     let stop_flag = Arc::new(AtomicBool::new(false));
-    let frames = Arc::new(AtomicU32::new(existing.len() as u32));
+    // The 300-capture limit applies per session (a resumed meeting keeps its earlier ones)
+    let frames = Arc::new(AtomicU32::new(0));
+    let time_offset = super::resume::offset();
     let handle = tokio::spawn(capture_loop(
         app.clone(),
         state,
@@ -241,6 +245,7 @@ async fn start<R: Runtime>(app: &AppHandle<R>) -> Result<(), String> {
         interval,
         stop_flag.clone(),
         frames.clone(),
+        time_offset,
     ));
     *SESSION.lock().unwrap_or_else(|e| e.into_inner()) = Some(Session { stop: stop_flag, frames, handle });
     info!("🖥️ Screen capture started (every {:.0}s)", interval);
@@ -271,6 +276,8 @@ async fn capture_loop<R: Runtime>(
     interval: f64,
     stop_flag: Arc<AtomicBool>,
     frames: Arc<AtomicU32>,
+    // Start of this session on the meeting's timeline (a resumed meeting continues it)
+    time_offset: f64,
 ) {
     // One change detector per screen, plus the active time at which its current
     // change was first seen
@@ -289,7 +296,7 @@ async fn capture_loop<R: Runtime>(
         if state.is_paused() {
             continue;
         }
-        let t = state.get_active_recording_duration().unwrap_or(0.0);
+        let t = state.get_active_recording_duration().unwrap_or(0.0) + time_offset;
         let monitor_choice = monitor.clone();
         let captured = tokio::task::spawn_blocking(move || capture(&monitor_choice)).await;
         let screens = match captured {

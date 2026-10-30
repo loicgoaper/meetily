@@ -230,7 +230,14 @@ impl RecordingSaver {
         let base_folder = super::recording_preferences::get_default_recordings_folder();
 
         // Create meeting folder structure (with or without .checkpoints/ subdirectory)
-        let meeting_folder = create_meeting_folder(&base_folder, meeting_name, create_checkpoints)?;
+        // Fork: a resumed meeting records its new session inside the meeting's folder
+        let meeting_folder = match crate::fork::resume::session_folder() {
+            Some(folder) => {
+                std::fs::create_dir_all(if create_checkpoints { folder.join(".checkpoints") } else { folder.clone() })?;
+                folder
+            }
+            None => create_meeting_folder(&base_folder, meeting_name, create_checkpoints)?,
+        };
 
         // Only initialize incremental saver if checkpoints are needed (auto_save is true)
         if create_checkpoints {
