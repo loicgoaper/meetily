@@ -295,3 +295,61 @@ async fn notion_uploads_follow_their_meeting() {
     let left: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM notion_uploads").fetch_one(&pool).await.unwrap();
     assert_eq!(left.0, 0);
 }
+
+fn write_metadata(dir: &std::path::Path, value: serde_json::Value) {
+    std::fs::write(dir.join("metadata.json"), value.to_string()).unwrap();
+}
+
+#[tokio::test]
+async fn meeting_is_dated_by_the_start_of_its_recording() {
+    let pool = migrated_pool().await;
+    let folder = tempfile::tempdir().unwrap();
+    write_metadata(folder.path(), serde_json::json!({ "created_at": "2026-10-30T13:05:00+00:00" }));
+    sqlx::query("INSERT INTO meetings (id, title, created_at, updated_at, folder_path) VALUES ('m2', 'R', '2026-10-30T14:12:00+00:00', '2026-10-30T14:12:00+00:00', ?)")
+        .bind(folder.path().to_string_lossy().to_string())
+        .execute(&pool)
+        .await
+        .unwrap();
+
+    assert!(super::meeting_time::align_created_at(&pool, "m2", folder.path()).await.unwrap());
+    let (created,): (String,) = sqlx::query_as("SELECT created_at FROM meetings WHERE id = 'm2'").fetch_one(&pool).await.unwrap();
+    assert!(created.starts_with("2026-10-30T13:05:00"), "{created}");
+
+    let sessions = super::meeting_time::load(&pool, "m2").await;
+    assert_eq!(sessions.len(), 1);
+    assert_eq!(sessions[0].started_at, "2026-10-30T13:05:00+00:00");
+}
+
+/// File database: VACUUM INTO of an in-memory pool writes into sqlx's memory VFS.
+async fn migrated_file_pool(dir: &std::path::Path) -> SqlitePool {
+    let options = sqlx::sqlite::SqliteConnectOptions::new()
+        .filename(dir.join("meetily.sqlite"))
+        .create_if_missing(true);
+    let pool = SqlitePool::connect_with(options).await.unwrap();
+    let mut migrator = sqlx::migrate!("./migrations");
+    migrator.set_ignore_missing(true);
+    migrator.run(&pool).await.unwrap();
+    pool
+}
+
+#[tokio::test]
+async fn older_meetings_are_fixed_once_after_a_backup() {
+    let database = tempfile::tempdir().unwrap();
+    let pool = migrated_file_pool(database.path()).await;
+    let folder = tempfile::tempdir().unwrap();
+    write_metadata(folder.path(), serde_json::json!({ "created_at": "2026-10-30T13:05:00+00:00" }));
+    sqlx::query("INSERT INTO meetings (id, title, created_at, updated_at, folder_path) VALUES ('m3', 'R', '2026-10-30T14:12:00+00:00', '2026-10-30T14:12:00+00:00', ?)")
+        .bind(folder.path().to_string_lossy().to_string())
+        .execute(&pool)
+        .await
+        .unwrap();
+    let backups = tempfile::tempdir().unwrap();
+
+    assert_eq!(super::meeting_time::fix_old_meetings(&pool, backups.path()).await.unwrap(), 1);
+    let copies: Vec<_> = std::fs::read_dir(backups.path()).unwrap().flatten().map(|e| e.file_name()).collect();
+    assert_eq!(copies.len(), 1, "database copied first: {copies:?}");
+    let (created,): (String,) = sqlx::query_as("SELECT created_at FROM meetings WHERE id = 'm3'").fetch_one(&pool).await.unwrap();
+    assert!(created.starts_with("2026-10-30T13:05:00"));
+    // The pass never runs twice
+    assert_eq!(super::meeting_time::fix_old_meetings(&pool, backups.path()).await.unwrap(), 0);
+}

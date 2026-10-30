@@ -12,6 +12,7 @@ pub mod i18n;
 pub mod illustrate;
 pub mod meeting_context;
 pub mod meeting_doc;
+pub mod meeting_time;
 pub mod notion;
 pub mod notion_md;
 pub mod openrouter_chat;
