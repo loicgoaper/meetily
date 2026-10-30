@@ -426,3 +426,21 @@ export interface RetentionReport {
 
 export const previewRetention = () => invoke<RetentionReport>('api_retention_preview');
 export const runRetentionNow = () => invoke<RetentionReport>('api_retention_run_now');
+
+// --- Resume a stopped meeting -----------------------------------------------------
+
+export interface ResumeTarget {
+  meetingId: string;
+  title: string;
+  folder: string;
+  sessionDir: string;
+  offsetSeconds: number;
+  sessionNumber: number;
+}
+
+/** Throws the reason when the meeting cannot be resumed now. */
+export const checkResume = (meetingId: string) => invoke<void>('api_check_resume', { meetingId });
+export const prepareResume = (meetingId: string) => invoke<ResumeTarget>('api_prepare_resume', { meetingId });
+/** Drop an armed resume that did not start (no effect while recording). */
+export const cancelResume = () => invoke<void>('api_cancel_resume');
+export const getActiveResume = () => invoke<ResumeTarget | null>('api_active_resume');

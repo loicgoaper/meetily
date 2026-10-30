@@ -387,5 +387,16 @@
     "missingMic": "« {{device}} » n’est pas branché : le micro par défaut sera utilisé.",
     "missingSystem": "« {{device}} » n’est pas branché : le son de la réunion repasse en Automatique.",
     "missingScreen": "L’écran mémorisé n’est plus branché : l’écran principal sera capturé."
+  },
+  "resume": {
+    "button": "Reprendre la réunion",
+    "recordingInProgress": "Un enregistrement est déjà en cours",
+    "pipelineBusy": "Attendez la fin de l'identification des intervenants ou de la lecture des captures",
+    "summaryBusy": "Attendez la fin de la génération du compte rendu",
+    "dialogTitle": "Reprendre « {{title}} »",
+    "dialogWarning": "La suite s'ajoute à cette réunion. À l'arrêt, les intervenants et le compte rendu seront refaits sur toute la réunion : les corrections manuelles seront remplacées.",
+    "start": "Reprendre l'enregistrement",
+    "banner": "Reprise de « {{title}} » · la suite commence à [{{time}}]",
+    "mergeFailed": "L'audio de la reprise n'a pas pu être recollé à la réunion"
   }
 }

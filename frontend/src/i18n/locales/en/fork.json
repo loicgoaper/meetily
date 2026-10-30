@@ -387,5 +387,16 @@
     "missingMic": "\"{{device}}\" is not plugged in: the default microphone will be used.",
     "missingSystem": "\"{{device}}\" is not plugged in: meeting audio goes back to Automatic.",
     "missingScreen": "The remembered screen is no longer plugged in: the primary screen will be captured."
+  },
+  "resume": {
+    "button": "Resume meeting",
+    "recordingInProgress": "A recording is already in progress",
+    "pipelineBusy": "Wait until speaker identification or screenshot reading is over",
+    "summaryBusy": "Wait until the summary is generated",
+    "dialogTitle": "Resume \"{{title}}\"",
+    "dialogWarning": "The recording is added to this meeting. When it stops, speakers and the summary are redone for the whole meeting: manual corrections are replaced.",
+    "start": "Resume recording",
+    "banner": "Resuming \"{{title}}\" · continues at [{{time}}]",
+    "mergeFailed": "The resumed audio could not be added to the meeting"
   }
 }

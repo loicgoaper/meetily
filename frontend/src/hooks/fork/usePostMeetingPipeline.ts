@@ -26,6 +26,11 @@ const processedMeetings = new Set<string>();
  */
 const activeRuns = new Map<string, Promise<void>>();
 
+/** A resumed meeting must run the whole post-meeting pipeline again. */
+export function forgetPostMeetingRun(meetingId: string) {
+  processedMeetings.delete(meetingId);
+}
+
 /**
  * After a recording: identify speakers (replaces the live transcript), read the
  * screenshots, then let the summary run. Failures never block the summary.

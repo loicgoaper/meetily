@@ -16,6 +16,8 @@ export interface SaveMeetingRequest {
 
 export interface SaveMeetingResponse {
   meeting_id: string;
+  /** Meetily perso: the recording resumed an existing meeting */
+  resumed?: boolean;
 }
 
 export interface Meeting {
