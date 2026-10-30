@@ -233,11 +233,12 @@ function MeetingDetailsContent() {
       // 2. No summary exists
       // 3. Meeting has transcripts
       // 4. Haven't checked yet
+      // Fork: a resumed meeting already has a summary, which is regenerated
+      const noSummaryYet = summaryResponse?.status === 'idle' && meetingSummary === null;
       if (
         meetingDetails &&
         !isLoading &&
-        summaryResponse?.status === 'idle' &&
-        meetingSummary === null &&
+        (noSummaryYet || (source === 'resume' && !!summaryResponse)) &&
         meetingDetails.transcripts &&
         meetingDetails.transcripts.length > 0 &&
         !hasCheckedAutoGen
@@ -248,7 +249,7 @@ function MeetingDetailsContent() {
     };
 
     checkAutoGen();
-  }, [meetingDetails, meetingSummary, summaryResponse, isLoading, hasCheckedAutoGen, setupAutoGeneration]);
+  }, [meetingDetails, meetingSummary, summaryResponse, isLoading, hasCheckedAutoGen, setupAutoGeneration, source]);
 
   if (error) {
     return (

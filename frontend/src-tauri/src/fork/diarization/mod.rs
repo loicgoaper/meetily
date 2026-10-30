@@ -277,11 +277,12 @@ pub async fn diarize_meeting<R: Runtime>(app: &AppHandle<R>, meeting_id: &str) -
     let folder = meeting_folder(&pool, meeting_id).await?;
     // Fork: never re-transcribe audio.mp4 while a resumed session is not glued onto it
     // (its part of the meeting would vanish from the transcript)
-    if let Some(dir) = super::resume::unmerged_session(&folder) {
-        return Err(format!(
-            "L'audio de la reprise ({}) n'est pas recollé à la réunion : identification annulée pour ne pas la perdre",
-            dir.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default()
-        ));
+    if super::resume::unmerged_session(&folder).is_some() {
+        let pending = folder.clone();
+        tokio::task::spawn_blocking(move || super::resume::reglue_pending(&pending))
+            .await
+            .map_err(|e| e.to_string())?
+            .map_err(|e| format!("L'audio de la reprise n'est pas recollé à la réunion ({e}) : identification annulée pour ne pas la perdre"))?;
     }
     let audio = crate::audio::retranscription::find_audio_file(&folder).map_err(|e| e.to_string())?;
     let api_key = super::openrouter_chat::api_key(app).await?;

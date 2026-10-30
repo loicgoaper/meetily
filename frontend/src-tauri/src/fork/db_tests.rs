@@ -396,4 +396,16 @@ async fn resumed_session_is_appended_to_its_meeting() {
         .await
         .unwrap();
     assert_eq!((count, start), (1, 61.0));
+
+    // After a restart: a folder with several sessions that belongs to a meeting is that meeting
+    let folder_path = folder.path().to_string_lossy().to_string();
+    assert!(super::resume::resumed_owner(&pool, Some(&folder_path)).await.is_none(), "no folder_path yet");
+    sqlx::query("UPDATE meetings SET folder_path = ? WHERE id = 'm1'").bind(&folder_path).execute(&pool).await.unwrap();
+    assert!(super::resume::resumed_owner(&pool, Some(&folder_path)).await.is_none(), "a single session is a new meeting");
+    write_metadata(folder.path(), serde_json::json!({ "sessions": [
+        { "started_at": "2026-10-30T13:05:00+00:00", "offset_seconds": 0.0 },
+        { "started_at": "2026-10-30T15:02:00+00:00", "offset_seconds": 60.0 }
+    ] }));
+    let owner = super::resume::resumed_owner(&pool, Some(&folder_path)).await.unwrap();
+    assert_eq!(owner.meeting_id, "m1");
 }

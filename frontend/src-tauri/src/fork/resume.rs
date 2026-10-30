@@ -22,6 +22,12 @@ use tauri::{AppHandle, Emitter, Runtime};
 
 const SESSION_PREFIX: &str = ".reprise-";
 const LIVE_BACKUP_FILE: &str = "transcripts.live.json";
+/// Written in a session folder once its audio is glued: a leftover folder carrying it
+/// must never be glued again
+const GLUED_MARKER: &str = "glued";
+/// A resume armed this long ago whose recording never started is dropped (dialog
+/// closed, page reloaded): the next recording must not land in it
+const ARMED_FOR: std::time::Duration = std::time::Duration::from_secs(120);
 /// Glued audio must last the sum of both parts within this margin
 const MERGE_TOLERANCE_SECS: f64 = 2.0;
 
@@ -39,32 +45,51 @@ pub struct ResumeTarget {
     pub session_number: u32,
 }
 
-/// Resume being recorded
-static ACTIVE: Lazy<Mutex<Option<ResumeTarget>>> = Lazy::new(|| Mutex::new(None));
+struct Armed {
+    target: ResumeTarget,
+    armed_at: std::time::Instant,
+    /// Set by the recording that started with this resume
+    started: bool,
+}
+
+/// Resume armed or being recorded
+static ACTIVE: Lazy<Mutex<Option<Armed>>> = Lazy::new(|| Mutex::new(None));
 /// Resume stopped, waiting for the UI to save its transcript
 static FINISHED: Lazy<Mutex<Option<ResumeTarget>>> = Lazy::new(|| Mutex::new(None));
 
-fn lock(m: &'static Mutex<Option<ResumeTarget>>) -> MutexGuard<'static, Option<ResumeTarget>> {
+fn lock<T>(m: &'static Mutex<T>) -> MutexGuard<'static, T> {
     m.lock().unwrap_or_else(|e| e.into_inner())
 }
 
 pub fn active() -> Option<ResumeTarget> {
-    lock(&ACTIVE).clone()
+    lock(&ACTIVE).as_ref().map(|a| a.target.clone())
 }
 
-/// Folder the recording saver uses instead of creating a new meeting folder.
+fn recording() -> Option<ResumeTarget> {
+    lock(&ACTIVE).as_ref().filter(|a| a.started).map(|a| a.target.clone())
+}
+
+/// Folder the recording saver uses instead of creating a new meeting folder. Called
+/// once when a recording starts: it binds the armed resume to that recording.
 pub fn session_folder() -> Option<PathBuf> {
-    lock(&ACTIVE).as_ref().map(|t| t.session_dir.clone())
+    let mut active = lock(&ACTIVE);
+    if active.as_ref().is_some_and(|a| !a.started && a.armed_at.elapsed() > ARMED_FOR) {
+        warn!("Resume armed too long ago, dropped: this recording is a new meeting");
+        *active = None;
+    }
+    let armed = active.as_mut()?;
+    armed.started = true;
+    Some(armed.target.session_dir.clone())
 }
 
 /// Shift of the live timeline (0 outside a resume).
 pub fn offset() -> f64 {
-    lock(&ACTIVE).as_ref().map(|t| t.offset_seconds).unwrap_or(0.0)
+    recording().map(|t| t.offset_seconds).unwrap_or(0.0)
 }
 
 /// Screenshots of a resumed session go to the meeting's own screens/.
 pub fn capture_folder() -> Option<PathBuf> {
-    lock(&ACTIVE).as_ref().map(|t| t.folder.clone())
+    recording().map(|t| t.folder)
 }
 
 /// Next free `.reprise-N`; session 1 is the original recording.
@@ -83,8 +108,37 @@ pub fn unmerged_session(folder: &Path) -> Option<PathBuf> {
         .flatten()
         .map(|entry| entry.path())
         .find(|path| {
-            path.file_name().is_some_and(|n| n.to_string_lossy().starts_with(SESSION_PREFIX)) && path.join("audio.mp4").exists()
+            path.file_name().is_some_and(|n| n.to_string_lossy().starts_with(SESSION_PREFIX))
+                && path.join("audio.mp4").exists()
+                && !path.join(GLUED_MARKER).exists()
         })
+}
+
+/// Glue a session's audio, mark the session glued, then remove its folder (best effort:
+/// a folder left behind with its marker is harmless).
+fn glue_audio(main: &Path, session_dir: &Path) -> Result<(), String> {
+    concat_audio(main, &session_dir.join("audio.mp4"), session_dir)?;
+    if let Err(e) = std::fs::write(session_dir.join(GLUED_MARKER), Utc::now().to_rfc3339()) {
+        warn!("Could not mark {} as glued: {}", session_dir.display(), e);
+    }
+    if let Err(e) = std::fs::remove_dir_all(session_dir) {
+        warn!("Could not remove {}: {}", session_dir.display(), e);
+    }
+    Ok(())
+}
+
+/// Retry gluing a session left unglued at stop. Ok(false) when there is none.
+pub fn reglue_pending(folder: &Path) -> Result<bool, String> {
+    let Some(session_dir) = unmerged_session(folder) else {
+        return Ok(false);
+    };
+    let main = folder.join("audio.mp4");
+    if !main.exists() {
+        return Err(format!("La réunion n'a pas d'audio.mp4 : la reprise reste dans {}", session_dir.display()));
+    }
+    glue_audio(&main, &session_dir)?;
+    info!("⏯️ Pending resume glued onto {}", folder.display());
+    Ok(true)
 }
 
 /// Meeting energy windows, padded with silence (or cut) up to `offset_seconds`,
@@ -176,20 +230,24 @@ pub fn append_live_backup(folder: &Path, segments: &[TranscriptSegment]) -> Resu
     Ok(segments.len())
 }
 
-/// Glue the stopped session onto its meeting. The session folder is removed only
-/// when its audio is glued (or when there was no audio to glue).
+/// Glue the stopped session onto its meeting. The session is recorded in metadata.json
+/// even when its audio could not be glued (its transcript is saved anyway); the
+/// session folder then stays, and blocks diarization until `reglue_pending` succeeds.
 fn glue_session(target: &ResumeTarget, ended_at: chrono::DateTime<Utc>) -> Result<(), String> {
+    // Everything the session folder holds is read first: a successful glue removes it
+    let session_meta = read_metadata(&target.session_dir).unwrap_or(Value::Null);
+    let session_energy = source_timeline::load_from_folder(&target.session_dir);
     let main_audio = target.folder.join("audio.mp4");
     let part_audio = target.session_dir.join("audio.mp4");
     let audio = if part_audio.exists() && main_audio.exists() {
-        concat_audio(&main_audio, &part_audio, &target.session_dir)
+        glue_audio(&main_audio, &target.session_dir)
     } else if part_audio.exists() {
         Err("La réunion n'a pas d'audio.mp4 : l'audio de la reprise reste dans son dossier".to_string())
     } else {
         Ok(())
     };
 
-    if let Some(session_energy) = source_timeline::load_from_folder(&target.session_dir) {
+    if let Some(session_energy) = session_energy {
         let base = source_timeline::load_from_folder(&target.folder).unwrap_or_default();
         let merged = merge_timelines(base, session_energy, target.offset_seconds);
         if let Err(e) = source_timeline::write(&target.folder, &merged) {
@@ -197,13 +255,18 @@ fn glue_session(target: &ResumeTarget, ended_at: chrono::DateTime<Utc>) -> Resul
         }
     }
 
-    let session_meta = read_metadata(&target.session_dir).unwrap_or(Value::Null);
     let duration = session_meta.get("duration_seconds").and_then(Value::as_f64);
     let started_at = session_meta
         .get("created_at")
         .and_then(Value::as_str)
         .map(str::to_string)
         .unwrap_or_else(|| (ended_at - chrono::Duration::seconds(duration.unwrap_or(0.0) as i64)).to_rfc3339());
+    // Without a measured duration, the wall-clock span still counts in the total
+    let duration = duration.or_else(|| {
+        chrono::DateTime::parse_from_rfc3339(&started_at)
+            .ok()
+            .map(|start| (ended_at - start.with_timezone(&Utc)).num_seconds().max(0) as f64)
+    });
     let mut meta = read_metadata(&target.folder).unwrap_or(Value::Null);
     add_session(
         &mut meta,
@@ -212,14 +275,30 @@ fn glue_session(target: &ResumeTarget, ended_at: chrono::DateTime<Utc>) -> Resul
     write_json_atomic(&target.folder.join("metadata.json"), &meta)?;
 
     audio?;
-    std::fs::remove_dir_all(&target.session_dir).map_err(|e| format!("Nettoyage de {} : {e}", target.session_dir.display()))
+    // No audio to glue (recording without audio): the session folder has served
+    if target.session_dir.exists() {
+        if let Err(e) = std::fs::remove_dir_all(&target.session_dir) {
+            warn!("Could not remove {}: {}", target.session_dir.display(), e);
+        }
+    }
+    Ok(())
 }
 
 /// Called by stop_recording once the session is saved. Returns the meeting folder
 /// (reported to the UI instead of the session folder); None outside a resume.
-pub fn finish_after_stop<R: Runtime>(app: &AppHandle<R>) -> Option<PathBuf> {
-    let target = lock(&ACTIVE).take()?;
-    match glue_session(&target, Utc::now()) {
+pub async fn finish_after_stop<R: Runtime>(app: &AppHandle<R>) -> Option<PathBuf> {
+    let target = {
+        let mut active = lock(&ACTIVE);
+        if !active.as_ref().is_some_and(|a| a.started) {
+            return None;
+        }
+        active.take()?.target
+    };
+    let glued = target.clone();
+    let outcome = tokio::task::spawn_blocking(move || glue_session(&glued, Utc::now()))
+    .await
+    .unwrap_or_else(|e| Err(e.to_string()));
+    match outcome {
         Ok(()) => info!("⏯️ Session {} glued onto meeting {}", target.session_number, target.meeting_id),
         Err(message) => {
             warn!("Resume of {} not fully glued: {}", target.meeting_id, message);
@@ -231,17 +310,31 @@ pub fn finish_after_stop<R: Runtime>(app: &AppHandle<R>) -> Option<PathBuf> {
     Some(folder)
 }
 
-/// The stopped resume whose folder is being saved, if any (consumed).
-pub fn take_finished_for(folder_path: Option<&str>) -> Option<ResumeTarget> {
-    let mut finished = lock(&FINISHED);
-    let matches = finished
+/// The stopped resume whose folder is being saved, if any. It is forgotten only once
+/// its transcript is saved (`append_to_meeting`), so a failed save can be retried.
+pub fn finished_for(folder_path: Option<&str>) -> Option<ResumeTarget> {
+    lock(&FINISHED)
         .as_ref()
-        .is_some_and(|t| folder_path.is_some_and(|f| Path::new(f) == t.folder.as_path()));
-    if matches {
-        finished.take()
-    } else {
-        None
+        .filter(|t| folder_path.is_some_and(|f| Path::new(f) == t.folder.as_path()))
+        .cloned()
+}
+
+/// After a restart the stopped resume is no longer in memory: a folder whose metadata
+/// lists several sessions and that already belongs to a meeting is that meeting.
+pub async fn resumed_owner(pool: &SqlitePool, folder_path: Option<&str>) -> Option<ResumeTarget> {
+    let folder_path = folder_path?;
+    let folder = PathBuf::from(folder_path);
+    if sessions_from_metadata(&read_metadata(&folder)?).len() < 2 {
+        return None;
     }
+    let (meeting_id, title): (String, String) =
+        sqlx::query_as("SELECT id, title FROM meetings WHERE folder_path = ? ORDER BY created_at LIMIT 1")
+            .bind(folder_path)
+            .fetch_optional(pool)
+            .await
+            .ok()
+            .flatten()?;
+    Some(ResumeTarget { meeting_id, title, session_dir: folder.clone(), folder, offset_seconds: 0.0, session_number: 0 })
 }
 
 async fn insert_segments(pool: &SqlitePool, meeting_id: &str, segments: &[TranscriptSegment]) -> Result<(), sqlx::Error> {
@@ -280,6 +373,12 @@ pub async fn append_to_meeting(
     insert_segments(pool, &target.meeting_id, segments)
         .await
         .map_err(|e| format!("Ajout de la transcription à la réunion impossible : {e}"))?;
+    {
+        let mut finished = lock(&FINISHED);
+        if finished.as_ref().is_some_and(|t| t.meeting_id == target.meeting_id) {
+            *finished = None;
+        }
+    }
     if let Err(e) = append_live_backup(&target.folder, segments) {
         warn!("Could not extend {}: {}", LIVE_BACKUP_FILE, e);
     }
@@ -328,8 +427,12 @@ async fn check(pool: &SqlitePool, meeting_id: &str) -> Result<PathBuf, String> {
         return Err("Compte rendu en cours de génération : attendez la fin pour reprendre".to_string());
     }
     let folder = super::diarization::meeting_folder(pool, meeting_id).await?;
-    if let Some(dir) = unmerged_session(&folder) {
-        return Err(format!("Une reprise précédente n'a pas été recollée ({})", dir.display()));
+    if unmerged_session(&folder).is_some() {
+        let pending = folder.clone();
+        tokio::task::spawn_blocking(move || reglue_pending(&pending))
+            .await
+            .map_err(|e| e.to_string())?
+            .map_err(|e| format!("Une reprise précédente n'a pas pu être recollée : {e}"))?;
     }
     Ok(folder)
 }
@@ -361,7 +464,7 @@ pub async fn api_prepare_resume(state: tauri::State<'_, AppState>, meeting_id: S
     };
     info!("⏯️ Resume armed: meeting {} from {:.1} s, session {}", target.meeting_id, target.offset_seconds, session_number);
     *lock(&FINISHED) = None;
-    *lock(&ACTIVE) = Some(target.clone());
+    *lock(&ACTIVE) = Some(Armed { target: target.clone(), armed_at: std::time::Instant::now(), started: false });
     Ok(target)
 }
 
@@ -371,7 +474,7 @@ pub async fn api_cancel_resume() -> Result<(), String> {
     if crate::audio::recording_commands::is_recording().await {
         return Ok(());
     }
-    if let Some(target) = lock(&ACTIVE).take() {
+    if let Some(Armed { target, .. }) = lock(&ACTIVE).take() {
         if target.session_dir.exists() && !target.session_dir.join("audio.mp4").exists() {
             let _ = std::fs::remove_dir_all(&target.session_dir);
         }
@@ -531,7 +634,14 @@ mod tests {
 
         assert!(glue_session(&target, Utc::now()).is_err());
         assert_eq!(std::fs::read(&main).unwrap(), before, "meeting audio untouched");
-        assert_eq!(unmerged_session(&folder), Some(session_dir));
+        assert_eq!(unmerged_session(&folder), Some(session_dir.clone()));
+
+        // Once the session audio is readable, the pending glue succeeds on retry
+        tone(&session_dir, "audio.mp4", 2).unwrap();
+        assert!(reglue_pending(&folder).unwrap());
+        assert!(unmerged_session(&folder).is_none());
+        let glued = super::super::diarization::audio_duration(&main).unwrap();
+        assert!((glued - 5.0).abs() < 0.5, "glued audio lasts {glued} s");
     }
 
     #[test]
@@ -545,9 +655,22 @@ mod tests {
             session_number: 2,
         };
         *lock(&FINISHED) = Some(target.clone());
-        assert!(take_finished_for(Some("C:/x/Autre")).is_none());
-        assert!(take_finished_for(None).is_none());
-        assert_eq!(take_finished_for(Some("C:/x/Reunion")), Some(target));
-        assert!(take_finished_for(Some("C:/x/Reunion")).is_none(), "consumed");
+        assert!(finished_for(Some("C:/x/Autre")).is_none());
+        assert!(finished_for(None).is_none());
+        assert_eq!(finished_for(Some("C:/x/Reunion")), Some(target.clone()));
+        assert_eq!(finished_for(Some("C:/x/Reunion")), Some(target), "kept until the transcript is saved");
+        *lock(&FINISHED) = None;
+    }
+
+    #[test]
+    fn a_glued_session_is_never_glued_twice() {
+        let dir = tempfile::tempdir().unwrap();
+        let session_dir = dir.path().join(".reprise-2");
+        std::fs::create_dir(&session_dir).unwrap();
+        std::fs::write(session_dir.join("audio.mp4"), b"x").unwrap();
+        assert_eq!(unmerged_session(dir.path()), Some(session_dir.clone()));
+        std::fs::write(session_dir.join(GLUED_MARKER), "done").unwrap();
+        assert!(unmerged_session(dir.path()).is_none());
+        assert!(!reglue_pending(dir.path()).unwrap());
     }
 }

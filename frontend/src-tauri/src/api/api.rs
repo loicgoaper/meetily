@@ -983,7 +983,11 @@ pub async fn api_save_transcript<R: Runtime>(
     let pool = state.db_manager.pool();
 
     // Fork: a resumed meeting appends its new session instead of creating a meeting
-    if let Some(target) = crate::fork::resume::take_finished_for(folder_path.as_deref()) {
+    let resumed = match crate::fork::resume::finished_for(folder_path.as_deref()) {
+        Some(target) => Some(target),
+        None => crate::fork::resume::resumed_owner(pool, folder_path.as_deref()).await,
+    };
+    if let Some(target) = resumed {
         crate::fork::resume::append_to_meeting(pool, &target, &transcripts_to_save, context.as_ref()).await?;
         return Ok(serde_json::json!({
             "status": "success",
