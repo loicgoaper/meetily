@@ -599,6 +599,7 @@ pub fn run() {
             // Fork: background Notion sync of changed meetings
             fork::notion::start_worker(_app.handle().clone());
             fork::retention::start_worker(_app.handle().clone());
+            fork::meeting_time::start_old_meetings_fix(_app.handle().clone());
 
             // Fork: apply the saved UI language to Rust-side strings (tray menu)
             let app_for_lang = _app.handle().clone();

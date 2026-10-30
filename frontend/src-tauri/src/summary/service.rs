@@ -603,6 +603,15 @@ impl SummaryService {
                 )
                 .await;
 
+                // Fork: fixed date line, written by Meetily (never by the model)
+                crate::fork::meeting_time::prepend_header(
+                    &pool,
+                    &meeting_id,
+                    &mut result_json,
+                    summary_language.as_deref().or(detected_summary_language.as_deref()),
+                )
+                .await;
+
                 match SummaryProcessesRepository::update_process_completed(
                     &pool,
                     &meeting_id,

@@ -982,6 +982,9 @@ pub async fn api_save_transcript<R: Runtime>(
 
     let pool = state.db_manager.pool();
 
+    // Fork: kept to date the meeting by the start of its recording
+    let folder_for_date = folder_path.clone();
+
     // Now, call the repository with the correctly typed data.
     match TranscriptsRepository::save_transcript(
         pool,
@@ -996,6 +999,12 @@ pub async fn api_save_transcript<R: Runtime>(
                 "Successfully saved transcript and created meeting with id: {}",
                 meeting_id
             );
+            // Fork: a meeting is dated by the start of its recording, not by this save
+            if let Some(folder) = folder_for_date.as_deref() {
+                if let Err(e) = crate::fork::meeting_time::align_created_at(pool, &meeting_id, std::path::Path::new(folder)).await {
+                    log_warn!("Could not date meeting {} by its start: {}", meeting_id, e);
+                }
+            }
             crate::fork::persist_new_meeting_extras(pool, &meeting_id, context.as_ref()).await;
             Ok(serde_json::json!({
                 "status": "success",

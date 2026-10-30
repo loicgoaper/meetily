@@ -492,7 +492,7 @@ pub async fn api_process_transcript<R: Runtime>(
         }
         _ => crate::fork::vision::PROMPT_CHARS_CLOUD,
     };
-    let final_prompt = crate::fork::summary_context::build(&pool, &m_id, custom_prompt.as_deref(), screen_budget).await;
+    let final_prompt = crate::fork::summary_context::build(&pool, &m_id, custom_prompt.as_deref(), screen_budget, summary_language.as_deref()).await;
     let final_template_id = match template_id.filter(|t| !t.trim().is_empty()) {
         Some(id) => id,
         None => {

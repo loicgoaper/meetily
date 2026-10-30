@@ -188,6 +188,10 @@ impl MeetingDoc {
 
     pub fn summary_document(&self) -> Option<String> {
         let summary = self.summary_markdown.as_ref()?;
+        // The summary may already start with the date line (perso.8)
+        if super::meeting_time::starts_with_header(summary) {
+            return Some(format!("# {}\n\n{}\n", self.title, summary));
+        }
         Some(format!("# {}\n\n*{}*\n\n{}\n", self.title, self.date_label(), summary))
     }
 

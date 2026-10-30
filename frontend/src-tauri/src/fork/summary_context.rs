@@ -9,7 +9,14 @@ use log::warn;
 use sqlx::SqlitePool;
 
 /// `screen_budget`: characters of screen notes the model can take (see vision::PROMPT_CHARS_*).
-pub async fn build(pool: &SqlitePool, meeting_id: &str, user_instructions: Option<&str>, screen_budget: usize) -> String {
+/// `summary_language`: language of the summary, for the date written in the prompt.
+pub async fn build(
+    pool: &SqlitePool,
+    meeting_id: &str,
+    user_instructions: Option<&str>,
+    screen_budget: usize,
+    summary_language: Option<&str>,
+) -> String {
     let context = match MeetingContextRepository::get(pool, meeting_id).await {
         Ok(ctx) => ctx,
         Err(e) => {
@@ -19,7 +26,17 @@ pub async fn build(pool: &SqlitePool, meeting_id: &str, user_instructions: Optio
     };
 
     let mut blocks: Vec<String> = Vec::new();
-    let rendered = context.render_for_prompt();
+    // Date, time and sessions first, so dates and deadlines can be written out
+    let sessions = super::meeting_time::local(&super::meeting_time::load(pool, meeting_id).await);
+    let french = super::meeting_time::is_french(pool, summary_language).await;
+    let mut rendered = super::meeting_time::prompt_lines(&sessions, french).unwrap_or_default();
+    let context_lines = context.render_for_prompt();
+    if !context_lines.is_empty() {
+        if !rendered.is_empty() {
+            rendered.push('\n');
+        }
+        rendered.push_str(&context_lines);
+    }
     if !rendered.is_empty() {
         blocks.push(format!("<meeting_context>\n{}\n</meeting_context>", rendered));
     }

@@ -353,3 +353,18 @@ async fn older_meetings_are_fixed_once_after_a_backup() {
     // The pass never runs twice
     assert_eq!(super::meeting_time::fix_old_meetings(&pool, backups.path()).await.unwrap(), 0);
 }
+
+#[tokio::test]
+async fn summary_context_always_gives_the_meeting_date() {
+    let pool = migrated_pool().await;
+    let folder = tempfile::tempdir().unwrap();
+    write_metadata(folder.path(), serde_json::json!({ "created_at": "2026-10-30T13:05:00+00:00", "completed_at": "2026-10-30T14:12:00+00:00", "duration_seconds": 4020.0 }));
+    sqlx::query("INSERT INTO meetings (id, title, created_at, updated_at, folder_path) VALUES ('m4', 'R', '2026-10-30T13:05:00+00:00', '2026-10-30T13:05:00+00:00', ?)")
+        .bind(folder.path().to_string_lossy().to_string())
+        .execute(&pool)
+        .await
+        .unwrap();
+    let block = super::summary_context::build(&pool, "m4", None, 1000, Some("fr")).await;
+    assert!(block.starts_with("<meeting_context>\nMeeting date: vendredi 30 octobre 2026"), "{block}");
+    assert!(block.contains("transcript [00:00]–[67:00]"));
+}
