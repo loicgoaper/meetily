@@ -14,7 +14,9 @@ import {
 } from '@/lib/transcription-model-readiness';
 import { toast } from 'sonner';
 import { useMeetingSetup } from '@/contexts/MeetingSetupContext';
-import { setLiveMeetingContext } from '@/services/forkService';
+import { cancelResume, prepareResume, setLiveMeetingContext } from '@/services/forkService';
+import { takeResumeRequest, type ResumeRequest } from '@/lib/fork/resume';
+import { forgetPostMeetingRun } from '@/hooks/fork/usePostMeetingPipeline';
 import i18n from '@/i18n';
 
 const TRANSCRIPTION_RUNTIME_START_ERROR_CODE = 'TRANSCRIPTION_RUNTIME_INITIALIZATION_FAILED';
@@ -79,8 +81,10 @@ export function useRecordingStart(
   // Fork: microphone and meeting audio chosen in the start dialog (used by the start calls below)
   const chosenDevicesRef = useRef<{ micDevice: string | null; systemDevice: string | null } | null>(null);
 
-  const prepareMeeting = useCallback(async (): Promise<string | null> => {
-    const setup = await requestSetup();
+  const prepareMeeting = useCallback(async (resume?: ResumeRequest | null): Promise<string | null> => {
+    // A new meeting never records into a resume left armed by a failed stop
+    if (!resume) await cancelResume().catch(() => undefined);
+    const setup = await requestSetup(resume ? { resume } : undefined);
     if (!setup) return null;
     chosenDevicesRef.current = setup.devices;
     try {
@@ -243,6 +247,8 @@ export function useRecordingStart(
           console.log('Auto-starting recording from navigation...');
           setIsAutoStarting(true);
           sessionStorage.removeItem('autoStartRecording'); // Clear the flag
+          // Fork: "Resume meeting" from a meeting page arrives through the auto-start
+          const resume = takeResumeRequest();
 
           // Check the selected transcription model before starting.
           const modelReady = await checkModelReady();
@@ -270,7 +276,7 @@ export function useRecordingStart(
           // Start the actual backend recording
           try {
             // Fork: title + context before recording (null = cancelled)
-            const generatedMeetingTitle = await prepareMeeting();
+            const generatedMeetingTitle = await prepareMeeting(resume);
             if (!generatedMeetingTitle) {
               setStatus(RecordingStatus.IDLE);
               return;
@@ -278,6 +284,11 @@ export function useRecordingStart(
 
             // Set STARTING status before initiating backend recording
             setStatus(RecordingStatus.STARTING, i18n.t('recording.start.initializing'));
+
+            if (resume) {
+              await prepareResume(resume.meetingId);
+              forgetPostMeetingRun(resume.meetingId);
+            }
 
             console.log('Auto-starting backend recording with meeting:', generatedMeetingTitle);
             const result = await recordingService.startRecordingWithDevices(
@@ -299,6 +310,7 @@ export function useRecordingStart(
             await showRecordingNotification();
           } catch (error) {
             console.error('Failed to auto-start recording:', error);
+            if (resume) await cancelResume().catch(() => undefined);
             const errorMsg = error instanceof Error ? error.message : String(error);
             if (errorMsg.includes('already in progress')) {
               // Benign race — another start won and is live; skip ERROR/alert.

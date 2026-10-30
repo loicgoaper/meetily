@@ -71,7 +71,7 @@ function MeetingDetailsContent() {
     if (hasCheckedAutoGen) return; // Only check once
 
     // Only auto-generate if navigated from recording
-    if (source !== 'recording') {
+    if (source !== 'recording' && source !== 'resume') {
       console.log('Not from recording navigation, skipping auto-generation');
       setHasCheckedAutoGen(true);
       return;
@@ -279,7 +279,8 @@ function MeetingDetailsContent() {
     meeting={meetingDetails}
     summaryData={meetingSummary}
     shouldAutoGenerate={shouldAutoGenerate}
-    fromRecording={source === 'recording'}
+    fromRecording={source === 'recording' || source === 'resume'}
+    resumed={source === 'resume'}
     onAutoGenerateComplete={() => setShouldAutoGenerate(false)}
     onMeetingUpdated={async () => {
       // Refetch meeting details to get updated title from backend

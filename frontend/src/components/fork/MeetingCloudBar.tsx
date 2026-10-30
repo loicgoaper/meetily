@@ -11,6 +11,7 @@ import { ScreenshotGallery } from './ScreenshotGallery';
 import { MeetingTagPicker, TagSuggestionsBar } from './MeetingTags';
 import { ExportButton } from './ExportDialog';
 import { NotionMeetingBadge } from './NotionMeetingBadge';
+import { ResumeMeetingButton } from './ResumeMeetingButton';
 
 type Pipeline = ReturnType<typeof usePostMeetingPipeline>;
 
@@ -18,7 +19,17 @@ type Pipeline = ReturnType<typeof usePostMeetingPipeline>;
  * Cloud steps of a meeting: progress of speaker identification / screen reading,
  * manual re-runs, restore of the live transcript, screenshots and cloud cost.
  */
-export function MeetingCloudBar({ meetingId, pipeline }: { meetingId: string; pipeline: Pipeline }) {
+export function MeetingCloudBar({
+  meetingId,
+  meetingTitle,
+  summaryBusy,
+  pipeline,
+}: {
+  meetingId: string;
+  meetingTitle: string;
+  summaryBusy: boolean;
+  pipeline: Pipeline;
+}) {
   const { t } = useTranslation();
   const [hasBackup, setHasBackup] = useState(false);
   const [screenshotCount, setScreenshotCount] = useState(0);
@@ -56,6 +67,11 @@ export function MeetingCloudBar({ meetingId, pipeline }: { meetingId: string; pi
         <MeetingTagPicker meetingId={meetingId} />
         <TagSuggestionsBar meetingId={meetingId} />
         <span className="ml-auto inline-flex items-center gap-1">
+          <ResumeMeetingButton
+            meetingId={meetingId}
+            meetingTitle={meetingTitle}
+            busyReason={busy || !pipeline.isDone ? t('fork.resume.pipelineBusy') : summaryBusy ? t('fork.resume.summaryBusy') : null}
+          />
           <ExportButton meetingId={meetingId} hasScreenshots={screenshotCount > 0} />
           <NotionMeetingBadge meetingId={meetingId} />
         </span>

@@ -13,6 +13,7 @@ import {
   detectAndCacheSummaryLanguage,
 } from '@/lib/summary-language-preferences';
 import i18n from '@/i18n';
+import { sourceAfterSave } from '@/lib/fork/resume';
 
 type SummaryStatus = 'idle' | 'processing' | 'summarizing' | 'regenerating' | 'completed' | 'error';
 
@@ -266,9 +267,11 @@ export function useRecordingStop(
             throw new Error(i18n.t('recording.stop.noMeetingId'));
           }
 
+          // Fork: a resumed meeting keeps its summary language and regenerates its summary
+          const resumed = responseData.resumed === true;
           let shouldDetectSummaryLanguage = false;
           try {
-            shouldDetectSummaryLanguage = !(await applyPinnedSummaryLanguageToMeeting(meetingId));
+            shouldDetectSummaryLanguage = !resumed && !(await applyPinnedSummaryLanguageToMeeting(meetingId));
           } catch (error) {
             console.warn('Failed to apply pinned summary language preference for new meeting:', error);
             toast.warning(i18n.t('recording.stop.summaryLanguageNotApplied'), {
@@ -338,7 +341,7 @@ export function useRecordingStop(
 
           // Auto-navigate after a short delay with source parameter
           setTimeout(() => {
-            router.push(`/meeting-details?id=${meetingId}&source=recording`);
+            router.push(`/meeting-details?id=${meetingId}&source=${sourceAfterSave(responseData)}`);
             clearTranscripts()
             Analytics.trackPageView('meeting_details');
 

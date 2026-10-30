@@ -21,6 +21,7 @@ import { indexedDBService } from '@/services/indexedDBService';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
+import { ResumeBanner } from '@/components/fork/ResumeBanner';
 
 export default function Home() {
   const { t } = useTranslation();
@@ -208,6 +209,8 @@ export default function Home() {
         onDelete={deleteRecoverableMeeting}
         onLoadPreview={loadMeetingTranscripts}
       />
+      {/* Fork: banner while a stopped meeting is resumed (always mounted: glue errors arrive at stop) */}
+      <ResumeBanner />
       <div className="flex flex-1 overflow-hidden">
         <TranscriptPanel
           isProcessingStop={isProcessingStop}

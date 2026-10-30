@@ -23,6 +23,7 @@ import { useMeetingContextData } from '@/hooks/fork/useMeetingContextData';
 import { useMeetingSpeakers } from '@/hooks/fork/useMeetingSpeakers';
 import { usePostMeetingPipeline } from '@/hooks/fork/usePostMeetingPipeline';
 import { MeetingCloudBar } from '@/components/fork/MeetingCloudBar';
+import { canAutoGenerate } from '@/lib/fork/resume';
 import { MeetingContextPanel } from '@/components/fork/MeetingContextPanel';
 import { IllustrateSummaryButton } from '@/components/fork/IllustrateSummaryButton';
 import { SegmentPlayButton, SpeakerChip } from '@/components/fork/SpeakerChip';
@@ -33,6 +34,7 @@ export default function PageContent({
   initialSummary,
   shouldAutoGenerate = false,
   fromRecording = false,
+  resumed = false,
   onAutoGenerateComplete,
   onMeetingUpdated,
   onRefetchTranscripts,
@@ -49,6 +51,8 @@ export default function PageContent({
   initialSummary: SummaryProcessResponse | null;
   shouldAutoGenerate?: boolean;
   fromRecording?: boolean;
+  /** Meetily perso: opened after resuming this meeting (its summary is redone) */
+  resumed?: boolean;
   onAutoGenerateComplete?: () => void;
   onMeetingUpdated?: () => Promise<void>;
   onRefetchTranscripts?: () => Promise<void>;
@@ -195,7 +199,7 @@ export default function PageContent({
     if (
       !shouldAutoGenerate
       || !pipeline.isDone
-      || summaryGeneration.summaryStatus !== 'idle'
+      || !canAutoGenerate(summaryGeneration.summaryStatus, resumed)
       || isModelConfigLoading
       || meetingData.transcripts.length === 0
       || autoGenerationStartedMeetingIdRef.current === meeting.id
@@ -207,9 +211,12 @@ export default function PageContent({
     console.log(`🤖 Auto-generating summary with ${modelConfig.provider}/${modelConfig.model}...`);
     onAutoGenerateComplete?.();
     // Fork: save a pending context edit first, the backend reads it from the database
-    void meetingContext.flush().then(() => summaryGeneration.handleGenerateSummary(''));
+    void meetingContext.flush().then(() =>
+      resumed ? summaryGeneration.handleRegenerateSummary() : summaryGeneration.handleGenerateSummary(''),
+    );
   }, [
     shouldAutoGenerate,
+    resumed,
     pipeline.isDone,
     meeting.id,
     meetingData.transcripts.length,
@@ -217,6 +224,7 @@ export default function PageContent({
     modelConfig.provider,
     modelConfig.model,
     summaryGeneration.handleGenerateSummary,
+    summaryGeneration.handleRegenerateSummary,
     summaryGeneration.summaryStatus,
     onAutoGenerateComplete,
   ]);
@@ -254,7 +262,14 @@ export default function PageContent({
               meetingId={meeting.id}
               meetingFolderPath={meeting.folder_path}
               onRefetchTranscripts={onRefetchTranscripts}
-              topBar={<MeetingCloudBar meetingId={meeting.id} pipeline={pipeline} />}
+              topBar={
+                <MeetingCloudBar
+                  meetingId={meeting.id}
+                  meetingTitle={meeting.title}
+                  summaryBusy={['processing', 'summarizing', 'regenerating'].includes(summaryGeneration.summaryStatus)}
+                  pipeline={pipeline}
+                />
+              }
               contextPanel={
                 <MeetingContextPanel
                   context={meetingContext.context}
