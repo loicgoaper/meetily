@@ -239,7 +239,7 @@ mod tests {
 
     #[test]
     fn french_templates_are_builtin_and_valid() {
-        for id in ["fr_reunion_standard", "fr_suivi_projet_client", "fr_reunion_interne", "fr_seance_psychiatrique"] {
+        for id in ["fr_reunion_standard", "fr_suivi_projet_client", "fr_reunion_interne", "fr_seance_psychiatrique", "fr_reunion_aa"] {
             let t = get_template(id).unwrap_or_else(|e| panic!("{}: {}", id, e));
             assert!(t.validate().is_ok());
             assert!(has_original(id));

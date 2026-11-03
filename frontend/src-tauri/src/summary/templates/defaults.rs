@@ -18,6 +18,7 @@ pub const FR_REUNION_CLIENT_COMMERCIALE: &str = include_str!("../../../templates
 pub const FR_SEANCE_PSYCHIATRIQUE: &str = include_str!("../../../templates/fr_seance_psychiatrique.json");
 pub const FR_SUIVI_PROJET_CLIENT: &str = include_str!("../../../templates/fr_suivi_projet_client.json");
 pub const FR_REUNION_INTERNE: &str = include_str!("../../../templates/fr_reunion_interne.json");
+pub const FR_REUNION_AA: &str = include_str!("../../../templates/fr_reunion_aa.json");
 
 /// Registry of all built-in templates
 ///
@@ -34,6 +35,7 @@ pub fn get_builtin_templates() -> Vec<(&'static str, &'static str)> {
         ("fr_seance_psychiatrique", FR_SEANCE_PSYCHIATRIQUE),
         ("fr_suivi_projet_client", FR_SUIVI_PROJET_CLIENT),
         ("fr_reunion_interne", FR_REUNION_INTERNE),
+        ("fr_reunion_aa", FR_REUNION_AA),
     ]
 }
 
@@ -56,6 +58,7 @@ pub fn get_builtin_template(id: &str) -> Option<&'static str> {
         "fr_seance_psychiatrique" => Some(FR_SEANCE_PSYCHIATRIQUE),
         "fr_suivi_projet_client" => Some(FR_SUIVI_PROJET_CLIENT),
         "fr_reunion_interne" => Some(FR_REUNION_INTERNE),
+        "fr_reunion_aa" => Some(FR_REUNION_AA),
         _ => None,
     }
 }

@@ -160,6 +160,72 @@ async fn live_summary_native_french_with_context() {
 
 #[tokio::test]
 #[ignore]
+async fn live_summary_aa_meeting_keeps_first_names_and_weekly_steps() {
+    use crate::summary::llm_client::LLMProvider;
+    let template = crate::summary::templates::get_template("fr_reunion_aa").unwrap();
+    // Fictional meeting: the context gives full names, the summary must keep first names only
+    let transcript = "[00:05] Michel : Bonjour, je m'appelle Michel, je suis alcoolique. Bienvenue au groupe de l'Église Nouvelle Vie. On commence par la prière de la sérénité.\n\
+        [00:40] Michel : Le thème ce soir, c'est la troisième étape. Je lis le passage du Gros Livre : « Nous avons décidé de confier notre volonté et notre vie aux soins de Dieu tel que nous Le concevions. »\n\
+        [01:30] Sylvie : Bonjour, je m'appelle Sylvie, alcoolique. Ça fait 90 jours aujourd'hui. Les vendredis soirs après le travail sont durs. Ce qui m'aide, c'est d'appeler ma marraine avant de quitter le bureau.\n\
+        [03:10] Jean : Moi c'est Jean. Ma question : comment on fait la troisième étape quand on n'est pas croyant ?\n\
+        [03:40] Michel : Pour moi, au début, ma puissance supérieure, c'était le groupe lui-même.\n\
+        [04:20] Sylvie : Ce qui a marché pour moi : chaque matin je dis « aide-moi à ne pas boire aujourd'hui », et le soir je fais le bilan de ma journée.\n\
+        [05:30] Jean : Merci. Je vais essayer ça cette semaine, et je vais me trouver un parrain d'ici dimanche.\n\
+        [06:10] Michel : Annonces : Sylvie reçoit son jeton de 90 jours. Prochaine réunion jeudi à 19 h, sur la quatrième étape. On cherche quelqu'un pour le café. Le panier de la 7e Tradition passe. On termine avec « Un jour à la fois ».";
+    // Monday 2 November 2026, 19:00 in Québec, given to the model as the app does
+    let sessions = [super::meeting_time::Session {
+        started_at: "2026-11-03T00:00:00Z".into(),
+        ended_at: Some("2026-11-03T01:00:00Z".into()),
+        offset_seconds: 0.0,
+        duration_seconds: Some(3600.0),
+    }];
+    let quebec = chrono::FixedOffset::west_opt(5 * 3600).unwrap();
+    let local = super::meeting_time::localize(&sessions, |d| d.with_timezone(&quebec));
+    let date_lines = super::meeting_time::prompt_lines(&local, true).unwrap();
+    let custom = format!(
+        "<meeting_context>\n{}\nParticipants:\n- Michel Bouchard (animateur) [the person who recorded the meeting]\n- Sylvie Gagnon\n- Jean Tremblay\n</meeting_context>",
+        date_lines.trim_end()
+    );
+    let custom = custom.as_str();
+    let client = reqwest::Client::new();
+    let generated = crate::summary::processor::generate_meeting_summary(
+        &client,
+        &LLMProvider::OpenRouter,
+        "google/gemini-3.1-flash-lite",
+        &key(),
+        transcript,
+        custom,
+        "fr_reunion_aa",
+        &template,
+        100_000,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        Some("fr"),
+        Some("fr"),
+        None,
+    )
+    .await
+    .unwrap();
+    println!("{}", generated.final_markdown);
+    let md = generated.final_markdown.to_lowercase();
+    assert!(md.contains("sylvie") && md.contains("jean"), "first names missing");
+    for last_name in ["bouchard", "gagnon", "tremblay"] {
+        assert!(!md.contains(last_name), "last name '{}' breaks anonymity", last_name);
+    }
+    let steps = md.split("pistes pour avancer").nth(1).expect("weekly steps section missing");
+    let steps = steps.split("engagements annoncés").next().unwrap_or(steps);
+    assert!(steps.matches("\n|").count() >= 4, "weekly steps table is empty");
+    assert!(md.contains("parrain"), "Jean's commitment missing");
+    assert!(md.contains("5 novembre") && !md.contains("2025"), "next meeting date not taken from the meeting date");
+}
+
+#[tokio::test]
+#[ignore]
 async fn live_ai_search_finds_meeting_by_intent() {
     use super::speakers::{MeetingSpeaker, SpeakersRepository};
     let pool = sqlx::SqlitePool::connect("sqlite::memory:").await.unwrap();

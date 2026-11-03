@@ -1,0 +1,59 @@
+{
+  "name": "Réunion AA – Église Nouvelle Vie (Québec)",
+  "description": "Réunion des Alcooliques anonymes à l'Église Nouvelle Vie : récapitulatif, partages, questions et pistes concrètes pour avancer pendant la semaine. Anonymat : prénoms seulement.",
+  "sections": [
+    {
+      "title": "Récapitulatif",
+      "instruction": "Paragraphe de 5 à 8 phrases : type de réunion (discussion, étape, tradition, conférencier), thème du jour, idées fortes revenues dans les partages et ton général. Anonymat AA : prénoms seulement, jamais de nom de famille ni de détail qui permettrait d'identifier quelqu'un (employeur, adresse, lieu de travail, famille)",
+      "format": "paragraph"
+    },
+    {
+      "title": "Thème et lectures",
+      "instruction": "Étape ou tradition étudiée et lectures faites (Gros Livre, Les Douze Étapes et les Douze Traditions, Réflexions quotidiennes, autre littérature AA), avec les passages ou phrases clés et leur horodatage [mm:ss]",
+      "format": "list"
+    },
+    {
+      "title": "Partages",
+      "instruction": "Chaque partage, dans l'ordre : le prénom tel qu'il a été dit pendant la réunion (sinon « Un membre »), l'essentiel de son expérience, de sa force et de son espoir en une ou deux phrases, sans détail intime ou identifiant, et le moment [mm:ss]",
+      "format": "list",
+      "item_format": "| **Prénom** | **Ce qui a été partagé** | Réf. [mm:ss] |\n| --- | --- | --- |"
+    },
+    {
+      "title": "Questions et réponses",
+      "instruction": "Questions posées pendant la réunion (par l'animateur, par un membre ou au tour de table) et les réponses, expériences ou pistes que le groupe y a apportées. Indique « Sans réponse pendant la réunion » si une question est restée ouverte",
+      "format": "list",
+      "item_format": "| **Question** | **Réponse ou piste du groupe** | Réf. [mm:ss] |\n| --- | --- | --- |"
+    },
+    {
+      "title": "Pistes pour avancer cette semaine",
+      "instruction": "Section la plus importante. Transforme les réponses, les partages et les lectures en 3 à 7 pistes concrètes pour les sept prochains jours : une action réalisable par piste (appeler son parrain ou sa marraine, lire un passage précis, aller à une réunion de plus, faire l'inventaire du soir de la 10e étape, éviter une situation à risque nommée pendant la réunion…), comment s'y prendre au quotidien, et d'où vient l'idée (partage, question ou lecture, avec [mm:ss]). Chaque piste doit venir de ce qui a été dit : n'invente aucun conseil, ne donne aucun avis médical, formule des suggestions et non des ordres",
+      "format": "list",
+      "item_format": "| **Piste pour la semaine** | **Comment s'y prendre** | Inspirée de |\n| --- | --- | --- |"
+    },
+    {
+      "title": "Engagements annoncés",
+      "instruction": "Engagements que des membres ont pris à voix haute pour la semaine (par exemple « je vais appeler mon parrain tous les jours »), avec leur prénom. Omets la section si personne n'en a pris",
+      "format": "list"
+    },
+    {
+      "title": "Pensée pour la semaine",
+      "instruction": "Une phrase, un slogan ou une question dits pendant la réunion, à garder en tête toute la semaine (par exemple « Un jour à la fois »)",
+      "format": "string"
+    },
+    {
+      "title": "Ressources et soutien",
+      "instruction": "Ressources mentionnées pendant la réunion : littérature, autres réunions (jour, heure, lieu), parrainage, ligne d'aide ou service AA. Ne recopie jamais le numéro de téléphone ou le courriel personnel d'un membre",
+      "format": "list"
+    },
+    {
+      "title": "Vie du groupe",
+      "instruction": "Annonces du groupe : anniversaires d'abstinence et jetons remis (prénom et durée), postes de service, réunion d'affaires, 7e Tradition, activités à venir. Omets la section s'il n'y a eu aucune annonce",
+      "format": "list"
+    },
+    {
+      "title": "Prochaine réunion",
+      "instruction": "Date, heure et thème de la prochaine réunion s'ils ont été annoncés",
+      "format": "string"
+    }
+  ]
+}
